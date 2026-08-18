@@ -27,7 +27,7 @@ export default function LoginPage() {
   return (
     <main className={styles.screen}>
       <form className={styles.card} onSubmit={handleSubmit}>
-        <h1 className={styles.title}>Kanban Daily Planner</h1>
+        <h1 className={styles.title}>Ledger</h1>
         <label className={styles.field}>
           <span className={styles.label}>Email</span>
           <input className={styles.input} name="email" type="email" autoComplete="email" required />

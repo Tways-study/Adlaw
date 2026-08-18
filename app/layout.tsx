@@ -12,7 +12,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Kanban Daily Planner",
+  title: "Ledger",
   description: "One sentence in, a finite day out.",
 };
 

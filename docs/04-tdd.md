@@ -1,4 +1,4 @@
-> **Project:** Kanban Daily Planner · **Doc:** TDD (Technical Design Document) · **Version:** 3.0 · **Date:** 2026-08-17
+> **Project:** Ledger · **Doc:** TDD (Technical Design Document) · **Version:** 3.0 · **Date:** 2026-08-17
 > **Status:** Draft — 1 unresolved placeholder. Reverted to Convex; see `00-stack-decision.md` v3.0
 > **Upstream:** `00-stack-decision.md`, `01-prd.md`, `02-app-flow.md`, `03-backend-schema.md`
 

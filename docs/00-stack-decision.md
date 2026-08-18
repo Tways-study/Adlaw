@@ -1,4 +1,4 @@
-> **Project:** Kanban Daily Planner · **Doc:** Stack Decision · **Version:** 3.0 · **Date:** 2026-08-17
+> **Project:** Ledger · **Doc:** Stack Decision · **Version:** 3.0 · **Date:** 2026-08-17
 > **Status:** Final — supersedes v2.0 (Postgres/Supabase), which itself superseded v1.0 (Convex). See amendment in `00-intake.md`
 > **Upstream:** `00-intake.md`
 

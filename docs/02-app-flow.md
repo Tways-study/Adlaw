@@ -1,4 +1,4 @@
-> **Project:** Kanban Daily Planner · **Doc:** App Flow · **Version:** 2.0 · **Date:** 2026-08-17
+> **Project:** Ledger · **Doc:** App Flow · **Version:** 2.0 · **Date:** 2026-08-17
 > **Status:** Draft
 > **Upstream:** `01-prd.md`
 

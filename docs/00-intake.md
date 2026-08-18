@@ -1,4 +1,4 @@
-> **Project:** Kanban Daily Planner · **Doc:** Intake & Constraints · **Version:** 1.2 · **Date:** 2026-08-17
+> **Project:** Ledger · **Doc:** Intake & Constraints · **Version:** 1.2 · **Date:** 2026-08-17
 > **Status:** Confirmed — 4 unresolved placeholders
 > **Upstream:** conversation of 2026-08-17, `PRODUCT.md`, `DESIGN.md`, `docs/superpowers/specs/2026-08-17-kanban-daily-planner-design.md`
 
