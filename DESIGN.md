@@ -1,0 +1,264 @@
+# Design
+
+The visual system. Strategy lives in `PRODUCT.md`; this file is how it looks
+and moves.
+
+**2026-08-18 pivot:** the palette below is deliberately adapted from Notion's
+live design system (profiled at
+`styles.refero.design/style/2bf4c61f-de10-4614-ba1b-20c0453bd2a9`), replacing
+the prior chroma-0 / exactly-two-color system. This is a considered decision,
+not drift — see `PRODUCT.md`'s Anti-references for the boundary that still
+holds (the palette is borrowed; the "generic container" information
+architecture Notion actually ships is still the thing this product exists to
+avoid). Light-theme values are adapted from the source with mechanical
+sRGB→OKLCH conversion; dark-theme values are an original derivation — the
+source only specifies a light palette — built by applying this system's own
+previously-verified light→dark deltas (per-token ΔL/ΔC, hue held constant) to
+the new hue family, then spot-checked for the same AA floor the old palette
+held.
+
+## Theme
+
+**An object, not a document.** Surfaces have mass, edges catch light, and things
+respond under the hand. Physicality comes from material, depth, and motion —
+never from props. No paper textures, tape, stains, rotation jitter, or
+skeuomorphic ornament of any kind. **"Paper Warmth" below is a flat canvas
+color, not a paper texture** — the no-skeuomorphism rule is unaffected by the
+palette pivot; a warm hex value is not a prop.
+
+Calm at rest, expressive only under interaction. Reference sensibility: Things 3
+and Apple — generous space, soft depth, opinionated about what you don't see.
+
+Light and dark are both first-class. Neither is an inversion of the other.
+
+## Color
+
+**Strategy: near-monochrome, one commitment.** Warm-toned neutrals carry the
+interface, with exactly one saturated brand color (blue) as "the single
+chromatic commitment," plus one dedicated alert red used for exactly one
+thing:
+
+- **Primary (blue)** — committed, planned, complete, selected, focused.
+- **Alert (red)** — past the edge of the day. Nothing else.
+
+A reserved accent cast exists in the token set (below) for possible future
+decorative use — empty-state illustration, feature moments — and is **not**
+used in UI chrome, buttons, or any functional signal in v1. The interface
+itself stays a two-color system in practice, even though the token palette is
+now wider than that.
+
+There is still no per-course color system. Courses are text labels. This rule
+is accessibility-motivated (color-blind-safe distinction across many courses
+isn't achievable with color alone), not aesthetic purism, and holds regardless
+of how many colors the palette makes available.
+
+### Tokens
+
+Color is OKLCH. Neutrals now carry a small warm chroma (not `0`) — this is the
+one deliberate exception to the prior "chroma-0 neutrals" rule, adopted
+because "Paper Warmth" is the signature of the palette being ported in.
+
+```css
+:root{                                      /* light */
+  --desk:oklch(0.970 0.003 68);             /* "Paper Warmth" — the ground */
+  --rail:oklch(0.950 0.004 68);             /* second neutral layer: sidebar */
+  --card:oklch(1 0 0);                      /* Pure White — cards only, never the page bg */
+  --card-hi:oklch(0.995 0.001 68);          /* hover */
+  --ink:oklch(0.22 0.004 68);
+  --ink-2:oklch(0.42 0.005 68);             /* secondary */
+  --ink-3:oklch(0.505 0.005 68);            /* meta — the AA floor, do not lighten */
+  --line:oklch(0.875 0.005 68);
+  --line-soft:oklch(0.925 0.004 68);
+  --primary:oklch(0.568 0.182 254);         /* Notion Blue #0075de — text + indicators */
+  --primary-fill:oklch(0.53 0.18 254);      /* filled surfaces, white text */
+  --primary-soft:oklch(0.958 0.020 243);    /* Sky Tint #e6f3fe — ghost buttons */
+  --alert:oklch(0.59 0.22 31);              /* Vermillion #e32d14 */
+  --alert-soft:oklch(0.95 0.035 31);
+  --on-fill:oklch(1 0 0);
+  --busy:oklch(0.885 0.004 68);             /* committed time blocks */
+
+  /* Reserved accent cast — decorative use only, never UI chrome or a functional signal */
+  --accent-marigold:oklch(0.80 0.16 75);    /* #ffb110 */
+  --accent-coral:oklch(0.651 0.213 31);     /* #f64932 */
+  --accent-mocha:oklch(0.60 0.06 45);       /* #b18164 */
+  --accent-sky:oklch(0.78 0.09 240);        /* #62aef0 */
+}
+:root[data-theme="dark"]{
+  --desk:oklch(0.145 0.004 68); --rail:oklch(0.115 0.004 68);
+  --card:oklch(0.205 0.005 68); --card-hi:oklch(0.235 0.005 68);
+  --ink:oklch(0.97 0.004 68); --ink-2:oklch(0.775 0.005 68); --ink-3:oklch(0.665 0.005 68);
+  --line:oklch(0.30 0.006 68); --line-soft:oklch(0.245 0.005 68);
+  --primary:oklch(0.75 0.16 254); --primary-fill:oklch(0.50 0.17 254);
+  --primary-soft:oklch(0.275 0.05 254);
+  --alert:oklch(0.74 0.19 31); --alert-soft:oklch(0.29 0.06 31);
+  --on-fill:oklch(1 0 0); --busy:oklch(0.26 0.005 68);
+}
+```
+
+Dark tokens are duplicated under `@media (prefers-color-scheme:dark)` guarded by
+`:root:not([data-theme="light"])`, so the explicit toggle wins in both directions.
+
+### Rules
+
+- `--primary` is for text and indicators; `--primary-fill` is for filled surfaces
+  and always carries white text. They are separate tokens because a fill bright
+  enough to read as brand in dark mode cannot hold white text.
+- `--ink-3` is at the 4.5:1 floor in both themes — the same floor the prior
+  palette held; adding warm chroma at this low a level doesn't move OKLCH `L`
+  enough to matter, but **verify with a real contrast checker before shipping,
+  not by inspection.** Lightening it for elegance is the single most common way
+  this system breaks.
+- Dimming (`.past`, opacity) must be gentler in dark than in light — `0.45` light,
+  `0.6` dark. Dark grounds destroy legibility far faster.
+- Only one `--primary-fill` call-to-action per screen. A second one competes
+  with the first and both lose their weight.
+- Don't invert the canvas/card hierarchy — `--desk` (warm, dim) stays under
+  `--card` (white, brighter). A white page with warm cards reads as a mistake,
+  not a variation.
+- The reserved accent tokens are not wired into any component in v1. Using one
+  in UI chrome is the palette equivalent of the per-course-color failure mode:
+  it reads as decoration competing with the two signals that actually mean
+  something.
+
+## Typography
+
+Two families. **Inter** (400/500/600/700) as the primary UI face — an open,
+self-hostable stand-in for the source system's proprietary font, not a
+compromise; it was already this doc's fallback. **Source Serif 4** as a
+secondary accent, used in exactly one place: the AI's one-line reason on the
+focus card (the interface's one moment of written, human-register voice, per
+`05-design-brief.md`'s "Voice" section). It is a system accent, not a parallel
+hierarchy — never buttons, labels, or data.
+
+Fixed rem/px scale, not fluid — users view at consistent DPI and a clamped heading
+that shrinks in a column looks worse, not better.
+
+| Role | Size | Weight | Tracking |
+|---|---|---|---|
+| Day title | 20px | 600 | −0.02em |
+| Focus card title | 17px | 550 | −0.018em |
+| Focus card reason (serif accent) | 14px | 400 | 0 |
+| Card title | 13.5px | 500 | −0.006em |
+| Body / UI | 14px | 400 | 0 |
+| Lane heading | 12.5px | 600 | −0.005em |
+| Meta, labels | 11.5px | 400–600 | 0 to +0.02em |
+
+Tracking is size-specific: tighten as size grows, near zero at body, slightly
+positive on small caps-ish labels. Never one letter-spacing value across the scale.
+
+All durations, counts, clock times, and dates use `font-variant-numeric:
+tabular-nums` so columns of numbers don't shimmer as they update.
+
+## Spacing
+
+Base unit `4px`, comfortable density. Card padding `24px`, element gap `8px`.
+(The source system's marketing-page values — `1440px` max-width, `80px`
+section gaps — don't apply here; this is an app board, not a landing page,
+and those are not adopted.)
+
+## Depth and material
+
+Elevation now separates *resting* surfaces from *interactive/transient* ones,
+per the adopted system's "no shadows on content cards" rule:
+
+- **Resting cards and panels use `--edge` only** (a hairline border, below) —
+  no shadow. This replaces the prior `--lift-2` role.
+- `--lift-1` — pressed/inline chrome (buttons, segmented control). Still a
+  shadow — this is interactive chrome, not a resting card, matching the
+  source system's own treatment of its nav and product-UI chrome.
+- `--lift-3` — lifted while dragging. Only ever transient, and still a real
+  shadow — a card mid-drag is not "resting," and losing that cue would make
+  drag read as static.
+- `--edge` — a 1px inset hairline. In dark it becomes a **top highlight**
+  (`inset 0 1px 0 oklch(1 0 0/.06)`), which is the light-catching edge that makes
+  the surface read as machined rather than flat.
+- `--groove` — an inset shadow where the rail meets the day. A seam, not a border.
+
+The capture bar is a translucent layer with content running underneath it, not an
+opaque strip that eats a fixed band of screen.
+
+Radii: `4px` small, `8px` buttons and small cards, `12px` cards and panels
+(including the focus card — no larger). `9999px` is reserved for pills only,
+never a general-purpose "rounder" card radius.
+
+## Motion
+
+Springs for anything the user touches; short eased transitions for everything else.
+
+| Interaction | Parameters |
+|---|---|
+| Card settle after drop | Critically damped, `bounce 0.12`, `response 0.4`, carrying release velocity |
+| Capacity meter | Critically damped, `response 0.45` |
+| Hover, color, chrome | 120–200ms, `cubic-bezier(.22,1,.36,1)` |
+| Button press | `scale(0.975)`, 110ms, on pointer-**down** |
+
+These are unchanged by the palette pivot — they're interaction physics, not
+color. The adopted source system (a marketing site) only specifies generic
+"200ms ease" hover transitions, which this table's 120–200ms range already
+covers; it says nothing about drag/spring physics, so that craft stays as
+previously tuned.
+
+Rules that are not negotiable:
+
+- Feedback fires on pointer-down, never on release.
+- Drag tracks 1:1 and respects the grab offset. Never snap to the card's center.
+- Animate from the current on-screen value, never the target. Every animation is
+  interruptible.
+- Only `transform` and `opacity`. No animated layout properties.
+- No orchestrated page-load sequence. The board loads into a task.
+- `prefers-reduced-motion: reduce` replaces springs with instant settles and
+  cross-fades. Content is never gated behind a reveal transition.
+
+## Components
+
+**Card.** The base unit. Cards differ by lane rather than repeating one rectangle:
+
+- *Focus card* (Start here) — larger padding, `12px` radius, 17px title, the parent
+  breakdown bar, and actions. Exactly one exists. Its one-line reason is the
+  interface's sole use of the Source Serif 4 accent.
+- *Queue card* (Then) — compact. Course label, title, duration, due hint.
+- *Done card* — no shadow, no background, hairline separator, struck through at
+  `--ink-3`. Deliberately minimal presence.
+
+**Cutline.** A hairline in `--alert` with a soft-background label naming the real
+boundary (`4:00 — work starts`). Cards below it dim. It moves as the queue changes.
+
+**Capacity slot.** A recessed track with an inset shadow, a `--primary-fill`
+segment, an `--alert` overflow segment past the notch, and a notch marking 100%.
+Reads as a machined slot, not a progress bar.
+
+**Timeline (Today's shape).** Time gutter plus two tracks: committed and planned.
+Solid line for now, dashed alert line for the day's edge. Blocks crossing the edge
+render in alert.
+
+**Segmented control, capture bar, shelf item** — standard affordances, standard
+behavior. Product UI earns trust through familiarity, not invention.
+
+Every interactive component needs default, hover, focus-visible, active, disabled,
+and where relevant loading and error. Focus ring is `2px solid var(--primary)` at
+`2px` offset, everywhere, no exceptions.
+
+## Bans
+
+Rewrite the element if you are about to ship any of these:
+
+- Colored side-stripe borders (`border-left` > 1px as an accent). This was in the
+  first draft and it is the clearest tell.
+- Shadows on resting content cards — hairline (`--edge`) only. Shadows are
+  reserved for interactive chrome (`--lift-1`) and the transient drag state
+  (`--lift-3`).
+- Inverting the canvas/card hierarchy — the page (`--desk`) is never brighter
+  than the cards on it.
+- More than one `--primary-fill` call-to-action per screen.
+- Skeuomorphic props: tape, stains, torn edges, pins, rotation jitter. (A warm
+  flat canvas color is not this — texture and grain still are.)
+- Gradient text, glassmorphism as decoration, hero-metric tiles.
+- Tiny uppercase tracked eyebrows above every section.
+- A per-course rainbow of tag colors, or any use of the reserved accent cast
+  as a functional/UI-chrome signal.
+- Gamification surfaces: XP bars, level badges, streak flames, confetti.
+- Nested cards.
+- The Source Serif 4 accent anywhere but the focus card's reason line —
+  never a button, label, or data value. Display/serif faces stay out of UI
+  labels, buttons, and data generally.
+- Radii above `12px` on cards/panels; `9999px` is for pills only.

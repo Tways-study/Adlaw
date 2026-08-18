@@ -1,0 +1,559 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Daily planner — working prototype</title>
+<style>
+/* ============================================================
+   TOKENS — neutrals at chroma 0, no warm tint. Two saturated
+   colors total: primary (commit / plan) and alert (past the edge).
+   ============================================================ */
+:root{
+  --desk:oklch(0.965 0 0);
+  --rail:oklch(0.945 0 0);
+  --card:oklch(1 0 0);
+  --card-hi:oklch(0.995 0 0);
+  --ink:oklch(0.22 0 0);
+  --ink-2:oklch(0.42 0 0);
+  --ink-3:oklch(0.505 0 0);
+  --line:oklch(0.875 0 0);
+  --line-soft:oklch(0.925 0 0);
+  --primary:oklch(0.47 0.115 162);
+  --primary-fill:oklch(0.45 0.115 162);
+  --primary-soft:oklch(0.945 0.028 162);
+  --alert:oklch(0.53 0.175 30);
+  --alert-soft:oklch(0.95 0.03 30);
+  --on-fill:oklch(1 0 0);
+  --busy:oklch(0.885 0 0);
+
+  --lift-1:0 1px 2px oklch(0 0 0/.07);
+  --lift-2:0 1px 2px oklch(0 0 0/.055), 0 10px 22px -10px oklch(0 0 0/.18);
+  --lift-3:0 2px 6px oklch(0 0 0/.10), 0 28px 54px -14px oklch(0 0 0/.32);
+  --edge:inset 0 0 0 1px oklch(0 0 0/.07);
+  --groove:inset 9px 0 14px -14px oklch(0 0 0/.24);
+
+  --r-s:6px; --r-m:9px; --r-l:13px;
+  --z-drag:60; --z-chrome:40;
+  --ease:cubic-bezier(.22,1,.36,1);
+}
+:root[data-theme="dark"]{
+  --desk:oklch(0.145 0 0); --rail:oklch(0.115 0 0);
+  --card:oklch(0.205 0 0); --card-hi:oklch(0.235 0 0);
+  --ink:oklch(0.97 0 0); --ink-2:oklch(0.775 0 0); --ink-3:oklch(0.665 0 0);
+  --line:oklch(0.30 0 0); --line-soft:oklch(0.245 0 0);
+  --primary:oklch(0.775 0.15 162); --primary-fill:oklch(0.48 0.12 162);
+  --primary-soft:oklch(0.275 0.05 162);
+  --alert:oklch(0.735 0.155 32); --alert-soft:oklch(0.29 0.06 32);
+  --on-fill:oklch(1 0 0); --busy:oklch(0.26 0 0);
+  --lift-1:0 1px 0 oklch(1 0 0/.05) inset, 0 1px 2px oklch(0 0 0/.5);
+  --lift-2:0 1px 0 oklch(1 0 0/.06) inset, 0 2px 4px oklch(0 0 0/.4), 0 12px 26px -10px oklch(0 0 0/.6);
+  --lift-3:0 1px 0 oklch(1 0 0/.09) inset, 0 4px 8px oklch(0 0 0/.5), 0 32px 62px -16px oklch(0 0 0/.75);
+  --edge:inset 0 0 0 1px oklch(1 0 0/.06);
+  --groove:inset 9px 0 14px -14px oklch(0 0 0/.6);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --desk:oklch(0.145 0 0); --rail:oklch(0.115 0 0);
+  --card:oklch(0.205 0 0); --card-hi:oklch(0.235 0 0);
+  --ink:oklch(0.97 0 0); --ink-2:oklch(0.775 0 0); --ink-3:oklch(0.665 0 0);
+  --line:oklch(0.30 0 0); --line-soft:oklch(0.245 0 0);
+  --primary:oklch(0.775 0.15 162); --primary-fill:oklch(0.48 0.12 162);
+  --primary-soft:oklch(0.275 0.05 162);
+  --alert:oklch(0.735 0.155 32); --alert-soft:oklch(0.29 0.06 32);
+  --on-fill:oklch(1 0 0); --busy:oklch(0.26 0 0);
+  --lift-1:0 1px 0 oklch(1 0 0/.05) inset, 0 1px 2px oklch(0 0 0/.5);
+  --lift-2:0 1px 0 oklch(1 0 0/.06) inset, 0 2px 4px oklch(0 0 0/.4), 0 12px 26px -10px oklch(0 0 0/.6);
+  --lift-3:0 1px 0 oklch(1 0 0/.09) inset, 0 4px 8px oklch(0 0 0/.5), 0 32px 62px -16px oklch(0 0 0/.75);
+  --edge:inset 0 0 0 1px oklch(1 0 0/.06);
+  --groove:inset 9px 0 14px -14px oklch(0 0 0/.6);
+}}
+
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;background:var(--desk);color:var(--ink);overflow:hidden;
+  font:400 14px/1.45 system-ui,-apple-system,"SF Pro Text",Segoe UI,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px;border-radius:5px}
+.num{font-variant-numeric:tabular-nums}
+
+.app{display:grid;grid-template-columns:250px minmax(0,1fr);height:100vh}
+
+/* ---------------- rail ---------------- */
+.rail{background:var(--rail);border-right:1px solid var(--line-soft);display:flex;flex-direction:column;min-height:0;padding:16px 0 0}
+.rail-head{padding:0 16px 12px;display:flex;align-items:baseline;gap:7px}
+.rail-head h1{margin:0;font-size:13.5px;font-weight:600;letter-spacing:-.01em}
+.rail-head span{font-size:11.5px;color:var(--ink-3)}
+.rail-scroll{overflow-y:auto;padding:0 10px 14px;flex:1;min-height:0;scrollbar-width:thin}
+.group{margin-bottom:14px}
+.group>h2{margin:0 0 5px 6px;font-size:11px;font-weight:600;color:var(--ink-3)}
+.shelf-item{display:flex;align-items:baseline;gap:8px;width:100%;text-align:left;padding:6px 8px;border-radius:var(--r-s);color:var(--ink-2);transition:background 120ms var(--ease),color 120ms var(--ease)}
+.shelf-item:hover{background:oklch(0.5 0 0/.09);color:var(--ink)}
+.shelf-item .t{flex:1;font-size:12.5px;line-height:1.3;min-width:0}
+.shelf-item .d{font-size:11px;color:var(--ink-3);flex:none}
+.horizon{border-top:1px solid var(--line-soft);padding:14px 16px 16px}
+.horizon h2{margin:0 0 8px;font-size:11px;font-weight:600;color:var(--ink-3)}
+.hz{display:flex;align-items:baseline;gap:9px;padding:4px 0;font-size:12px}
+.hz .day{width:32px;color:var(--ink-3);flex:none}
+.hz .what{flex:1;color:var(--ink-2);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hz .in{font-size:11px;color:var(--ink-3);flex:none}
+.hz.soon .in,.hz.soon .day{color:var(--alert);font-weight:600}
+
+/* ---------------- day ---------------- */
+.day{display:flex;flex-direction:column;min-width:0;box-shadow:var(--groove)}
+.daybar{display:flex;align-items:flex-end;gap:22px;padding:20px 26px 15px}
+.date h2{margin:0;font-size:20px;font-weight:600;letter-spacing:-.02em;line-height:1.15}
+.date p{margin:3px 0 0;font-size:12.5px;color:var(--ink-3)}
+.cap{flex:1;max-width:380px;margin-bottom:2px}
+.cap-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;font-size:12px}
+.cap-top .lhs{color:var(--ink-3)}
+.cap-top .rhs{font-weight:600;letter-spacing:-.005em}
+.cap-top .rhs.over{color:var(--alert)}
+.cap-top .rhs.fits{color:var(--primary)}
+.slot{position:relative;height:8px;border-radius:99px;background:var(--line-soft);box-shadow:inset 0 1px 2px oklch(0 0 0/.15)}
+.slot .fill,.slot .spill{position:absolute;top:0;bottom:0;border-radius:99px;width:0}
+.slot .fill{left:0;background:var(--primary-fill)}
+.slot .spill{left:100%;background:var(--alert)}
+.slot .notch{position:absolute;top:-4px;bottom:-4px;left:100%;width:2px;border-radius:2px;background:var(--ink);opacity:.5}
+.themes{display:flex;gap:2px;padding:2px;border-radius:8px;background:var(--line-soft);align-self:center;margin-bottom:2px}
+.themes button{padding:4px 10px;font-size:11.5px;border-radius:6px;color:var(--ink-3);transition:color 140ms var(--ease)}
+.themes button[aria-pressed="true"]{background:var(--card);color:var(--ink);box-shadow:var(--lift-1)}
+
+.lanes{flex:1;min-height:0;display:grid;grid-template-columns:1.15fr 1fr .62fr;padding:0 26px}
+.lane{display:flex;flex-direction:column;min-height:0;padding:0 16px}
+.lane:first-child{padding-left:0}
+.lane:last-child{padding-right:0}
+.lane+.lane{border-left:1px solid var(--line-soft)}
+.lane-head{display:flex;align-items:baseline;gap:8px;padding:2px 2px 11px}
+.lane-head h3{margin:0;font-size:12.5px;font-weight:600;letter-spacing:-.005em}
+.lane-head .c{font-size:11.5px;color:var(--ink-3)}
+.lane-body{flex:1;min-height:0;overflow-y:auto;padding:2px 2px 90px;scrollbar-width:thin}
+.lane.drop-target .lane-body{background:var(--primary-soft);border-radius:var(--r-m)}
+
+/* ---------------- cards ---------------- */
+.card{position:relative;background:var(--card);border-radius:var(--r-m);box-shadow:var(--edge),var(--lift-2);padding:11px 13px;margin-bottom:8px;cursor:grab;touch-action:none;transition:box-shadow 160ms var(--ease),background 160ms var(--ease)}
+.card:hover{background:var(--card-hi)}
+.card:active{cursor:grabbing}
+.card.dragging{position:fixed;z-index:var(--z-drag);margin:0;cursor:grabbing;box-shadow:var(--edge),var(--lift-3);pointer-events:none}
+.ghost{border-radius:var(--r-m);background:oklch(0.5 0 0/.07);margin-bottom:8px}
+.course{font-size:10.5px;font-weight:600;color:var(--ink-3);letter-spacing:.02em;display:block;margin-bottom:3px}
+.card h4{margin:0;font-size:13.5px;font-weight:500;line-height:1.35;letter-spacing:-.006em}
+.meta{margin-top:6px;display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--ink-3)}
+.dot{width:2.5px;height:2.5px;border-radius:50%;background:currentColor;opacity:.55;flex:none}
+
+.card.focus{padding:15px 16px 14px;border-radius:var(--r-l)}
+.card.focus h4{font-size:17px;font-weight:550;letter-spacing:-.018em;line-height:1.28}
+.parent{margin-top:11px;padding-top:11px;border-top:1px solid var(--line-soft)}
+.parent .pl{display:flex;justify-content:space-between;font-size:11.5px;color:var(--ink-3);margin-bottom:6px}
+.steps{display:flex;gap:3px}
+.steps i{flex:1;height:3px;border-radius:2px;background:var(--line)}
+.steps i.on{background:var(--primary-fill)}
+.actions{display:flex;gap:6px;margin-top:13px}
+.btn{padding:7px 15px;border-radius:7px;font-size:12.5px;font-weight:600;background:var(--primary-fill);color:var(--on-fill);box-shadow:var(--lift-1);transition:transform 110ms ease-out,filter 140ms var(--ease)}
+.btn:hover{filter:brightness(1.12)}
+.btn:active{transform:scale(.975)}
+.btn.ghostbtn{background:transparent;color:var(--ink-3);box-shadow:none;padding:7px 10px;font-weight:500}
+.btn.ghostbtn:hover{color:var(--ink)}
+.card.past{opacity:.45}
+.card.past:hover{opacity:.72}
+/* dimming reads much harder on a dark ground — pull it back */
+:root[data-theme="dark"] .card.past{opacity:.6}
+:root[data-theme="dark"] .card.past:hover{opacity:.85}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .card.past{opacity:.6}
+  :root:not([data-theme="light"]) .card.past:hover{opacity:.85}}
+
+.cutline{display:flex;align-items:center;gap:8px;margin:3px 0 12px}
+.cutline .rule{flex:1;height:1px;background:var(--alert);opacity:.5}
+.cutline .lbl{font-size:10.5px;font-weight:600;color:var(--alert);background:var(--alert-soft);padding:3px 7px;border-radius:5px;flex:none}
+
+.lane[data-lane="done"] .card{padding:7px 4px;box-shadow:none;background:transparent;border-radius:0;margin-bottom:0;border-bottom:1px solid var(--line-soft)}
+.lane[data-lane="done"] .card:hover{background:oklch(0.5 0 0/.05)}
+.lane[data-lane="done"] .card h4{font-size:12.5px;color:var(--ink-3);font-weight:400;text-decoration:line-through;text-decoration-color:oklch(0.5 0 0/.5)}
+.lane[data-lane="done"] .course,.lane[data-lane="done"] .meta,
+.lane[data-lane="done"] .parent,.lane[data-lane="done"] .actions{display:none}
+
+/* ---------------- today's shape (the time model, made visible) ---------- */
+.shape{margin-top:16px;background:var(--card);border-radius:var(--r-l);box-shadow:var(--edge),var(--lift-2);padding:14px 15px 12px}
+.shape-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:11px}
+.shape-head h4{margin:0;font-size:12.5px;font-weight:600}
+.shape-head span{font-size:11.5px;color:var(--ink-3)}
+.tl{position:relative;display:grid;grid-template-columns:38px 1fr 1fr;gap:0 8px;height:372px}
+.tl .gut{position:relative}
+.tl .gut b{position:absolute;right:0;transform:translateY(-50%);font-size:10px;font-weight:400;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.tl .col{position:relative;border-radius:5px;background:linear-gradient(var(--line-soft) 1px,transparent 1px) 0 0/100% 31px}
+.tl .col::before{content:attr(data-t);position:absolute;top:-15px;left:1px;font-size:9.5px;font-weight:600;color:var(--ink-3);letter-spacing:.02em}
+.blk{position:absolute;left:0;right:2px;border-radius:5px;padding:3px 7px;overflow:hidden;font-size:10.5px;line-height:1.25}
+.blk.fixed{background:var(--busy);color:var(--ink-2)}
+.blk.plan{background:var(--primary-soft);color:var(--primary);box-shadow:inset 0 0 0 1px oklch(0.5 0.1 162/.22);font-weight:550}
+.blk.plan.spill{background:var(--alert-soft);color:var(--alert);box-shadow:inset 0 0 0 1px oklch(0.6 0.14 30/.28)}
+.blk small{display:block;font-size:9.5px;opacity:.8;font-weight:400}
+.nowline{position:absolute;left:38px;right:0;height:1px;background:var(--ink);opacity:.8;z-index:3}
+.nowline::after{content:"";position:absolute;left:-3px;top:-2.5px;width:6px;height:6px;border-radius:50%;background:var(--ink)}
+/* the edge of the day. The gutter already reads 4:00, so the line needs no label. */
+.endline{position:absolute;left:38px;right:0;border-top:1.5px dashed var(--alert);z-index:3}
+
+/* ---------------- capture ---------------- */
+.capture{position:fixed;left:250px;right:0;bottom:0;padding:12px 26px 16px;z-index:var(--z-chrome);
+  background:linear-gradient(to top,var(--desk) 45%,transparent)}
+.capture-inner{display:flex;align-items:center;gap:10px;max-width:600px;background:var(--card);border-radius:11px;padding:10px 14px;box-shadow:var(--edge),var(--lift-2)}
+.capture-inner:focus-within{box-shadow:inset 0 0 0 1.5px var(--primary-fill),var(--lift-3)}
+.capture input{flex:1;border:0;background:none;color:var(--ink);font:inherit;font-size:13.5px;outline:none}
+.capture input::placeholder{color:var(--ink-3)}
+.hint{font-size:11px;color:var(--ink-3);flex:none}
+kbd{font:inherit;font-size:10.5px;padding:2px 5px;border-radius:4px;background:var(--line-soft);color:var(--ink-3)}
+.parsed{display:flex;gap:6px;margin:0 0 8px 2px;flex-wrap:wrap;opacity:0;transform:translateY(4px);transition:opacity 200ms var(--ease),transform 200ms var(--ease)}
+.parsed.show{opacity:1;transform:none}
+.chip{font-size:11px;padding:3px 8px;border-radius:6px;background:var(--primary-soft);color:var(--primary);font-weight:600}
+
+@media (prefers-reduced-transparency:reduce){.capture{background:var(--desk)}}
+@media (prefers-contrast:more){.card,.shape{box-shadow:inset 0 0 0 1px var(--ink-3)}}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <aside class="rail">
+    <div class="rail-head"><h1>Everything</h1><span class="num">7</span></div>
+    <div class="rail-scroll">
+      <div class="group"><h2>BIO 210</h2>
+        <button class="shelf-item"><span class="t">Lab report</span><span class="d num">3h left</span></button>
+        <button class="shelf-item"><span class="t">Reading wk 8</span><span class="d num">45m</span></button></div>
+      <div class="group"><h2>HIST 140</h2>
+        <button class="shelf-item"><span class="t">Essay outline</span><span class="d num">2h</span></button>
+        <button class="shelf-item"><span class="t">Source list</span><span class="d num">30m</span></button></div>
+      <div class="group"><h2>CALC 2</h2>
+        <button class="shelf-item"><span class="t">Pset 5</span><span class="d num">1h30</span></button></div>
+      <div class="group"><h2>No course</h2>
+        <button class="shelf-item"><span class="t">Renew library books</span><span class="d num">5m</span></button>
+        <button class="shelf-item"><span class="t">Book advising slot</span><span class="d num">10m</span></button></div>
+    </div>
+    <div class="horizon">
+      <h2>Next two weeks</h2>
+      <div class="hz soon"><span class="day">Thu</span><span class="what">BIO lab report</span><span class="in num">2d</span></div>
+      <div class="hz"><span class="day">Fri</span><span class="what">CALC pset 4</span><span class="in num">3d</span></div>
+      <div class="hz"><span class="day">Mon</span><span class="what">HIST essay</span><span class="in num">6d</span></div>
+      <div class="hz"><span class="day">Thu</span><span class="what">PSYC midterm</span><span class="in num">9d</span></div>
+    </div>
+  </aside>
+
+  <main class="day">
+    <header class="daybar">
+      <div class="date">
+        <h2>Tuesday</h2>
+        <p>Two classes done · <span class="num">3h 45m</span> free before your shift</p>
+      </div>
+      <div class="cap">
+        <div class="cap-top"><span class="lhs">Planned against time left</span><span class="rhs num" id="capText">—</span></div>
+        <div class="slot"><div class="fill" id="capFill"></div><div class="spill" id="capSpill"></div><div class="notch"></div></div>
+      </div>
+      <div class="themes" role="group" aria-label="Appearance">
+        <button data-theme-set="light" aria-pressed="false">Light</button>
+        <button data-theme-set="dark" aria-pressed="false">Dark</button>
+        <button data-theme-set="auto" aria-pressed="true">Auto</button>
+      </div>
+    </header>
+
+    <section class="lanes">
+      <div class="lane" data-lane="now">
+        <div class="lane-head"><h3>Start here</h3><span class="c">picked for right now</span></div>
+        <div class="lane-body">
+          <article class="card focus" data-min="60" tabindex="0">
+            <span class="course">BIO 210</span>
+            <h4>Draft the results section</h4>
+            <div class="meta"><span class="num">1h 00m</span><i class="dot"></i><span>the data's already in the sheet</span></div>
+            <div class="parent">
+              <div class="pl"><span>Lab report · due Thursday</span><span class="num">step 2 of 4</span></div>
+              <div class="steps"><i class="on"></i><i class="on"></i><i></i><i></i></div>
+            </div>
+            <div class="actions"><button class="btn">Start</button><button class="btn ghostbtn">Not this one</button></div>
+          </article>
+
+          <div class="shape">
+            <div class="shape-head"><h4>Today's shape</h4><span>class schedule + calendar</span></div>
+            <div class="tl" id="tl">
+              <div class="gut" id="gut"></div>
+              <div class="col" data-t="COMMITTED" id="colFixed"></div>
+              <div class="col" data-t="PLANNED" id="colPlan"></div>
+              <div class="nowline" id="nowline"></div>
+              <div class="endline" id="endline"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="lane" data-lane="next">
+        <div class="lane-head"><h3>Then</h3><span class="c" id="nextCount"></span></div>
+        <div class="lane-body" id="nextBody">
+          <article class="card" data-min="90" tabindex="0">
+            <span class="course">CALC 2</span><h4>Pset 4 · problems 1–6</h4>
+            <div class="meta"><span class="num">1h 30m</span><i class="dot"></i><span>due Friday</span></div>
+          </article>
+          <article class="card" data-min="120" tabindex="0">
+            <span class="course">HIST 140</span><h4>Essay outline</h4>
+            <div class="meta"><span class="num">2h 00m</span><i class="dot"></i><span>due Monday</span></div>
+          </article>
+          <article class="card" data-min="75" tabindex="0">
+            <span class="course">PSYC 101</span><h4>Read chapter 9</h4>
+            <div class="meta"><span class="num">1h 15m</span><i class="dot"></i><span>midterm in 9d</span></div>
+          </article>
+          <article class="card" data-min="10" tabindex="0">
+            <h4>Email advisor about spring registration</h4>
+            <div class="meta"><span class="num">10m</span></div>
+          </article>
+        </div>
+      </div>
+
+      <div class="lane" data-lane="done">
+        <div class="lane-head"><h3>Done</h3><span class="c num" id="doneCount"></span></div>
+        <div class="lane-body">
+          <article class="card" data-min="45" tabindex="0"><h4>Reading wk 7</h4></article>
+          <article class="card" data-min="5" tabindex="0"><h4>Print BIO syllabus</h4></article>
+          <article class="card" data-min="20" tabindex="0"><h4>Upload CALC quiz</h4></article>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="capture">
+  <div class="parsed" id="parsed"></div>
+  <div class="capture-inner">
+    <input id="cap" placeholder="finish bio lab report by thursday" autocomplete="off" spellcheck="false">
+    <span class="hint"><kbd>↩</kbd> to capture</span>
+  </div>
+</div>
+
+<script>
+'use strict';
+/* ---------- the day, in minutes past midnight ---------- */
+const DAY_START = 480, DAY_END = 1200, NOW = 735;      // 8:00 · 20:00 · 12:15
+const FIXED = [
+  {s:540,  e:615,  t:'BIO 210',  sub:'lecture'},
+  {s:660,  e:735,  t:'CALC 2',   sub:'seminar'},
+  {s:960,  e:1140, t:'Work',     sub:'shift'}
+];
+const HARD_END = 960;                                   // work starts — today's real edge
+const FREE = HARD_END - NOW;                            // 3h 45m of plannable time left
+const PX = 372 / (DAY_END - DAY_START);
+const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+const y = m => (m - DAY_START) * PX;
+const clock = m => { const h = Math.floor(m/60), mm = m%60; const h12 = ((h+11)%12)+1;
+  return h12 + ':' + String(mm).padStart(2,'0'); };
+const fmt = m => (m >= 60 ? Math.floor(m/60) + 'h ' : '') + String(m%60).padStart(m>=60?2:1,'0') + 'm';
+
+/* ---------- theme ---------- */
+const themeBtns = [...document.querySelectorAll('[data-theme-set]')];
+themeBtns.forEach(b => b.addEventListener('click', () => {
+  const v = b.dataset.themeSet;
+  if (v === 'auto') document.documentElement.removeAttribute('data-theme');
+  else document.documentElement.dataset.theme = v;
+  themeBtns.forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+}));
+
+/* ---------- spring: critically damped by default, velocity-aware ---------- */
+function spring({from, to, velocity = 0, bounce = 0, duration = .4, onUpdate, onDone}) {
+  if (reduce.matches) { onUpdate(to); onDone && onDone(); return; }
+  const z = 1 - bounce, w = 2 * Math.PI / duration, x0 = from - to, t0 = performance.now();
+  const step = now => {
+    const t = (now - t0) / 1000; let x;
+    if (z >= 1) x = (x0 + (velocity + w * x0) * t) * Math.exp(-w * t);
+    else { const wd = w * Math.sqrt(1 - z*z);
+      x = Math.exp(-z*w*t) * (x0 * Math.cos(wd*t) + ((velocity + z*w*x0)/wd) * Math.sin(wd*t)); }
+    onUpdate(to + x);
+    if ((Math.abs(x) < .15 && t > duration*.5) || t > duration*6) { onUpdate(to); onDone && onDone(); return; }
+    requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
+/* ---------- static chrome of the timeline ---------- */
+const gut = document.getElementById('gut'), colFixed = document.getElementById('colFixed');
+for (let m = DAY_START; m <= DAY_END; m += 120) {
+  const b = document.createElement('b'); b.style.top = y(m) + 'px'; b.textContent = clock(m); gut.append(b);
+}
+FIXED.forEach(f => {
+  const d = document.createElement('div');
+  d.className = 'blk fixed';
+  d.style.top = y(f.s) + 'px'; d.style.height = (f.e - f.s) * PX + 'px';
+  d.innerHTML = `${f.t}<small>${f.sub}</small>`;
+  colFixed.append(d);
+});
+document.getElementById('nowline').style.top = y(NOW) + 'px';
+document.getElementById('endline').style.top = y(HARD_END) + 'px';
+
+/* ---------- capacity, cutline, and the plan track ---------- */
+const capFill = document.getElementById('capFill'), capSpill = document.getElementById('capSpill');
+const capText = document.getElementById('capText'), nextBody = document.getElementById('nextBody');
+const colPlan = document.getElementById('colPlan');
+
+function recompute() {
+  const nowCards  = [...document.querySelectorAll('.lane[data-lane="now"] .card')];
+  const nextCards = [...nextBody.querySelectorAll('.card')];
+  const queue = [...nowCards, ...nextCards];
+  const total = queue.reduce((s, c) => s + (+c.dataset.min), 0);
+
+  /* lay the queue into real time, starting now */
+  colPlan.textContent = '';
+  let at = NOW;
+  queue.forEach(c => {
+    const dur = +c.dataset.min, end = at + dur;
+    const d = document.createElement('div');
+    d.className = 'blk plan' + (end > HARD_END ? ' spill' : '');
+    d.style.top = y(at) + 'px';
+    d.style.height = Math.max(14, dur * PX) + 'px';
+    const title = c.querySelector('h4').textContent;
+    d.innerHTML = `${title.length > 22 ? title.slice(0,21) + '…' : title}` +
+      (dur * PX > 24 ? `<small>${clock(at)}–${clock(end)}</small>` : '');
+    colPlan.append(d);
+    at = end;
+  });
+
+  /* the cutline: where today actually runs out */
+  nextBody.querySelector('.cutline')?.remove();
+  let run = nowCards.reduce((s, c) => s + (+c.dataset.min), 0), placed = false;
+  nextCards.forEach(c => {
+    run += (+c.dataset.min);
+    const past = NOW + run > HARD_END;
+    c.classList.toggle('past', past);
+    if (past && !placed) {
+      placed = true;
+      const cut = document.createElement('div');
+      cut.className = 'cutline';
+      cut.innerHTML = '<span class="rule"></span><span class="lbl">4:00 — work starts</span><span class="rule"></span>';
+      c.before(cut);
+    }
+  });
+
+  const over = total - FREE;
+  capText.textContent = over > 0 ? fmt(over) + ' over' : fmt(FREE - total) + ' spare';
+  capText.className = 'rhs num ' + (over > 0 ? 'over' : 'fits');
+  const pct = Math.min(1, total / FREE), sp = Math.max(0, Math.min(1, over / FREE));
+  spring({from: +(capFill.dataset.p || 0), to: pct, duration: .45,
+    onUpdate: v => { capFill.style.width = v * 100 + '%'; capFill.dataset.p = v; }});
+  spring({from: +(capSpill.dataset.p || 0), to: sp, duration: .45,
+    onUpdate: v => { capSpill.style.width = v * 100 + '%'; capSpill.dataset.p = v; }});
+
+  document.getElementById('nextCount').textContent = nextCards.length + ' queued';
+  document.getElementById('doneCount').textContent =
+    document.querySelectorAll('.lane[data-lane="done"] .card').length;
+}
+
+/* ---------- drag: grab offset, 1:1 tracking, velocity handoff, FLIP settle ---------- */
+let drag = null;
+document.addEventListener('pointerdown', e => {
+  const card = e.target.closest('.card');
+  if (!card || e.target.closest('button') || e.button !== 0) return;
+  const r = card.getBoundingClientRect();
+  const ghost = document.createElement('div');
+  ghost.className = 'ghost'; ghost.style.height = r.height + 'px';
+  card.after(ghost);
+  drag = {card, ghost, hist:[{x:e.clientX, y:e.clientY, t:performance.now()}],
+          dx:e.clientX - r.left, dy:e.clientY - r.top, moved:false};
+  card.setPointerCapture(e.pointerId);
+  card.classList.add('dragging');
+  Object.assign(card.style, {left:r.left+'px', top:r.top+'px', width:r.width+'px'});
+});
+document.addEventListener('pointermove', e => {
+  if (!drag) return;
+  if (!drag.moved && Math.hypot(e.clientX - drag.hist[0].x, e.clientY - drag.hist[0].y) < 6) return;
+  drag.moved = true;
+  drag.card.style.left = (e.clientX - drag.dx) + 'px';
+  drag.card.style.top  = (e.clientY - drag.dy) + 'px';
+  drag.hist.push({x:e.clientX, y:e.clientY, t:performance.now()});
+  if (drag.hist.length > 6) drag.hist.shift();
+  const lane = laneAt(e.clientX, e.clientY);
+  document.querySelectorAll('.lane').forEach(l => l.classList.toggle('drop-target', l === lane));
+});
+document.addEventListener('pointerup', e => {
+  if (!drag) return;
+  const {card, ghost} = drag;
+  document.querySelectorAll('.lane').forEach(l => l.classList.remove('drop-target'));
+  const a = drag.hist[0], b = drag.hist.at(-1), dt = Math.max(16, b.t - a.t);
+  const vx = (b.x - a.x) / dt * 1000, vy = (b.y - a.y) / dt * 1000;
+  const lane = drag.moved ? laneAt(e.clientX, e.clientY) : null;
+  const body = lane?.querySelector('.lane-body');
+  const before = card.getBoundingClientRect();
+  card.classList.remove('dragging'); card.removeAttribute('style');
+  if (body) {
+    const at = insertionPoint(body, e.clientY);
+    at ? body.insertBefore(card, at) : body.appendChild(card);
+    card.classList.toggle('focus', lane.dataset.lane === 'now');
+  } else ghost.replaceWith(card);
+  ghost.remove();
+  recompute();
+  if (!drag.moved) { drag = null; return; }
+  const after = card.getBoundingClientRect();
+  let cx = before.left - after.left, cy = before.top - after.top;
+  const paint = () => card.style.transform = `translate3d(${cx}px,${cy}px,0)`;
+  card.style.willChange = 'transform'; paint();
+  spring({from:cx, to:0, velocity:vx, bounce:.12, onUpdate:v => {cx = v; paint();}});
+  spring({from:cy, to:0, velocity:vy, bounce:.12, onUpdate:v => {cy = v; paint();},
+          onDone:() => {card.style.transform = ''; card.style.willChange = '';}});
+  drag = null;
+});
+const laneAt = (x, yy) => [...document.querySelectorAll('.lane')].find(l => {
+  const r = l.getBoundingClientRect();
+  return x >= r.left && x <= r.right && yy >= r.top && yy <= r.bottom;
+}) || null;
+const insertionPoint = (body, yy) => [...body.querySelectorAll('.card')].find(c => {
+  const r = c.getBoundingClientRect(); return yy < r.top + r.height / 2;
+}) || null;
+
+/* ---------- keyboard equivalent for every drag ---------- */
+document.addEventListener('keydown', e => {
+  const card = document.activeElement?.closest?.('.card');
+  if (!card || !['1','2','3'].includes(e.key)) return;
+  const lane = document.querySelectorAll('.lane')[+e.key - 1];
+  lane.querySelector('.lane-body').appendChild(card);
+  card.classList.toggle('focus', lane.dataset.lane === 'now');
+  card.focus(); recompute();
+});
+
+/* ---------- capture: one sentence in, structure out ---------- */
+const COURSES = {bio:'BIO 210', calc:'CALC 2', hist:'HIST 140', psyc:'PSYC 101', chem:'CHEM 105'};
+const parsedEl = document.getElementById('parsed'), input = document.getElementById('cap');
+function parse(s) {
+  const t = s.toLowerCase();
+  const course = Object.keys(COURSES).find(k => t.includes(k));
+  const day = (t.match(/\b(today|tomorrow|mon|tue|wed|thu|fri|sat|sun)\w*/) || [])[0];
+  const hm = t.match(/(\d+(?:\.\d+)?)\s*(h|hr|hour)/), mm = t.match(/(\d+)\s*(m|min)/);
+  let min = hm ? Math.round(parseFloat(hm[1]) * 60) : mm ? +mm[1]
+    : /essay|report|paper|draft/.test(t) ? 120
+    : /pset|problem|homework|hw/.test(t) ? 90
+    : /read|chapter/.test(t) ? 45
+    : /email|message|book|sign|renew/.test(t) ? 10 : 45;
+  return {course: course ? COURSES[course] : null, day, min, big: min >= 120};
+}
+input.addEventListener('input', () => {
+  const v = input.value.trim();
+  if (!v) return parsedEl.classList.remove('show');
+  const p = parse(v);
+  parsedEl.innerHTML = [
+    p.course && `<span class="chip">${p.course}</span>`,
+    `<span class="chip">${fmt(p.min)}</span>`,
+    p.day && `<span class="chip">due ${p.day[0].toUpperCase() + p.day.slice(1,3)}</span>`,
+    p.big && `<span class="chip">splits into 4 steps</span>`
+  ].filter(Boolean).join('');
+  parsedEl.classList.add('show');
+});
+input.addEventListener('keydown', e => {
+  if (e.key !== 'Enter' || !input.value.trim()) return;
+  const text = input.value.trim(), p = parse(text);
+  const card = document.createElement('article');
+  card.className = 'card'; card.dataset.min = p.min; card.tabIndex = 0;
+  card.innerHTML = (p.course ? `<span class="course">${p.course}</span>` : '') +
+    `<h4>${text.replace(/[<>]/g,'')}</h4><div class="meta"><span class="num">${fmt(p.min)}</span>` +
+    (p.day ? `<i class="dot"></i><span>due ${p.day}</span>` : '') + `</div>`;
+  nextBody.append(card);
+  input.value = ''; parsedEl.classList.remove('show');
+  recompute();
+  card.animate([{opacity:0, transform:'translateY(6px)'}, {opacity:1, transform:'none'}],
+    {duration: reduce.matches ? 0 : 260, easing:'cubic-bezier(.22,1,.36,1)'});
+});
+
+recompute();
+</script>
+</body>
+</html>
