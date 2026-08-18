@@ -1,0 +1,93 @@
+/* ============================================================
+   TOKENS — DESIGN.md, verbatim. See DESIGN.md's 2026-08-18 pivot
+   note: warm-toned neutrals, one blue commitment, one dedicated
+   alert red. Resting cards/panels use --edge (hairline) only —
+   there is no --lift-2 in this system; shadows are reserved for
+   interactive chrome (--lift-1) and the transient drag state
+   (--lift-3).
+   ============================================================ */
+:root {
+  --desk: oklch(0.970 0.003 68);
+  --rail: oklch(0.950 0.004 68);
+  --card: oklch(1 0 0);
+  --card-hi: oklch(0.995 0.001 68);
+  --ink: oklch(0.22 0.004 68);
+  --ink-2: oklch(0.42 0.005 68);
+  --ink-3: oklch(0.505 0.005 68);
+  --line: oklch(0.875 0.005 68);
+  --line-soft: oklch(0.925 0.004 68);
+  --primary: oklch(0.568 0.182 254);
+  --primary-fill: oklch(0.53 0.18 254);
+  --primary-soft: oklch(0.958 0.020 243);
+  --alert: oklch(0.59 0.22 31);
+  --alert-soft: oklch(0.95 0.035 31);
+  --on-fill: oklch(1 0 0);
+  --busy: oklch(0.885 0.004 68);
+
+  --accent-marigold: oklch(0.80 0.16 75);
+  --accent-coral: oklch(0.651 0.213 31);
+  --accent-mocha: oklch(0.60 0.06 45);
+  --accent-sky: oklch(0.78 0.09 240);
+
+  --lift-1: 0 1px 2px oklch(0 0 0 / .07);
+  --lift-3: 0 2px 6px oklch(0 0 0 / .10), 0 28px 54px -14px oklch(0 0 0 / .32);
+  --edge: inset 0 0 0 1px oklch(0 0 0 / .08);
+  --groove: inset 9px 0 14px -14px oklch(0 0 0 / .24);
+
+  --r-s: 4px;
+  --r-m: 8px;
+  --r-l: 12px;
+  --z-drag: 60;
+  --z-chrome: 40;
+  --ease: cubic-bezier(.22, 1, .36, 1);
+}
+
+:root[data-theme="dark"] {
+  --desk: oklch(0.145 0.004 68);
+  --rail: oklch(0.115 0.004 68);
+  --card: oklch(0.205 0.005 68);
+  --card-hi: oklch(0.235 0.005 68);
+  --ink: oklch(0.97 0.004 68);
+  --ink-2: oklch(0.775 0.005 68);
+  --ink-3: oklch(0.665 0.005 68);
+  --line: oklch(0.30 0.006 68);
+  --line-soft: oklch(0.245 0.005 68);
+  --primary: oklch(0.75 0.16 254);
+  --primary-fill: oklch(0.50 0.17 254);
+  --primary-soft: oklch(0.275 0.05 254);
+  --alert: oklch(0.74 0.19 31);
+  --alert-soft: oklch(0.29 0.06 31);
+  --on-fill: oklch(1 0 0);
+  --busy: oklch(0.26 0.005 68);
+
+  --lift-1: 0 1px 0 oklch(1 0 0 / .05) inset, 0 1px 2px oklch(0 0 0 / .5);
+  --lift-3: 0 1px 0 oklch(1 0 0 / .09) inset, 0 4px 8px oklch(0 0 0 / .5), 0 32px 62px -16px oklch(0 0 0 / .75);
+  --edge: inset 0 0 0 1px oklch(1 0 0 / .07);
+  --groove: inset 9px 0 14px -14px oklch(0 0 0 / .6);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --desk: oklch(0.145 0.004 68);
+    --rail: oklch(0.115 0.004 68);
+    --card: oklch(0.205 0.005 68);
+    --card-hi: oklch(0.235 0.005 68);
+    --ink: oklch(0.97 0.004 68);
+    --ink-2: oklch(0.775 0.005 68);
+    --ink-3: oklch(0.665 0.005 68);
+    --line: oklch(0.30 0.006 68);
+    --line-soft: oklch(0.245 0.005 68);
+    --primary: oklch(0.75 0.16 254);
+    --primary-fill: oklch(0.50 0.17 254);
+    --primary-soft: oklch(0.275 0.05 254);
+    --alert: oklch(0.74 0.19 31);
+    --alert-soft: oklch(0.29 0.06 31);
+    --on-fill: oklch(1 0 0);
+    --busy: oklch(0.26 0.005 68);
+
+    --lift-1: 0 1px 0 oklch(1 0 0 / .05) inset, 0 1px 2px oklch(0 0 0 / .5);
+    --lift-3: 0 1px 0 oklch(1 0 0 / .09) inset, 0 4px 8px oklch(0 0 0 / .5), 0 32px 62px -16px oklch(0 0 0 / .75);
+    --edge: inset 0 0 0 1px oklch(1 0 0 / .07);
+    --groove: inset 9px 0 14px -14px oklch(0 0 0 / .6);
+  }
+}

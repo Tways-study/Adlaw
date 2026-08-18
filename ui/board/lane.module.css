@@ -1,0 +1,65 @@
+/* Shared by StartHere / ThenQueue / DoneLane. Two columns for now — Done
+   never renders in Slice 1 (capture doesn't exist yet, so nothing can reach
+   "done"). Once Done can appear (Slice 2+), this needs a third column and a
+   rule for the 2-vs-3-lane width split. */
+.lanes {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  padding: 0 26px;
+}
+
+.lane {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 0 16px;
+}
+
+.lane:first-child {
+  padding-left: 0;
+}
+
+.lane:last-child {
+  padding-right: 0;
+}
+
+.lane + .lane {
+  border-left: 1px solid var(--line-soft);
+}
+
+.laneHead {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 2px 2px 11px;
+}
+
+.laneHead h3 {
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+
+.laneHeadMeta {
+  font-size: 11.5px;
+  color: var(--ink-3);
+}
+
+.laneBody {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 2px 2px 90px;
+  scrollbar-width: thin;
+}
+
+.emptyState {
+  margin: 0;
+  padding: 8px 2px;
+  font-size: 12.5px;
+  color: var(--ink-3);
+  line-height: 1.5;
+}

@@ -1,0 +1,55 @@
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 26px 15px;
+}
+
+.date h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.themes {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 8px;
+  background: var(--line-soft);
+}
+
+.themes button {
+  padding: 4px 10px;
+  font-size: 11.5px;
+  border-radius: 6px;
+  color: var(--ink-3);
+  transition: color 140ms var(--ease);
+}
+
+.themes button[aria-pressed="true"] {
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: var(--lift-1);
+}
+
+.signOut {
+  font-size: 12px;
+  color: var(--ink-3);
+  padding: 6px 10px;
+  border-radius: var(--r-s);
+}
+
+.signOut:hover {
+  color: var(--ink);
+  background: oklch(0.5 0 0 / 0.08);
+}
