@@ -4,17 +4,27 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository state
 
-**Slice 1 (Skeleton) built.** Next.js (App Router) + Convex + Convex Auth
-(password provider, one seeded account) are wired up; `DESIGN.md`'s tokens are
-in `ui/tokens.css`. A user can log in and see an empty board. No task capture,
-drag, AI, or Calendar yet — those are Slices 2–7 per `docs/04-tdd.md` §Build
-order.
+**Slices 1–3 built, plus a public landing surface.** Next.js (App Router) +
+Convex + Convex Auth (password provider, one seeded account) are wired up;
+`DESIGN.md`'s tokens are in `ui/tokens.css`. Task capture (heuristic parser
+only), lanes, complete, delete+undo, and drag all work. No schedule editor,
+capacity math, timeline, Calendar, or AI yet — those are Slices 4–7 per
+`docs/04-tdd.md` §Build order.
+
+**Routing:** `/` is the public marketing landing page, `/login` is public, and
+the board lives at **`/board`**. `proxy.ts` is the only redirect authority —
+authed visitors to `/` or `/login` go to `/board`; unauthed visitors to anything
+else go to `/login`. Never express these as `next.config.ts` `redirects()`:
+those default to 308 permanent and browsers cache them indefinitely, which would
+lock you out of the landing page on that browser.
 
 Commands: `npm run dev` (Next + Turbopack), `npx convex dev` (Convex functions,
 run alongside `npm run dev` in a separate terminal — writes `.env.local`),
-`npm run lint`, `npx tsc --noEmit`. No test suite yet — `core/*` (Slice 4+)
-is what `04-tdd.md`'s Vitest/Playwright plan actually targets; nothing to
-meaningfully test before then.
+`npm run lint`, `npx tsc --noEmit`, `npm test` (Vitest). Tests cover
+`core/heuristic.ts`, the Convex task mutations, and `ui/landing/copy.ts`'s
+fixtures. `vitest.config.mts` includes `**/*.test.ts` only — **no `.tsx`, and no
+environment is configured**, so component tests need a config change first; keep
+new tests pure and they don't.
 
 The one seeded account is created by `SEED_EMAIL=... SEED_PASSWORD=...
 node scripts/seed-admin.mjs`, run once after `npx convex dev` has written
@@ -114,8 +124,9 @@ From `docs/04-tdd.md` §Module map — where things go once scaffolding starts:
 
 ```
 app/                    Next.js routes. Thin — layout and data wiring only
+  page.tsx              S0 landing (public, server component)
   (auth)/login          S1
-  page.tsx              S2 board
+  board/page.tsx        S2 board (+ board/layout.tsx, metadata only)
 convex/
   schema.ts             03-backend-schema
   tasks.ts              queries + mutations, invariants enforced here
@@ -133,13 +144,24 @@ ai/
   gemini.ts             provider adapter
   index.ts              provider selection
 ui/
-  board/                lanes, cards, cutline
+  board/                lanes, cards, cutline (+ shell.module.css, the .app/.day grid)
+  landing/              S0 sections, copy.ts fixtures, demos/ miniatures
+  theme/                shared theme toggle + applyTheme (storage key lives here)
   timeline/              Today's shape
   capture/               input + live preview
   settings/               S6 + S7 (Calendar connect)
   drag/                  pointer tracking, spring, FLIP
   tokens.css             DESIGN.md, verbatim
 ```
+
+**`ui/landing/` may not import from `ui/board/`.** Every board component is
+`"use client"` + `useQuery` against `api.tasks`, and `convex/tasks.ts` throws
+`"Not signed in"` for an unauthenticated caller — importing one into the public
+page gives a signed-out visitor console errors and permanently-undefined
+queries. The two exceptions are the pure modules: `core/heuristic.ts` (the
+landing hero runs the real parser live) and `ui/board/format.ts`. The miniatures
+under `ui/landing/demos/` are static reproductions ported from
+`docs/design/prototype.html`.
 
 The boundary that matters: **`core/` has no imports outside itself.** It is
 plain functions over plain data, testable without a browser, a database, a
@@ -178,10 +200,20 @@ reading any single module.
 
 `DESIGN.md` carries the full ban list. The three that get broken most:
 
-- **Exactly two saturated colors exist**: primary (green — committed, planned,
-  complete, selected) and alert (red — past the edge of the day, nothing else).
-  Neutrals are chroma exactly `0`. Courses are text labels; there is no per-course
-  color system, and adding one is the failure mode, not the upgrade.
+- **Exactly two saturated colors exist**: primary (blue, Notion `#0075de` since
+  the 2026-08-18 pivot — committed, planned, complete, selected) and alert (red —
+  past the edge of the day, nothing else). Neutrals carry a small warm chroma
+  (~`0.003–0.006` at hue 68), not `0` — that was the pre-pivot rule. Courses are
+  text labels; there is no per-course color system, and adding one is the failure
+  mode, not the upgrade.
+- **Text on a tint uses `--primary-ink` / `--alert-ink`, not `--primary` /
+  `--alert`.** The latter pair misses the 4.5:1 AA floor against their own soft
+  tints in light theme (4.05:1 and 3.88:1, measured). Keep `--primary` and
+  `--alert` for fills, bars, and rules. See `DESIGN.md` §Color → Rules.
+- **`docs/design/prototype.html` predates the palette pivot.** Its CSS hardcodes
+  the old green primary (`oklch(… 162)`). Port its layout, motion, and structure;
+  take colors from `ui/tokens.css`. It also uses `--lift-2`, a token that no
+  longer exists — a resting card is `--edge` only.
 - **No skeuomorphic props.** Physicality comes from material, depth, and motion.
   No paper textures, tape, stains, pins, or rotation jitter. An earlier draft was
   rejected for exactly this.

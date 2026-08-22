@@ -4,14 +4,15 @@
 
 # App flow
 
-Seven surfaces. Only two are full screens; the rest are panels over the board,
+Eight surfaces. Only three are full screens; the rest are panels over the board,
 because the board is where the user actually lives and pushing them off it is the
 fastest way to break flow.
 
 | # | Surface | Type | Reached from |
 |---|---|---|---|
-| S1 | Lock | Route `/login` | Any route while unauthenticated |
-| S2 | Board | Route `/` | After auth. The default and only home |
+| S0 | Landing | Route `/` | Public. The signed-out home, and where sign-out returns you |
+| S1 | Lock | Route `/login` | Public. Any gated route while unauthenticated |
+| S2 | Board | Route `/board` | After auth. The default and only home once signed in |
 | S3 | First run | State of S2 | S2 when no schedule blocks exist |
 | S4 | Schedule editor | Slide-over panel | S2 rail, or the S3 prompt |
 | S5 | Task detail | Inline card expansion | Clicking a card on S2 |
