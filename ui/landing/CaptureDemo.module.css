@@ -1,0 +1,83 @@
+.demo {
+  width: 100%;
+  max-width: 560px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--card);
+  border-radius: 11px;
+  padding: 12px 16px;
+  box-shadow: var(--edge);
+}
+
+.inner:focus-within {
+  box-shadow: inset 0 0 0 1.5px var(--primary-fill);
+}
+
+.inner input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font-size: 14px;
+  outline: none;
+}
+
+.inner input::placeholder {
+  /* --ink-3 is the AA floor; placeholder text is held to the same 4.5:1 as
+     body text, not dropped to a lighter grey. */
+  color: var(--ink-3);
+}
+
+/* Reserved height: the chip row appears and disappears as the field is typed
+   into, and reflowing the hero underneath it would be worse than the gap. */
+.parsed {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+  min-height: 22px;
+  margin-left: 2px;
+}
+
+.chip {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: var(--r-s);
+  background: var(--primary-soft);
+  color: var(--primary-ink);
+  font-weight: 600;
+}
+
+.chipQuiet {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: var(--r-s);
+  background: var(--line-soft);
+  color: var(--ink-3);
+  font-weight: 600;
+}
+
+.empty {
+  font-size: 11.5px;
+  color: var(--ink-3);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
