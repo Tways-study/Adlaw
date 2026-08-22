@@ -111,6 +111,9 @@
 }
 
 .wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   font-size: 17px;
   font-weight: 600;
   letter-spacing: -0.018em;
@@ -166,11 +169,31 @@
 /* ── Hero ────────────────────────────────────────────────── */
 
 .hero {
+  position: relative;
+  z-index: 0;
   padding-block: clamp(48px, 8vw, 104px) var(--rhythm);
   display: flex;
   flex-direction: column;
   gap: 24px;
   align-items: start;
+}
+
+/* The day-mark, large and quiet, in the empty right side of the hero at
+   desktop widths. z-index: -1 (relative to .hero's own stacking context
+   above) keeps it behind the headline and demo rather than competing with
+   them — it's texture for the section, not a second thing to read. Placed
+   flush at top/right rather than bled off the edge, so it can't reintroduce
+   the horizontal-overflow bug a 100vw or negatively-offset element would. */
+.heroMark {
+  top: 0;
+  right: 0;
+  z-index: -1;
+}
+
+@media (max-width: 860px) {
+  .heroMark {
+    display: none;
+  }
 }
 
 .heroDemo {

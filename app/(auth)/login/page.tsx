@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { ThemeToggle } from "@/ui/theme/ThemeToggle";
+import { DayMark } from "@/ui/graphics/DayMark";
 import styles from "./login.module.css";
 
 const ERROR_ID = "login-error";
@@ -59,6 +60,7 @@ export default function LoginPage() {
       </p>
       <div className={styles.content}>
         <Link href="/" className={styles.wordmark}>
+          <DayMark size={26} />
           Ledger
         </Link>
         <form className={styles.card} onSubmit={handleSubmit}>
