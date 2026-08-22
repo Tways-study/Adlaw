@@ -1,0 +1,39 @@
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 84px;
+  transform: translateX(-50%);
+  z-index: var(--z-chrome);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--ink);
+  color: var(--desk);
+  border-radius: var(--r-m);
+  padding: 10px 12px 10px 16px;
+  font-size: 12.5px;
+  box-shadow: var(--lift-3);
+}
+
+.undo {
+  font-weight: 600;
+  color: var(--primary);
+  padding: 6px 10px;
+  border-radius: var(--r-s);
+}
+
+.undo:hover {
+  background: oklch(1 0 0 / 0.1);
+}
+
+:root[data-theme="dark"] .toast {
+  background: var(--card-hi);
+  color: var(--ink);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .toast {
+    background: var(--card-hi);
+    color: var(--ink);
+  }
+}

@@ -1,13 +1,16 @@
-/* Shared by StartHere / ThenQueue / DoneLane. Two columns for now — Done
-   never renders in Slice 1 (capture doesn't exist yet, so nothing can reach
-   "done"). Once Done can appear (Slice 2+), this needs a third column and a
-   rule for the 2-vs-3-lane width split. */
+/* Shared by StartHere / ThenQueue / DoneLane. Done renders conditionally
+   (app/page.tsx), so the grid gains a third column only once it has
+   something to show. */
 .lanes {
   flex: 1;
   min-height: 0;
   display: grid;
   grid-template-columns: 1.15fr 1fr;
   padding: 0 26px;
+}
+
+.lanes[data-done="true"] {
+  grid-template-columns: 1.15fr 1fr 0.62fr;
 }
 
 .lane {

@@ -1,0 +1,192 @@
+/* Resting cards use --edge (hairline) only — no shadow. DESIGN.md's
+   Components section: shadows are reserved for interactive chrome
+   (--lift-1) and the transient drag state (--lift-3), neither of which
+   apply to a resting, non-dragging card. */
+.card {
+  position: relative;
+  background: var(--card);
+  border-radius: var(--r-m);
+  box-shadow: var(--edge);
+  margin-bottom: 8px;
+  transition: background 160ms var(--ease);
+}
+
+.card:hover {
+  background: var(--card-hi);
+}
+
+.trigger {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 11px 13px;
+}
+
+.course {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--ink-3);
+  letter-spacing: 0.02em;
+  display: block;
+  margin-bottom: 3px;
+}
+
+.card h4,
+.detail h4 {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 500;
+  line-height: 1.35;
+  letter-spacing: -0.006em;
+}
+
+.meta {
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  color: var(--ink-3);
+}
+
+.dot {
+  width: 2.5px;
+  height: 2.5px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.55;
+  flex: none;
+}
+
+.actions {
+  display: flex;
+  gap: 6px;
+  padding: 0 13px 12px;
+}
+
+.card .actions {
+  padding-top: 2px;
+}
+
+.btn {
+  padding: 7px 15px;
+  border-radius: var(--r-s);
+  font-size: 12.5px;
+  font-weight: 600;
+  background: var(--primary-fill);
+  color: var(--on-fill);
+  box-shadow: var(--lift-1);
+  transition:
+    transform 110ms ease-out,
+    filter 140ms var(--ease);
+}
+
+.btn:hover {
+  filter: brightness(1.12);
+}
+
+.btn:active {
+  transform: scale(0.975);
+}
+
+.ghostbtn {
+  background: transparent;
+  color: var(--ink-3);
+  padding: 7px 10px;
+  font-weight: 500;
+  border-radius: var(--r-s);
+}
+
+.ghostbtn:hover {
+  color: var(--ink);
+}
+
+/* ---------------- compact (Everything rail shelf item) ---------------- */
+.shelfItemWrap {
+  margin-bottom: 2px;
+}
+
+.shelfItem {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  padding: 6px 8px;
+  border-radius: var(--r-s);
+  color: var(--ink-2);
+  transition:
+    background 120ms var(--ease),
+    color 120ms var(--ease);
+}
+
+.shelfItem:hover {
+  background: oklch(0.5 0 0 / 0.09);
+  color: var(--ink);
+}
+
+.t {
+  flex: 1;
+  font-size: 12.5px;
+  line-height: 1.3;
+  min-width: 0;
+}
+
+.d {
+  font-size: 11px;
+  color: var(--ink-3);
+  flex: none;
+}
+
+.detail {
+  padding: 4px 8px 10px;
+  margin-bottom: 2px;
+}
+
+.detail .meta {
+  margin-top: 4px;
+}
+
+.detail .actions {
+  padding: 10px 0 0;
+}
+
+/* ---------------- done row ---------------- */
+.doneCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 7px 4px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.doneCard:hover {
+  background: oklch(0.5 0 0 / 0.05);
+}
+
+.doneCard h4 {
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 400;
+  color: var(--ink-3);
+  text-decoration: line-through;
+  text-decoration-color: oklch(0.5 0 0 / 0.5);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.undo {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--primary);
+  padding: 4px 8px;
+  border-radius: var(--r-s);
+  flex: none;
+}
+
+.undo:hover {
+  background: var(--primary-soft);
+}

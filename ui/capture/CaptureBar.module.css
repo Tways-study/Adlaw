@@ -8,6 +8,22 @@
   background: linear-gradient(to top, var(--desk) 45%, transparent);
 }
 
+.parsed {
+  display: flex;
+  gap: 6px;
+  margin: 0 0 8px 2px;
+  flex-wrap: wrap;
+}
+
+.chip {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: var(--r-s);
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-weight: 600;
+}
+
 .inner {
   display: flex;
   align-items: center;

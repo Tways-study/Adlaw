@@ -16,6 +16,17 @@ run alongside `npm run dev` in a separate terminal — writes `.env.local`),
 is what `04-tdd.md`'s Vitest/Playwright plan actually targets; nothing to
 meaningfully test before then.
 
+The one seeded account is created by `SEED_EMAIL=... SEED_PASSWORD=...
+node scripts/seed-admin.mjs`, run once after `npx convex dev` has written
+`.env.local`. `convex/auth.ts`'s `createOrUpdateUser` guard rejects every
+signup after the first, so re-running the script is a no-op error, not a way
+to add a second account — there is no signup route to test.
+
+`proxy.ts` at the repo root is Next.js 16's replacement for `middleware.ts`
+(renamed in this version — see the breaking-change notes `AGENTS.md`
+points at). It's what gates every route behind Convex Auth and redirects
+to `/login`; don't add a `middleware.ts` expecting it to do this job.
+
 `AGENTS.md` at the repo root is generated and rewritten by `next dev` itself
 (framework/version-specific breaking-change notes) — it's not a second
 agent-instructions file competing with this one; leave it alone.
