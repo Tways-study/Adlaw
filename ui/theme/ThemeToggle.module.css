@@ -1,0 +1,21 @@
+.themes {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 8px;
+  background: var(--line-soft);
+}
+
+.themes button {
+  padding: 4px 10px;
+  font-size: 11.5px;
+  border-radius: 6px;
+  color: var(--ink-3);
+  transition: color 140ms var(--ease);
+}
+
+.themes button[aria-pressed="true"] {
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: var(--lift-1);
+}

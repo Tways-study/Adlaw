@@ -6,12 +6,12 @@
   box-sizing: border-box;
 }
 
-html,
-body {
+html {
   height: 100%;
 }
 
 body {
+  min-height: 100%;
   margin: 0;
   background: var(--desk);
   color: var(--ink);
@@ -41,17 +41,4 @@ input {
 
 .num {
   font-variant-numeric: tabular-nums;
-}
-
-.app {
-  display: grid;
-  grid-template-columns: 250px minmax(0, 1fr);
-  height: 100vh;
-}
-
-.day {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  box-shadow: var(--groove);
 }
