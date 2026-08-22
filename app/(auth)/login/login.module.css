@@ -11,6 +11,12 @@
   position: relative;
   overflow: hidden;
   background: var(--desk);
+
+  /* Display type for .echo below — the same --d2 clamp as
+     ui/landing/landing.module.css. Duplicated rather than shared across a
+     module boundary for two consumers: DESIGN.md's landing-surface addendum
+     is the source of truth both read from, and it's three lines. */
+  --d2: clamp(1.625rem, 1.23rem + 1.7vw, 2.5rem);
 }
 
 .rail {
@@ -70,7 +76,48 @@
   }
 }
 
+/* The empty half of the screen at wide viewports gets content, not
+   decoration: the product's own thesis, resting off-axis in the field
+   plane's lower-left — the same asymmetry the card uses on the rail
+   plane, so the composition reads as one deliberate idea rather than two
+   centered things floating apart. z-index:1 (matching .content) keeps it
+   painting above .sweep regardless of where the sweep's animation is,
+   so its contrast against --desk never fluctuates. */
+.echo {
+  position: absolute;
+  z-index: 1;
+  inset: auto 64px 88px calc(46% + 64px);
+  max-width: 30ch;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.echoLine {
+  margin: 0;
+  font-size: var(--d2);
+  font-weight: 600;
+  letter-spacing: -0.023em;
+  line-height: 1.1;
+  color: var(--ink-2);
+  text-wrap: balance;
+}
+
+.echoSub {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 400;
+  letter-spacing: -0.011em;
+  line-height: 1.55;
+  color: var(--ink-3);
+}
+
 .wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   font-size: 28px;
   font-weight: 600;
   letter-spacing: -0.021em;
@@ -220,6 +267,9 @@
     width: 100%;
   }
   .field {
+    display: none;
+  }
+  .echo {
     display: none;
   }
   .content {

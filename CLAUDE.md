@@ -18,6 +18,13 @@ else go to `/login`. Never express these as `next.config.ts` `redirects()`:
 those default to 308 permanent and browsers cache them indefinitely, which would
 lock you out of the landing page on that browser.
 
+`/icon` and `/apple-icon` (Next's generated routes for `app/icon.tsx` and
+`app/apple-icon.tsx`) are also in `proxy.ts`'s public list. Both are dot-less
+URLs, so the middleware's catch-all matcher — which excludes paths with a dot,
+the way it excludes `/favicon.ico` — doesn't exclude them on its own. Adding a
+new file-convention route under `app/` (an OG image, another icon size) needs
+the same check before assuming it's reachable while signed out.
+
 Commands: `npm run dev` (Next + Turbopack), `npx convex dev` (Convex functions,
 run alongside `npm run dev` in a separate terminal — writes `.env.local`),
 `npm run lint`, `npx tsc --noEmit`, `npm test` (Vitest). Tests cover
@@ -127,6 +134,8 @@ app/                    Next.js routes. Thin — layout and data wiring only
   page.tsx              S0 landing (public, server component)
   (auth)/login          S1
   board/page.tsx        S2 board (+ board/layout.tsx, metadata only)
+  icon.tsx              favicon, generated from the day-mark (next/og)
+  apple-icon.tsx         iOS home-screen icon, same source, opaque
 convex/
   schema.ts             03-backend-schema
   tasks.ts              queries + mutations, invariants enforced here
@@ -147,6 +156,7 @@ ui/
   board/                lanes, cards, cutline (+ shell.module.css, the .app/.day grid)
   landing/              S0 sections, copy.ts fixtures, demos/ miniatures
   theme/                shared theme toggle + applyTheme (storage key lives here)
+  graphics/             DayMark — the one graphic, public surfaces only (S0 + S1)
   timeline/              Today's shape
   capture/               input + live preview
   settings/               S6 + S7 (Calendar connect)

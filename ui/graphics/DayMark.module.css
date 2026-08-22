@@ -1,0 +1,60 @@
+.mark {
+  flex: none;
+  overflow: visible;
+}
+
+.track {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 1.6;
+}
+
+.arc {
+  fill: none;
+  stroke: var(--primary-fill);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+
+.notch {
+  stroke: var(--alert);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+
+/* The large background variant: hairline only, near-silent until you look
+   for it. Deliberately no fill, no glow, no drop shadow — the same material
+   language as --edge and the timeline's ruled grid, not a decorative prop.
+   Stroke widths here are real pixels (vector-effect on the shapes keeps them
+   from inflating with the mark's 420px render size) — thinner than the
+   small glyph on purpose, since a ring standing behind body copy has to
+   read as texture, not as a second thing to look at. */
+.ambient .track {
+  stroke: var(--line-soft);
+  stroke-width: 1;
+}
+
+.ambient .arc {
+  stroke: var(--primary);
+  stroke-width: 1;
+  opacity: 0.4;
+}
+
+.ambient .notch {
+  stroke: var(--alert);
+  stroke-width: 1;
+  opacity: 0.45;
+}
+
+.ambient {
+  position: absolute;
+  pointer-events: none;
+}
+
+/* A diffuse hairline ring is exactly what a high-contrast user can't rely
+   on seeing — drop it rather than let it half-render. */
+@media (prefers-contrast: more) {
+  .ambient {
+    display: none;
+  }
+}

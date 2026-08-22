@@ -287,9 +287,13 @@ feedback at `scale(0.975)` / 110ms on pointer-**down**, focus ring untouched.
 
 Newly permitted, exactly two kinds:
 
-**(a) One ambient background treatment per screen.** Period ≥ 20s, amplitude
-≤ 0.06 opacity delta, neutral only — no hue shift, no chromatic token.
-Non-interactive, `aria-hidden`, `pointer-events: none`, maximum one element.
+**(a) One ambient background treatment per screen.** Period ≥ 20s, neutral
+only — no hue shift, no chromatic token. Non-interactive, `aria-hidden`,
+`pointer-events: none`, maximum one element. `/login`'s sweep is the shipped
+reference: opacity 0.35 → 0.80 → 0.35 (a 0.45 delta) over 40s, tuned and
+contrast-verified — any real content sitting near an ambient layer needs its
+own stacking order above it (`z-index: 1`, matching `.content`), so its
+contrast against the canvas can't fluctuate as the animation runs.
 The "every animation is interruptible" rule targets gesture-driven motion and
 does not apply to a non-interactive ambient layer. `/login`'s light sweep is the
 one instance; it uses `--sheen`.
@@ -364,6 +368,48 @@ render in alert.
 
 **Segmented control, capture bar, shelf item** — standard affordances, standard
 behavior. Product UI earns trust through familiarity, not invention.
+
+**The day-mark** (`ui/graphics/DayMark.tsx`) — the one graphic in the product,
+and the reason it's allowed: it isn't illustration, it's the capacity slot's own
+shape read a different way. A hairline ring stands for the day; one solid arc in
+`--primary-fill` is what's committed; one short notch in `--alert` marks where
+that commitment ends — the same relationship as the slot's fill/spill/notch, and
+the timeline's dashed edge line, just wrapped into a circle instead of a bar. No
+clock face, no numerals, no percentage label anywhere near it — a mark, not a
+stat, so it can never be misread as one. Two scales, one motif, no motion:
+
+- *Mark* (~20–26px) — paired with the "Ledger" wordmark wherever it appears.
+  `stroke-width: 1.6`, real pixels via `vector-effect="non-scaling-stroke"`
+  (SVG stroke-width is otherwise in viewBox units and inflates or vanishes with
+  the rendered size — get this wrong and the two scales come out backwards).
+- *Ambient* (~420px) — sits large and quiet behind the landing hero's empty
+  side, `z-index: -1` so it never competes with the headline or the capture
+  demo. Thinner and fainter than the mark scale (`stroke-width: 1`, arc at
+  `opacity: 0.4`) — texture for the section, not a second thing to read.
+  Hidden under `prefers-contrast: more`, same reasoning as the login sweep: a
+  diffuse hairline is what that mode can't rely on rendering.
+
+Public surfaces only (`/` and `/login`) — there's no wordmark inside the board
+to attach it to, and it isn't proposed for one.
+
+**Third scale: the favicon** (`app/icon.tsx`, 32px; `app/apple-icon.tsx`, 180px,
+the iOS home-screen icon). Same geometry, but these routes can't reach
+`ui/tokens.css` — `next/og`'s `ImageResponse` renders server-side via Satori,
+independent of the app's CSS, and Satori's color parser doesn't reliably
+handle `oklch()` — so the three colors are the light-theme values converted to
+sRGB hex once and hardcoded in each file (`--line` `#d8d5d2`, `--primary-fill`
+`#0069d0`, `--alert` `#e22a12`). `app/icon.tsx` stays transparent, since a
+favicon sits on the browser's own tab-strip color; `app/apple-icon.tsx` is
+opaque `--card` white, since a transparent apple-touch-icon renders as solid
+black under Apple's HIG, and it isn't pre-rounded — iOS applies its own corner
+mask. `app/favicon.ico` (Next's stock placeholder) stays in place as a legacy
+fallback; browsers prefer the generated PNG.
+
+Both routes are dot-less URLs (`/icon`, `/apple-icon`), so `proxy.ts`'s
+catch-all matcher doesn't exclude them the way it excludes `/favicon.ico` —
+they have to be listed in `isPublicRoute` explicitly, or a signed-out request
+for either 307s to `/login` instead of returning image bytes, and the favicon
+silently breaks on the one page that most needs it working.
 
 Every interactive component needs default, hover, focus-visible, active, disabled,
 and where relevant loading and error. Focus ring is `2px solid var(--primary)` at

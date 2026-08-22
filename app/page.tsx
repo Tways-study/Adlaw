@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ThemeToggle } from "@/ui/theme/ThemeToggle";
+import { DayMark } from "@/ui/graphics/DayMark";
 import { CaptureDemo } from "@/ui/landing/CaptureDemo";
 import { Failure } from "@/ui/landing/Failure";
 import { HowItWorks } from "@/ui/landing/HowItWorks";
@@ -35,7 +36,10 @@ export default function LandingPage() {
     <div className={styles.landing}>
       <div className={styles.shell}>
         <header className={styles.topBar}>
-          <span className={styles.wordmark}>Ledger</span>
+          <span className={styles.wordmark}>
+            <DayMark size={18} />
+            Ledger
+          </span>
           <div className={styles.topRight}>
             <ThemeToggle />
             <Link href="/login" className={styles.textLink}>
@@ -46,6 +50,7 @@ export default function LandingPage() {
 
         <main>
           <section className={styles.hero}>
+            <DayMark ambient size={420} className={styles.heroMark} />
             <h1 className={styles.d1}>A day that fits.</h1>
             <p className={styles.lead}>
               Type one sentence. Ledger works out the course, the effort and the deadline — then
