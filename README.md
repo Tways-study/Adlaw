@@ -1,8 +1,8 @@
 # Ledger
 
-A single-user daily planner. Type one sentence; it infers course, effort,
-deadline, and steps. The day has a finite capacity, and overcommitment is
-visible in the layout rather than announced.
+Single-user daily planner: type a sentence, it infers course, effort,
+deadline, and steps — capacity from your schedule + a read-only Calendar
+overlay, overcommitment visible in the layout, not announced.
 
 See `CLAUDE.md` for the full architecture and build order, `PRODUCT.md` and
 `DESIGN.md` for the product and visual system, and `CONTEXT.md` for the
