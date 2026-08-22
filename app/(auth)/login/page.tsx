@@ -1,11 +1,17 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAuthActions } from "@convex-dev/auth/react";
+import { ThemeToggle } from "@/ui/theme/ThemeToggle";
 import styles from "./login.module.css";
+
+const ERROR_ID = "login-error";
 
 export default function LoginPage() {
   const { signIn } = useAuthActions();
+  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -17,8 +23,26 @@ export default function LoginPage() {
     formData.set("flow", "signIn");
     try {
       await signIn("password", formData);
-    } catch {
-      setError("Wrong email or password.");
+      // Explicit navigation: previously this "worked" only because
+      // AuthProvider's onChange:invalidateCache fires a server action whose
+      // POST happens to trip the middleware — emergent behavior across three
+      // layers. Navigate on purpose instead. replace, not push: Back must
+      // not return to the login form.
+      router.replace("/board");
+    } catch (err) {
+      // Convex Auth surfaces a credential rejection as InvalidAccountId /
+      // InvalidSecret in the thrown error's message. Anything else — a
+      // network failure, a cold Convex deployment, a 500 — is not the
+      // user's password being wrong, and saying so would violate "Name the
+      // real thing" (docs/05-design-brief.md).
+      const message = err instanceof Error ? err.message : String(err);
+      const isCredentialRejection =
+        message.includes("InvalidAccountId") || message.includes("InvalidSecret");
+      setError(
+        isCredentialRejection
+          ? "Wrong email or password."
+          : "Could not reach the server. Try again.",
+      );
     } finally {
       setSubmitting(false);
     }
@@ -26,31 +50,53 @@ export default function LoginPage() {
 
   return (
     <main className={styles.screen}>
-      <form className={styles.card} onSubmit={handleSubmit}>
-        <h1 className={styles.title}>Ledger</h1>
-        <label className={styles.field}>
-          <span className={styles.label}>Email</span>
-          <input className={styles.input} name="email" type="email" autoComplete="email" required />
-        </label>
-        <label className={styles.field}>
-          <span className={styles.label}>Password</span>
-          <input
-            className={styles.input}
-            name="password"
-            type="password"
-            autoComplete="current-password"
-            required
-          />
-        </label>
-        {error && (
-          <p className={styles.error} role="alert">
-            {error}
-          </p>
-        )}
-        <button className={styles.submit} type="submit" disabled={submitting}>
-          {submitting ? "Signing in…" : "Sign in"}
-        </button>
-      </form>
+      <div className={styles.rail} aria-hidden="true" />
+      <div className={styles.field} aria-hidden="true" />
+      <div className={styles.sweep} aria-hidden="true" />
+      <div className={styles.content}>
+        <Link href="/" className={styles.wordmark}>
+          Ledger
+        </Link>
+        <form className={styles.card} onSubmit={handleSubmit}>
+          <h1 className={styles.title}>Sign in</h1>
+          <label className={styles.fieldRow}>
+            <span className={styles.label}>Email</span>
+            <input
+              className={styles.input}
+              name="email"
+              type="email"
+              autoComplete="email"
+              autoFocus
+              required
+              aria-invalid={error ? true : undefined}
+              aria-describedby={error ? ERROR_ID : undefined}
+            />
+          </label>
+          <label className={styles.fieldRow}>
+            <span className={styles.label}>Password</span>
+            <input
+              className={styles.input}
+              name="password"
+              type="password"
+              autoComplete="current-password"
+              required
+              aria-invalid={error ? true : undefined}
+              aria-describedby={error ? ERROR_ID : undefined}
+            />
+          </label>
+          {error && (
+            <p className={styles.error} role="alert" id={ERROR_ID}>
+              {error}
+            </p>
+          )}
+          <button className={styles.submit} type="submit" disabled={submitting}>
+            {submitting ? "Signing in…" : "Sign in"}
+          </button>
+        </form>
+      </div>
+      <div className={styles.toggle}>
+        <ThemeToggle />
+      </div>
     </main>
   );
 }

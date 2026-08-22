@@ -1,9 +1,96 @@
+/* ============================================================
+   Two planes and a seam: the board's own --rail / --desk / --groove
+   device, scaled to full screen. .rail is the dim left plane the card
+   sits on; .field is the brighter right plane, joined to .rail by the
+   same directional --groove inset shadow that seams .day to the board's
+   rail. overflow: hidden is required — the oversized .sweep layer would
+   otherwise create horizontal scroll.
+   ============================================================ */
 .screen {
-  min-height: 100vh;
+  min-height: 100dvh;
+  position: relative;
+  overflow: hidden;
+  background: var(--desk);
+}
+
+.rail {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 46%;
+  background: var(--rail);
+}
+
+.field {
+  position: absolute;
+  inset: 0 0 0 46%;
+  background: var(--desk);
+  box-shadow: var(--groove);
+}
+
+/* Off-axis composition: the card centers within the left (rail) plane,
+   not within the viewport, so it sits on the dim plane with the wider
+   bright field to its right. */
+.content {
+  position: relative;
+  z-index: 1;
+  width: 46%;
+  min-height: 100dvh;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: var(--desk);
+  gap: 20px;
+}
+
+/* The ambient light sweep: a single oversized radial-gradient layer.
+   Transform and opacity only, so the gradient rasterizes once into a
+   promoted layer and every frame after that is compositor-only — zero
+   repaint. Animating background-position instead would be the obvious
+   approach and is paint-bound; don't. */
+.sweep {
+  position: absolute;
+  inset: -20% -40%;
+  pointer-events: none;
+  background: radial-gradient(50% 60% at 50% 50%, var(--sheen), transparent 70%);
+  will-change: transform, opacity;
+  animation: sweep 40s linear infinite alternate;
+}
+
+@keyframes sweep {
+  0% {
+    transform: translate3d(-14%, -6%, 0);
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate3d(14%, 6%, 0);
+    opacity: 0.35;
+  }
+}
+
+.wordmark {
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.021em;
+  color: var(--ink);
+  text-decoration: none;
+  transition: color 140ms var(--ease);
+}
+
+.wordmark:hover {
+  color: var(--ink-2);
+}
+
+/* Bottom-right, on the bright --desk field rather than the rail plane:
+   bottom-left is where Next's dev indicator sits, and it covers the
+   control during development. */
+.toggle {
+  position: absolute;
+  right: 24px;
+  bottom: 24px;
+  z-index: 2;
 }
 
 .card {
@@ -25,7 +112,7 @@
   color: var(--ink);
 }
 
-.field {
+.fieldRow {
   display: flex;
   flex-direction: column;
   gap: 5px;
@@ -81,4 +168,64 @@
 .submit:disabled {
   opacity: 0.6;
   cursor: default;
+}
+
+/* Reduced motion: a genuine alternative, not a removal — the sheen stays,
+   at its mid-state, permanently still. Composition is unchanged; only
+   movement stops. */
+@media (prefers-reduced-motion: reduce) {
+  .sweep {
+    animation: none;
+    transform: translate3d(0, 0, 0);
+    opacity: 0.6;
+  }
+}
+
+/* Reduced transparency: the sweep is a soft light effect, closer to
+   transparency than to opaque color — remove it and let the two solid
+   planes stand on their own. */
+@media (prefers-reduced-transparency: reduce) {
+  .sweep {
+    display: none;
+  }
+}
+
+/* High contrast: a diffuse inner shadow (the sweep, and --groove's soft
+   seam) is exactly what a high-contrast user cannot see — give them a
+   real line and real borders instead. */
+@media (prefers-contrast: more) {
+  .sweep {
+    display: none;
+  }
+  .field {
+    box-shadow: none;
+  }
+  .rail {
+    border-right: 1px solid var(--line);
+  }
+  .card {
+    box-shadow: inset 0 0 0 1px var(--ink-3);
+  }
+  .input {
+    box-shadow: inset 0 0 0 1px var(--ink-3);
+  }
+}
+
+/* Below 720px a 46% plane is ~172px — narrower than the card itself.
+   Two planes need room for two planes, so the rail goes full-width and
+   the seam disappears rather than rotating (which would need a new
+   horizontal --groove token). */
+@media (max-width: 720px) {
+  .rail {
+    width: 100%;
+  }
+  .field {
+    display: none;
+  }
+  .content {
+    width: 100%;
+  }
+  .card {
+    width: min(320px, calc(100% - 32px));
+  }
 }
