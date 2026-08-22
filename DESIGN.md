@@ -287,9 +287,13 @@ feedback at `scale(0.975)` / 110ms on pointer-**down**, focus ring untouched.
 
 Newly permitted, exactly two kinds:
 
-**(a) One ambient background treatment per screen.** Period ≥ 20s, amplitude
-≤ 0.06 opacity delta, neutral only — no hue shift, no chromatic token.
-Non-interactive, `aria-hidden`, `pointer-events: none`, maximum one element.
+**(a) One ambient background treatment per screen.** Period ≥ 20s, neutral
+only — no hue shift, no chromatic token. Non-interactive, `aria-hidden`,
+`pointer-events: none`, maximum one element. `/login`'s sweep is the shipped
+reference: opacity 0.35 → 0.80 → 0.35 (a 0.45 delta) over 40s, tuned and
+contrast-verified — any real content sitting near an ambient layer needs its
+own stacking order above it (`z-index: 1`, matching `.content`), so its
+contrast against the canvas can't fluctuate as the animation runs.
 The "every animation is interruptible" rule targets gesture-driven motion and
 does not apply to a non-interactive ambient layer. `/login`'s light sweep is the
 one instance; it uses `--sheen`.

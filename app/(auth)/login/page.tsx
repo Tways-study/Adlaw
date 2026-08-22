@@ -53,6 +53,10 @@ export default function LoginPage() {
       <div className={styles.rail} aria-hidden="true" />
       <div className={styles.field} aria-hidden="true" />
       <div className={styles.sweep} aria-hidden="true" />
+      <p className={styles.echo}>
+        <span className={styles.echoLine}>A day that fits.</span>
+        <span className={styles.echoSub}>One sentence in, a finite day out.</span>
+      </p>
       <div className={styles.content}>
         <Link href="/" className={styles.wordmark}>
           Ledger
