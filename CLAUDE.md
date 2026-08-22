@@ -147,6 +147,7 @@ ui/
   board/                lanes, cards, cutline (+ shell.module.css, the .app/.day grid)
   landing/              S0 sections, copy.ts fixtures, demos/ miniatures
   theme/                shared theme toggle + applyTheme (storage key lives here)
+  graphics/             DayMark — the one graphic, public surfaces only (S0 + S1)
   timeline/              Today's shape
   capture/               input + live preview
   settings/               S6 + S7 (Calendar connect)

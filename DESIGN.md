@@ -369,6 +369,29 @@ render in alert.
 **Segmented control, capture bar, shelf item** — standard affordances, standard
 behavior. Product UI earns trust through familiarity, not invention.
 
+**The day-mark** (`ui/graphics/DayMark.tsx`) — the one graphic in the product,
+and the reason it's allowed: it isn't illustration, it's the capacity slot's own
+shape read a different way. A hairline ring stands for the day; one solid arc in
+`--primary-fill` is what's committed; one short notch in `--alert` marks where
+that commitment ends — the same relationship as the slot's fill/spill/notch, and
+the timeline's dashed edge line, just wrapped into a circle instead of a bar. No
+clock face, no numerals, no percentage label anywhere near it — a mark, not a
+stat, so it can never be misread as one. Two scales, one motif, no motion:
+
+- *Mark* (~20–26px) — paired with the "Ledger" wordmark wherever it appears.
+  `stroke-width: 1.6`, real pixels via `vector-effect="non-scaling-stroke"`
+  (SVG stroke-width is otherwise in viewBox units and inflates or vanishes with
+  the rendered size — get this wrong and the two scales come out backwards).
+- *Ambient* (~420px) — sits large and quiet behind the landing hero's empty
+  side, `z-index: -1` so it never competes with the headline or the capture
+  demo. Thinner and fainter than the mark scale (`stroke-width: 1`, arc at
+  `opacity: 0.4`) — texture for the section, not a second thing to read.
+  Hidden under `prefers-contrast: more`, same reasoning as the login sweep: a
+  diffuse hairline is what that mode can't rely on rendering.
+
+Public surfaces only (`/` and `/login`) — there's no wordmark inside the board
+to attach it to, and it isn't proposed for one.
+
 Every interactive component needs default, hover, focus-visible, active, disabled,
 and where relevant loading and error. Focus ring is `2px solid var(--primary)` at
 `2px` offset, everywhere, no exceptions.
