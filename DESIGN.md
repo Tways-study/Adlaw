@@ -392,6 +392,25 @@ stat, so it can never be misread as one. Two scales, one motif, no motion:
 Public surfaces only (`/` and `/login`) — there's no wordmark inside the board
 to attach it to, and it isn't proposed for one.
 
+**Third scale: the favicon** (`app/icon.tsx`, 32px; `app/apple-icon.tsx`, 180px,
+the iOS home-screen icon). Same geometry, but these routes can't reach
+`ui/tokens.css` — `next/og`'s `ImageResponse` renders server-side via Satori,
+independent of the app's CSS, and Satori's color parser doesn't reliably
+handle `oklch()` — so the three colors are the light-theme values converted to
+sRGB hex once and hardcoded in each file (`--line` `#d8d5d2`, `--primary-fill`
+`#0069d0`, `--alert` `#e22a12`). `app/icon.tsx` stays transparent, since a
+favicon sits on the browser's own tab-strip color; `app/apple-icon.tsx` is
+opaque `--card` white, since a transparent apple-touch-icon renders as solid
+black under Apple's HIG, and it isn't pre-rounded — iOS applies its own corner
+mask. `app/favicon.ico` (Next's stock placeholder) stays in place as a legacy
+fallback; browsers prefer the generated PNG.
+
+Both routes are dot-less URLs (`/icon`, `/apple-icon`), so `proxy.ts`'s
+catch-all matcher doesn't exclude them the way it excludes `/favicon.ico` —
+they have to be listed in `isPublicRoute` explicitly, or a signed-out request
+for either 307s to `/login` instead of returning image bytes, and the favicon
+silently breaks on the one page that most needs it working.
+
 Every interactive component needs default, hover, focus-visible, active, disabled,
 and where relevant loading and error. Focus ring is `2px solid var(--primary)` at
 `2px` offset, everywhere, no exceptions.

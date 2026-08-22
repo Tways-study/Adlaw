@@ -6,7 +6,13 @@ import {
 
 const isLoginPage = createRouteMatcher(["/login"]);
 const isLanding = createRouteMatcher(["/"]);
-const isPublicRoute = createRouteMatcher(["/", "/login"]);
+// /icon and /apple-icon are Next's generated routes for app/icon.tsx and
+// app/apple-icon.tsx — no dot in the URL, so the matcher below doesn't
+// exclude them the way it excludes /favicon.ico. Without this, a signed-out
+// request for either (e.g. a browser fetching the tab favicon while on
+// /login) gets 307'd to /login instead of returned as image bytes, and the
+// favicon silently breaks on the one page that most needs it to work.
+const isPublicRoute = createRouteMatcher(["/", "/login", "/icon", "/apple-icon"]);
 
 // Three rules, authed checked first:
 //   1. Authed hitting /login or / (the landing page) → bounce to /board.
