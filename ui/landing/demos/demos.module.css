@@ -1,0 +1,372 @@
+/* ============================================================
+   MINIATURES — ported from docs/design/prototype.html.
+
+   These are static, presentational reproductions of board surfaces
+   for the landing page. They are NOT the board: every component in
+   ui/board/ is "use client" + useQuery against api.tasks, and
+   convex/tasks.ts throws "Not signed in" for an unauthenticated
+   caller, so importing one here would give a signed-out visitor
+   console errors and permanently-undefined queries.
+
+   Two values were corrected on the way over. The prototype predates
+   the 2026-08-18 palette pivot, when the primary moved from green
+   (hue 162) to Notion blue (hue 254); porting it verbatim would have
+   silently reintroduced the abandoned palette:
+     .blk.plan       oklch(0.5 0.1 162/.22) -> hue 254
+     .blk.plan.spill oklch(0.6 0.14 30/.28) -> hue 31 (the alert hue)
+
+   Also note --lift-2 is gone from the system: a resting card is
+   --edge only.
+   ============================================================ */
+
+.card {
+  background: var(--card);
+  border-radius: var(--r-m);
+  box-shadow: var(--edge);
+  padding: 11px 13px;
+}
+
+.focus {
+  padding: 15px 16px 14px;
+  border-radius: var(--r-l);
+}
+
+.focusTitle {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 550;
+  letter-spacing: -0.018em;
+  line-height: 1.28;
+}
+
+.course {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--ink-3);
+  letter-spacing: 0.02em;
+  display: block;
+  margin-bottom: 3px;
+}
+
+.meta {
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  color: var(--ink-3);
+}
+
+.dot {
+  width: 2.5px;
+  height: 2.5px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.55;
+  flex: none;
+}
+
+/* The AI's one-line reason — the single place in this product where the
+   Source Serif 4 accent is permitted. Never a button, label, or data value. */
+.reason {
+  margin: 10px 0 0;
+  font-family: var(--font-accent), Georgia, serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+
+/* ── Parent breakdown + step progress ────────────────────── */
+
+.parent {
+  margin-top: 11px;
+  padding-top: 11px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.parentLabel {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 11.5px;
+  color: var(--ink-3);
+  margin-bottom: 6px;
+}
+
+.steps {
+  display: flex;
+  gap: 3px;
+}
+
+.steps span {
+  flex: 1;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--line);
+}
+
+.steps span.on {
+  background: var(--primary-fill);
+}
+
+/* ── Capacity slot ───────────────────────────────────────── */
+
+.capBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.capTop {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 11.5px;
+  color: var(--ink-3);
+}
+
+.over {
+  color: var(--alert-ink);
+  font-weight: 600;
+}
+
+.fits {
+  color: var(--primary-ink);
+  font-weight: 600;
+}
+
+.slot {
+  position: relative;
+  height: 8px;
+  border-radius: 99px;
+  background: var(--line-soft);
+  box-shadow: inset 0 1px 2px oklch(0 0 0 / 0.15);
+}
+
+.fill,
+.spill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 99px;
+}
+
+.fill {
+  left: 0;
+  background: var(--primary-fill);
+}
+
+.spill {
+  left: 100%;
+  background: var(--alert);
+}
+
+.notch {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  left: 100%;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--ink);
+  opacity: 0.5;
+}
+
+/* ── Horizon rail ────────────────────────────────────────── */
+
+.horizon {
+  display: flex;
+  flex-direction: column;
+}
+
+.hz {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  padding: 4px 0;
+  font-size: 12px;
+}
+
+.hzDay {
+  width: 32px;
+  color: var(--ink-3);
+  flex: none;
+}
+
+.hzWhat {
+  flex: 1;
+  color: var(--ink-2);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hzIn {
+  font-size: 11px;
+  color: var(--ink-3);
+  flex: none;
+}
+
+.hz.soon .hzIn,
+.hz.soon .hzDay {
+  color: var(--alert-ink);
+  font-weight: 600;
+}
+
+/* ── Today's shape (the timeline) ────────────────────────── */
+
+.tl {
+  position: relative;
+  display: grid;
+  grid-template-columns: 38px 1fr 1fr;
+  gap: 0 8px;
+}
+
+.gut {
+  position: relative;
+}
+
+.gut b {
+  position: absolute;
+  right: 0;
+  transform: translateY(-50%);
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The one sanctioned "texture" in this system, and it survives because it
+   means something: each band is an hour. */
+.col {
+  position: relative;
+  border-radius: 5px;
+  background: linear-gradient(var(--line-soft) 1px, transparent 1px) 0 0 / 100% 31px;
+}
+
+.col::before {
+  content: attr(data-t);
+  position: absolute;
+  top: -15px;
+  left: 1px;
+  font-size: 9.5px;
+  font-weight: 600;
+  color: var(--ink-3);
+  letter-spacing: 0.02em;
+}
+
+.blk {
+  position: absolute;
+  left: 0;
+  right: 2px;
+  border-radius: 5px;
+  padding: 3px 7px;
+  overflow: hidden;
+  font-size: 10.5px;
+  line-height: 1.25;
+}
+
+.blk small {
+  display: block;
+  font-size: 9.5px;
+  opacity: 0.8;
+  font-weight: 400;
+}
+
+.fixed {
+  background: var(--busy);
+  color: var(--ink-2);
+}
+
+.plan {
+  background: var(--primary-soft);
+  color: var(--primary-ink);
+  box-shadow: inset 0 0 0 1px oklch(0.5 0.1 254 / 0.22);
+  font-weight: 550;
+}
+
+.plan.blkSpill {
+  background: var(--alert-soft);
+  color: var(--alert-ink);
+  box-shadow: inset 0 0 0 1px oklch(0.6 0.14 31 / 0.28);
+}
+
+/* The edge of the day. The gutter already reads the hour, so the line itself
+   needs no label. */
+.endline {
+  position: absolute;
+  left: 38px;
+  right: 0;
+  border-top: 1.5px dashed var(--alert);
+  z-index: 3;
+}
+
+.edgeLabel {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--alert-ink);
+  background: var(--alert-soft);
+  padding: 3px 7px;
+  border-radius: 5px;
+  align-self: flex-start;
+}
+
+/* ── Bare capture (the fourth failure's evidence) ────────── */
+
+.bare {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.bareInner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--card);
+  border-radius: 11px;
+  padding: 10px 14px;
+  box-shadow: var(--edge);
+  font-size: 13.5px;
+  color: var(--ink-3);
+}
+
+.bareHint {
+  font-size: 11px;
+  color: var(--ink-3);
+  flex: none;
+}
+
+.bareHint kbd {
+  font: inherit;
+  font-size: 10.5px;
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: var(--line-soft);
+  color: var(--ink-3);
+}
+
+.refused {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+  color: var(--ink-3);
+  text-decoration: line-through;
+}
+
+/* ── Honesty marker ──────────────────────────────────────── */
+
+/* Slices 4-7 are unbuilt. Any miniature above that depicts one carries this
+   line. No badge, no pill, no "coming soon" — just the sentence. */
+.notShipped {
+  margin: 0;
+  font-size: 11.5px;
+  color: var(--ink-3);
+}

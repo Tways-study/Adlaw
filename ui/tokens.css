@@ -7,6 +7,11 @@
    (--lift-3).
    ============================================================ */
 :root {
+  /* color-scheme: the board never scrolls the document, so this is invisible
+     there — it only matters on pages that do (landing, login), where its
+     absence in dark mode produces a white scrollbar track and light-styled
+     native form controls. */
+  color-scheme: light;
   --desk: oklch(0.970 0.003 68);
   --rail: oklch(0.950 0.004 68);
   --card: oklch(1 0 0);
@@ -21,6 +26,22 @@
   --primary-soft: oklch(0.958 0.020 243);
   --alert: oklch(0.59 0.22 31);
   --alert-soft: oklch(0.95 0.035 31);
+
+  /* Text-on-tint inks. --primary and --alert are tuned to read as brand and as
+     alarm; measured against their own soft tints at body size in light theme
+     they miss the AA floor that PRODUCT.md sets as non-negotiable:
+       --primary on --primary-soft  4.05:1
+       --alert   on --alert-soft    3.88:1
+       --alert   on --desk          4.21:1
+     These are the same pairings ui/capture/CaptureBar.module.css already ships,
+     so the board inherits the failure too and should adopt these.
+
+     Use --*-ink for TEXT on a tint or on the canvas; keep --primary / --alert
+     for fills, bars, and rules, where the AA text floor does not apply. The
+     split has to be per-theme: light needs a darker ink, dark needs a lighter
+     one, so a single value cannot serve both. */
+  --primary-ink: oklch(0.47 0.17 254); /* 6.06:1 on --primary-soft */
+  --alert-ink: oklch(0.50 0.20 31); /* 5.63:1 on --alert-soft, 6.11:1 on --desk */
   --on-fill: oklch(1 0 0);
   --busy: oklch(0.885 0.004 68);
 
@@ -28,6 +49,10 @@
   --accent-coral: oklch(0.651 0.213 31);
   --accent-mocha: oklch(0.60 0.06 45);
   --accent-sky: oklch(0.78 0.09 240);
+
+  /* --sheen: neutral white alpha for the login page's ambient light sweep.
+     Per-theme value, not a fixed white — see the dark blocks below. */
+  --sheen: oklch(1 0 0 / .55);
 
   --lift-1: 0 1px 2px oklch(0 0 0 / .07);
   --lift-3: 0 2px 6px oklch(0 0 0 / .10), 0 28px 54px -14px oklch(0 0 0 / .32);
@@ -43,6 +68,7 @@
 }
 
 :root[data-theme="dark"] {
+  color-scheme: dark;
   --desk: oklch(0.145 0.004 68);
   --rail: oklch(0.115 0.004 68);
   --card: oklch(0.205 0.005 68);
@@ -60,6 +86,17 @@
   --on-fill: oklch(1 0 0);
   --busy: oklch(0.26 0.005 68);
 
+  /* Dark's --primary / --alert already clear AA against their own tints
+     (6.49:1 and 5.37:1 measured), so the inks track them here rather than
+     diverging. The split exists for light's sake. */
+  --primary-ink: oklch(0.75 0.16 254);
+  --alert-ink: oklch(0.74 0.19 31);
+
+  /* --sheen: neutral white alpha for the login page's ambient light sweep.
+     Dark's value is much lower than light's — the same 0.55 alpha here would
+     blow out over --rail's low lightness. */
+  --sheen: oklch(1 0 0 / .05);
+
   --lift-1: 0 1px 0 oklch(1 0 0 / .05) inset, 0 1px 2px oklch(0 0 0 / .5);
   --lift-3: 0 1px 0 oklch(1 0 0 / .09) inset, 0 4px 8px oklch(0 0 0 / .5), 0 32px 62px -16px oklch(0 0 0 / .75);
   --edge: inset 0 0 0 1px oklch(1 0 0 / .07);
@@ -68,6 +105,7 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
+    color-scheme: dark;
     --desk: oklch(0.145 0.004 68);
     --rail: oklch(0.115 0.004 68);
     --card: oklch(0.205 0.005 68);
@@ -84,6 +122,15 @@
     --alert-soft: oklch(0.29 0.06 31);
     --on-fill: oklch(1 0 0);
     --busy: oklch(0.26 0.005 68);
+
+    /* See the explicit dark block above. */
+    --primary-ink: oklch(0.75 0.16 254);
+    --alert-ink: oklch(0.74 0.19 31);
+
+    /* --sheen: neutral white alpha for the login page's ambient light sweep.
+       Dark's value is much lower than light's — the same 0.55 alpha here
+       would blow out over --rail's low lightness. */
+    --sheen: oklch(1 0 0 / .05);
 
     --lift-1: 0 1px 0 oklch(1 0 0 / .05) inset, 0 1px 2px oklch(0 0 0 / .5);
     --lift-3: 0 1px 0 oklch(1 0 0 / .09) inset, 0 4px 8px oklch(0 0 0 / .5), 0 32px 62px -16px oklch(0 0 0 / .75);

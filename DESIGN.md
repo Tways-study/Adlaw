@@ -103,6 +103,17 @@ Dark tokens are duplicated under `@media (prefers-color-scheme:dark)` guarded by
 - `--primary` is for text and indicators; `--primary-fill` is for filled surfaces
   and always carries white text. They are separate tokens because a fill bright
   enough to read as brand in dark mode cannot hold white text.
+- **`--primary-ink` / `--alert-ink` are for text on a tint or on the canvas.**
+  Measured in light theme, the obvious pairings miss the AA floor that
+  `PRODUCT.md` sets as non-negotiable: `--primary` on `--primary-soft` is
+  **4.05:1**, `--alert` on `--alert-soft` is **3.88:1**, and `--alert` on
+  `--desk` is **4.21:1** — all below 4.5:1 for body-size text. The `-ink`
+  variants are darker in light (6.06:1 and 5.63:1) and simply track `--primary`
+  / `--alert` in dark, where those already clear the floor. Keep `--primary` and
+  `--alert` for fills, bars, and rules, where the text floor doesn't apply.
+  *This was found while building the landing surface;
+  `ui/capture/CaptureBar.module.css` still ships the failing pairing, so the
+  board should adopt `--primary-ink` for its chips.*
 - `--ink-3` is at the 4.5:1 floor in both themes — the same floor the prior
   palette held; adding warm chroma at this low a level doesn't move OKLCH `L`
   enough to matter, but **verify with a real contrast checker before shipping,
@@ -208,6 +219,126 @@ Rules that are not negotiable:
 - No orchestrated page-load sequence. The board loads into a task.
 - `prefers-reduced-motion: reduce` replaces springs with instant settles and
   cross-fades. Content is never gated behind a reveal transition.
+
+## Landing surface (addendum, 2026-08-22)
+
+**Scope: `/` and `/login` only. Inside the board every rule above holds
+unchanged.** These two surfaces have an audience the rest of this document was
+never written for — a first-time reader on an unknown device, including a phone.
+Where a rule's stated justification doesn't reach that reader, it is relaxed
+here and nowhere else.
+
+### Display type
+
+Not a second scale — three more rungs on the existing ladder, seeded at the 20px
+day title at a constant 1.4 ratio: 20 → 28 → 40 → 56.
+
+| Role | Size | Weight | Tracking | Line height |
+|---|---|---|---|---|
+| Display 1 — hero | 56px | 600 | −0.024em | 1.02 |
+| Display 2 — section | 40px | 600 | −0.023em | 1.10 |
+| Display 3 — band heading | 28px | 600 | −0.021em | 1.22 |
+| Lead prose | 17px | 400 | −0.011em | 1.55 |
+
+**Tracking flattens; it does not keep tightening.** The instinct is to
+extrapolate the app curve (−0.006em at 13.5px → −0.02em at 20px) out to −0.04em
+at 56px. That is wrong for Inter, whose dynamic-metrics curve asymptotes near
+−0.022em — 20px/−0.02em is already essentially there. Display sizes converge to
+−0.021…−0.024em and never go past it. This is the single most likely thing to
+get wrong later, and it looks like a squashed logotype.
+
+Weight is **600, never 700**: 700 at 56px is shouty and contradicts "quiet at
+rest". No new body size — landing prose reuses the existing 17px rung at weight
+400.
+
+### `clamp()` — a documented exception
+
+§Typography says the scale is fixed rem/px, not fluid, because "users view at
+consistent DPI". That justification is a claim about one student on one laptop
+looking at a board. It does not reach a public page, where a fixed 56px headline
+at 375px produces roughly six characters per line and horizontal overflow — a
+worse outcome than anything the fixed-scale rule was written to prevent. The
+rule is not overturned; its premise simply doesn't extend here.
+
+**Permitted for the three display sizes, on the landing surface, and nowhere
+else.** Not the lead, not body, not any app text, not spacing.
+
+```
+D1  clamp(2.125rem, 1.5rem  + 2.67vw, 3.5rem)     34 → 56px
+D2  clamp(1.625rem, 1.23rem + 1.70vw, 2.5rem)     26 → 40px
+D3  clamp(1.375rem, 1.20rem + 0.73vw, 1.75rem)    22 → 28px
+```
+
+**Every fixed term is in `rem`, never `px` — this is load-bearing.** A pure-`vw`
+clamp violates WCAG 2.2 SC 1.4.4 (Resize Text): the text stops responding to the
+reader's browser font-size setting. The rem intercept is what preserves scaling,
+and it is why these numbers look arbitrary. Do not "simplify" them.
+
+These live as custom properties scoped to the landing root in
+`ui/landing/landing.module.css`, not as global tokens — the system has no type
+tokens at all, and growing a global scale for one surface would break that
+convention for no gain.
+
+### Motion allowance
+
+Still binding, unchanged: `transform` and `opacity` only, no animated layout
+properties, hover/chrome at 120–200ms `cubic-bezier(.22,1,.36,1)`, press
+feedback at `scale(0.975)` / 110ms on pointer-**down**, focus ring untouched.
+
+Newly permitted, exactly two kinds:
+
+**(a) One ambient background treatment per screen.** Period ≥ 20s, amplitude
+≤ 0.06 opacity delta, neutral only — no hue shift, no chromatic token.
+Non-interactive, `aria-hidden`, `pointer-events: none`, maximum one element.
+The "every animation is interruptible" rule targets gesture-driven motion and
+does not apply to a non-interactive ambient layer. `/login`'s light sweep is the
+one instance; it uses `--sheen`.
+
+**(b) One scroll-triggered entrance per section.** ≤ 200ms, ≤ 8px translate, via
+native CSS `animation-timeline: view()` — no JS, no library, consistent with a
+repo that hand-rolls all motion.
+
+**The entrance must animate `transform` only — never `opacity`.** This is the
+hard part and it was got wrong first. An opacity-gated reveal leaves every
+below-the-fold section at `opacity: 0` until scrolled into view, so a full-page
+screenshot, a print, a headless renderer, or a background tab captures a blank
+page. That is exactly what §Motion's "content is never gated behind a reveal
+transition" forbids. Author the resting state as the final visible state, let
+the keyframes supply only the from-state, use `animation-duration: auto`, and
+wrap the whole thing in `@supports (animation-timeline: view())`. Unsupporting
+browsers then land on the end state immediately: the failure mode is "no
+animation", never "invisible content".
+
+Banned on this surface: parallax · scroll pinning or hijacking · animated
+counters · typewriter effects · staggered list cascades · more than one ambient
+layer per screen · any animation of `background-position`, `width`, `height`,
+`top`, or `left`.
+
+`prefers-reduced-motion: reduce` gets a genuine alternative, not a removal:
+ambient treatments render at their mid-state and hold, permanently still;
+entrances resolve instantly to their end state. Nothing disappears, nothing is
+dimmer, nothing is missing.
+
+### Spacing
+
+§Spacing rejects the source system's marketing values because "this is an app
+board, not a landing page". That reason has now expired for exactly one surface.
+Adopt, for the landing only: content max-width **1080px** (not 1440 — too wide
+for 17px prose in this register), section rhythm **96px** desktop / **64px**
+below 720px, prose measure **34em**. All multiples of the 4px base.
+
+**Never `width: 100vw`** — it includes the scrollbar width and produces
+horizontal overflow. Full-bleed bands set a background on the section element
+itself and let the shell hold the content.
+
+### The ban list still applies in full
+
+Nothing in §Bans is relaxed here. In particular: at most **one**
+`--primary-fill` call-to-action on the whole document (a scrolling page is
+arguable, so don't argue it), no gradient text, no decorative glassmorphism, no
+hero-metric tiles, no uppercase tracked eyebrows, no grain or texture, no
+identical card grids, no radii above 12px, and the Source Serif 4 accent stays
+on the focus card's reason line alone.
 
 ## Components
 
