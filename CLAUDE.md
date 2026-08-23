@@ -172,7 +172,9 @@ ui/
   graphics/             DayMark — the one graphic, public surfaces only (S0 + S1)
   type/                 TaglineWord — the rotating "A day that ___" word,
                         public surfaces only. Readings live in its CSS as
-                        ::after content on purpose; see docs/07
+                        ::after content on purpose — keeping them out of the
+                        DOM is what stops the landing <h1> indexing as all
+                        four at once. Don't "simplify" them back inline
   timeline/              Today's shape                             (Slice 5, not built)
   capture/               input + live preview. Built, heuristic-only
   settings/               S6 + S7 (Calendar connect)                (Slice 8, not built)
