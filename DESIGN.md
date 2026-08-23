@@ -318,10 +318,23 @@ counters · typewriter effects · staggered list cascades · more than one ambie
 layer per screen · any animation of `background-position`, `width`, `height`,
 `top`, or `left`.
 
-**One sanctioned exception to the one-ambient cap:** `/login` and `/signup`
-carry both the light sweep and the ambient day-mark, taken knowingly on
-2026-08-23 — see §Components → the day-mark for the full reasoning and the
-constraints it still honors. Nowhere else.
+**(c) One rotating word, in the tagline only.** Added 2026-08-23. `/login`
+and `/signup`'s echo line cycles the final word of "A day that ___" through
+four ledger-native readings. Strictly scoped: one instance per screen, one
+word, `transform` and `opacity` only, ≥ 4s per word (an 18s cycle), and the
+words are stacked in a single CSS grid cell so the container is sized by the
+widest and *nothing* animates layout — the `width`/`height` ban is not bent.
+
+This is **not** the banned typewriter effect, which reveals per character
+with a cursor and draws the eye letter by letter; this is a whole-word
+crossfade at a period slower than most ambient loops. It is nonetheless a
+third motion kind on this surface, so it is written down rather than left to
+look like drift. Under `prefers-reduced-motion: reduce` the cycle stops and
+the canonical first word holds — the same "render at mid-state and hold"
+treatment ambient layers get. The rotator is `aria-hidden`; a visually
+hidden static copy of the full sentence carries the accessible name, so
+assistive tech reads one stable tagline and never a word churning on a
+timer.
 
 `prefers-reduced-motion: reduce` gets a genuine alternative, not a removal:
 ambient treatments render at their mid-state and hold, permanently still;
@@ -374,6 +387,27 @@ render in alert.
 **Segmented control, capture bar, shelf item** — standard affordances, standard
 behavior. Product UI earns trust through familiarity, not invention.
 
+**The rotating tagline** (`ui/type/TaglineWord.tsx`) — on `/login` and
+`/signup`, the echo line's final word cycles: *A day that* **fits · adds up ·
+balances · closes out**. The four readings are a set, not a thesaurus dump —
+"fits" is the product's capacity thesis, and the other three are accounting
+terms the name Ledger already invokes, so the rotation says something rather
+than just moving. It replaced the ambient day-mark in this plane on
+2026-08-23 (see the day-mark entry below for why that came out).
+
+Mechanics, and why they satisfy §Motion rather than bend it: the four
+readings are stacked in a **single CSS grid cell**, so the container is sized
+by the widest and the line never reflows — the animation is `opacity` and
+`translateY(6px)` only, and the `width`/`height` ban stays intact. 18s cycle,
+4.5s per reading, ~0.5s crossfade where each word's fade-out window is
+exactly the next one's fade-in, so there is no blank beat. No JavaScript: it
+is keyframes plus a `--i` index per word, so it works in a server component.
+The rotator is `aria-hidden` with a visually hidden static copy carrying the
+accessible name — verified against the real accessibility tree, which
+contains only "fits." — and it is `user-select: none`, so selecting the
+tagline copies one clean sentence instead of all four readings. Under
+`prefers-reduced-motion: reduce` the cycle stops and "fits." holds.
+
 **The day-mark** (`ui/graphics/DayMark.tsx`) — the one graphic in the product,
 and the reason it's allowed: it isn't illustration, it's the capacity slot's own
 shape read a different way. A hairline ring stands for the day; one solid arc in
@@ -403,27 +437,17 @@ stat, so it can never be misread as one. Two scales, one motif:
   a live stat loading, which is exactly what the fixed-fraction rule above
   exists to prevent. Both stop under `prefers-reduced-motion: reduce`.
 
-**The ambient scale also runs on `/login` and `/signup`** (`.fieldMark`,
-440px, upper right of the field plane, cropped by the screen edge on one
-axis only so it reads as environment rather than a placed sticker; balanced
-diagonally against `.echo` in that plane's lower left). Same entrance and
-rotation as the hero instance, and hidden below 720px along with the field
-plane it lives in.
+**The ambient scale is the landing hero's alone.** It was briefly also placed
+in `/login` and `/signup`'s field plane on 2026-08-23 and removed the same
+day: at that size the ring had to be cropped by the screen edge to fit
+beside the sign-in card, and a cropped circle reads as off-centre rather
+than as deliberate framing. The auth screens keep the light sweep as their
+single ambient layer, and the field plane's presence now comes from the
+rotating tagline instead (§Components → rotating tagline). The one-ambient
+cap holds everywhere, with no exceptions.
 
-> **Deliberate exception, 2026-08-23.** This puts a *second* ambient layer on
-> those two screens, alongside the light sweep — which the landing-surface
-> addendum below bans outright ("more than one ambient layer per screen",
-> "maximum one element"), and which the day-mark's chromatic `--primary` arc
-> and `--alert` notch also cut against on a clause reading "neutral only".
-> Taken knowingly, at the author's direction, to give the auth screens' empty
-> field plane real presence and tie them to the landing hero, which already
-> carries this mark. The two layers are ordered so the mark paints *above*
-> the sweep — overlapping ambients would otherwise make its contrast
-> fluctuate as the sweep's opacity animates, the exact failure the addendum's
-> stacking note warns about. Both freeze under `prefers-reduced-motion`, and
-> the mark disappears entirely under `prefers-contrast: more`, so neither
-> accessibility path inherits the exception. **This is the only sanctioned
-> two-ambient surface; the cap still holds everywhere else.**
+The *mark* scale (~26px, beside the wordmark) does appear on all three
+public surfaces — that is unaffected by the above.
 
 Public surfaces only (`/`, `/login`, `/signup`) — there's no wordmark inside
 the board to attach it to, and it isn't proposed for one.

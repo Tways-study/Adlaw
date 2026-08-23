@@ -1,0 +1,74 @@
+/* All four readings occupy ONE grid cell, so the container is sized by the
+   widest of them and the line never reflows as words swap. This is what
+   keeps the animation to transform/opacity only — a rotator that resized to
+   each word would be animating width, which DESIGN.md bans outright. */
+.rotator {
+  display: inline-grid;
+  vertical-align: baseline;
+  /* All four readings live in the DOM at once, so without this, selecting
+     the tagline copies "fits. adds up. balances. closes out." The srOnly
+     span beside this one is still selectable, so a copy yields the single
+     canonical sentence — the same thing screen readers get. */
+  user-select: none;
+}
+
+.word {
+  grid-area: 1 / 1;
+  justify-self: start;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateY(6px);
+  animation: taglineWord 18s var(--ease) infinite;
+  animation-delay: calc(var(--i) * 4.5s);
+}
+
+/* 18s / 4 words = one word every 4.5s, each holding ~4s with a ~0.5s
+   crossfade. The fade-out window (25% → 28%) is exactly the next word's
+   fade-in window, so the two cross rather than leaving a blank beat. */
+@keyframes taglineWord {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  3% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  25% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  28% {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+/* A genuine alternative, not a removal: the canonical first reading holds,
+   permanently still — the same treatment DESIGN.md gives ambient layers. */
+@media (prefers-reduced-motion: reduce) {
+  .word {
+    animation: none;
+    opacity: 0;
+    transform: none;
+  }
+  .word:first-child {
+    opacity: 1;
+  }
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}

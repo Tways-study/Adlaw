@@ -74,17 +74,6 @@
   }
 }
 
-/* The day-mark, at ambient scale, filling the field plane's upper right.
-   This is the auth screens' SECOND ambient layer alongside .sweep —
-   a deliberate exception to DESIGN.md's "maximum one ambient layer per
-   screen", recorded in that file's day-mark section. Cropped by .screen's
-   overflow: hidden so it reads as environment rather than a placed sticker,
-   and balanced diagonally against .echo in the plane's lower left. */
-.fieldMark {
-  top: 7%;
-  right: -58px;
-}
-
 .echo {
   position: absolute;
   z-index: 1;
@@ -349,10 +338,6 @@
     display: none;
   }
   .echo {
-    display: none;
-  }
-  /* Lives in the field plane, which is gone at this width. */
-  .fieldMark {
     display: none;
   }
   .content {

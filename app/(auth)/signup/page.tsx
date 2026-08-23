@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { ThemeToggle } from "@/ui/theme/ThemeToggle";
 import { DayMark } from "@/ui/graphics/DayMark";
+import { TaglineWord } from "@/ui/type/TaglineWord";
 import styles from "./signup.module.css";
 
 const ERROR_ID = "signup-error";
@@ -64,13 +65,10 @@ export default function SignupPage() {
       <div className={styles.rail} aria-hidden="true" />
       <div className={styles.field} aria-hidden="true" />
       <div className={styles.sweep} aria-hidden="true" />
-      {/* Placed after .sweep so it paints above it: two ambient layers
-          overlapping would otherwise make the mark's contrast fluctuate as
-          the sweep's opacity animates. Both sit below .echo/.content, which
-          carry z-index: 1. */}
-      <DayMark ambient size={440} className={styles.fieldMark} />
       <p className={styles.echo}>
-        <span className={styles.echoLine}>A day that fits.</span>
+        <span className={styles.echoLine}>
+          A day that <TaglineWord />
+        </span>
         <span className={styles.echoSub}>One sentence in, a finite day out.</span>
       </p>
       <div className={styles.content}>
