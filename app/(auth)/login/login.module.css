@@ -94,6 +94,14 @@
    centered things floating apart. z-index:1 (matching .content) keeps it
    painting above .sweep regardless of where the sweep's animation is,
    so its contrast against --desk never fluctuates. */
+/* The auth screens' second ambient layer, alongside .sweep — a deliberate
+   exception to DESIGN.md's "maximum one ambient layer per screen", recorded
+   in that file's day-mark section. See ../signup/signup.module.css. */
+.fieldMark {
+  top: 7%;
+  right: -58px;
+}
+
 .echo {
   position: absolute;
   z-index: 1;
@@ -356,6 +364,10 @@
     display: none;
   }
   .echo {
+    display: none;
+  }
+  /* Lives in the field plane, which is gone at this width. */
+  .fieldMark {
     display: none;
   }
   .content {

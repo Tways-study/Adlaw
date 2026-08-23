@@ -318,6 +318,11 @@ counters · typewriter effects · staggered list cascades · more than one ambie
 layer per screen · any animation of `background-position`, `width`, `height`,
 `top`, or `left`.
 
+**One sanctioned exception to the one-ambient cap:** `/login` and `/signup`
+carry both the light sweep and the ambient day-mark, taken knowingly on
+2026-08-23 — see §Components → the day-mark for the full reasoning and the
+constraints it still honors. Nowhere else.
+
 `prefers-reduced-motion: reduce` gets a genuine alternative, not a removal:
 ambient treatments render at their mid-state and hold, permanently still;
 entrances resolve instantly to their end state. Nothing disappears, nothing is
@@ -398,8 +403,30 @@ stat, so it can never be misread as one. Two scales, one motif:
   a live stat loading, which is exactly what the fixed-fraction rule above
   exists to prevent. Both stop under `prefers-reduced-motion: reduce`.
 
-Public surfaces only (`/` and `/login`) — there's no wordmark inside the board
-to attach it to, and it isn't proposed for one.
+**The ambient scale also runs on `/login` and `/signup`** (`.fieldMark`,
+440px, upper right of the field plane, cropped by the screen edge on one
+axis only so it reads as environment rather than a placed sticker; balanced
+diagonally against `.echo` in that plane's lower left). Same entrance and
+rotation as the hero instance, and hidden below 720px along with the field
+plane it lives in.
+
+> **Deliberate exception, 2026-08-23.** This puts a *second* ambient layer on
+> those two screens, alongside the light sweep — which the landing-surface
+> addendum below bans outright ("more than one ambient layer per screen",
+> "maximum one element"), and which the day-mark's chromatic `--primary` arc
+> and `--alert` notch also cut against on a clause reading "neutral only".
+> Taken knowingly, at the author's direction, to give the auth screens' empty
+> field plane real presence and tie them to the landing hero, which already
+> carries this mark. The two layers are ordered so the mark paints *above*
+> the sweep — overlapping ambients would otherwise make its contrast
+> fluctuate as the sweep's opacity animates, the exact failure the addendum's
+> stacking note warns about. Both freeze under `prefers-reduced-motion`, and
+> the mark disappears entirely under `prefers-contrast: more`, so neither
+> accessibility path inherits the exception. **This is the only sanctioned
+> two-ambient surface; the cap still holds everywhere else.**
+
+Public surfaces only (`/`, `/login`, `/signup`) — there's no wordmark inside
+the board to attach it to, and it isn't proposed for one.
 
 **Third scale: the favicon** (`app/icon.tsx`, 32px; `app/apple-icon.tsx`, 180px,
 the iOS home-screen icon). Same geometry, but these routes can't reach

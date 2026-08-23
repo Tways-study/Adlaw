@@ -54,6 +54,8 @@ export default function LoginPage() {
       <div className={styles.rail} aria-hidden="true" />
       <div className={styles.field} aria-hidden="true" />
       <div className={styles.sweep} aria-hidden="true" />
+      {/* See ../signup/page.tsx for why this sits after .sweep. */}
+      <DayMark ambient size={440} className={styles.fieldMark} />
       <p className={styles.echo}>
         <span className={styles.echoLine}>A day that fits.</span>
         <span className={styles.echoSub}>One sentence in, a finite day out.</span>
