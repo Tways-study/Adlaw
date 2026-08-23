@@ -5,8 +5,10 @@
 ---
 
 *"One sentence in, a finite day out."*
-A single-user daily planner that infers course, effort, and deadline from
-one typed sentence — overcommitment is visible in the layout, not announced.
+
+Type a task in plain language — Ledger infers the course, effort, and deadline
+for you. Your day has a fixed capacity, and when you've taken on too much, the
+board shows it in the layout instead of an alert.
 
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=nextdotjs&logoColor=white)](https://nextjs.org)
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=white)](https://react.dev)
@@ -40,10 +42,16 @@ npx convex dev   # Convex functions + local dev deployment
 npm run dev      # Next.js
 ```
 
+Set an invite code so `/signup` can create accounts:
+
+```bash
+npx convex env set SIGNUP_INVITE_CODE <your-code>
+```
+
 Open [http://localhost:3000](http://localhost:3000).
 
 ## Stack
 
 Next.js (App Router) · Convex (data, functions, auth) · Convex Auth
-(password provider, one seeded account) · hand-written CSS from `DESIGN.md`
+(password provider, invite-gated signup) · hand-written CSS from `DESIGN.md`
 tokens.

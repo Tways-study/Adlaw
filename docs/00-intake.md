@@ -50,6 +50,32 @@ reasoning, including why the auth mechanism also had to change (Convex Auth's
 password provider, not a hand-rolled cookie) as a real consequence of Convex's
 client-calls-functions-directly model rather than a preference.
 
+## Amendment 3 — 2026-08-23
+
+The author directed a real reversal of the single-user constraint: Ledger now
+supports multiple accounts through an invite-gated signup flow at `/signup`,
+rather than the one account seeded at setup. This is not the open, anyone-can-
+join signup a consumer product would ship — with zero budget and no
+billing/admin layer, an unauthenticated public signup would expose the app's
+free-tier Gemini and Google Calendar OAuth quota to anyone who found the URL.
+A shared invite code (a Convex deployment env var, `SIGNUP_INVITE_CODE`),
+checked in the Password provider's `profile` callback before any account is
+created, keeps signup self-serve for people it's shared with while staying
+closed to the open internet.
+
+Every table that held data now carries `userId` and is scoped to it —
+`courses`, `tasks`, `scheduleBlocks`, `calendarCache`, `aiLog`, and `settings`
+(which stops being a global singleton and becomes one row per user). Courses
+are per-user, not shared: two accounts' course lists (e.g. two different
+students' class schedules) have no reason to overlap and every reason to stay
+separate. See `03-backend-schema.md` §Design rules for the updated ownership
+model and `convex/tasks.ts` for the authorization layer this required —
+previously nothing checked task ownership at all, since there was only ever
+one possible owner.
+
+**What did not change:** budget (zero — an invite code costs nothing to run),
+the read-only Calendar sync direction, and the design system in `DESIGN.md`.
+
 ## Constraints
 
 | Constraint | Value | Source | Architectural consequence |
@@ -60,7 +86,7 @@ client-calls-functions-directly model rather than a preference.
 | AI provider | Google Gemini, free tier | stated | Schema-constrained JSON output. Rate-limited per minute/day — fine at one user. Free-tier content may be used for product improvement; accepted knowingly |
 | Accounts held | Vercel, Supabase (blocked — free-project limit reached) | stated | Supabase unused as of Amendment 2. New: Convex, Google Cloud project for Calendar OAuth, AI Studio key |
 | Google Calendar | **In v1**, read-only overlay | amended | OAuth flow, encrypted refresh-token storage, a sync cache table, a connect/disconnect screen |
-| Users | 1 | stated | No RLS in the Supabase-product sense, no roles, no sharing, no multi-tenancy. A single shared password gates the whole app |
+| Users | Multiple, invite-gated | amended (3) | No RLS in the Supabase-product sense — ownership is checked directly in each Convex mutation/query via `userId`, not a policy layer. No roles, no sharing between accounts; a shared invite code (not a per-user role) gates who may sign up at all |
 | Data sensitivity | Author's own coursework titles | inferred from description | No third-party PII, no regulated data, no compliance surface, no residency requirement |
 | Scale | ~40 live tasks, ~1 session/day | inferred from single user | Every candidate database is over-specified. Postgres is chosen for fit with the held account and the relational shape of the data, not for scale |
 | Offline | Not required | spec §7 | No sync engine, no CRDT, no local-first database. `localStorage` capture queue only |
@@ -85,7 +111,7 @@ When two design choices conflict, the higher-ranked failure wins.
 | Full feature/config scope vs a 2–4 week casual timeline | **Not resolved by fiat.** Documented honestly in `01-prd.md` §Scope check with a real build-order estimate. Proceeding at the author's direction; the timeline is the thing most likely to move, not the scope |
 | Zero budget vs an AI-dependent core promise | Gemini free tier, behind a provider-agnostic adapter. Heuristic parser ships as the permanent fallback, not a placeholder |
 | "Personal tool" simplicity vs hosted infrastructure + OAuth | Hosting and Calendar both stand. An app you must start from a terminal, or one whose capacity is wrong because it can't see your calendar, is an app you stop opening — and abandonment is failure mode #1 |
-| Single-user product vs a real identity system | Resolved differently depending on the data layer — under Postgres (v2.0), the client had no DB access at all, so a hand-rolled cookie sufficed. Under Convex (v3.0, current), the client calls functions directly, so Convex Auth's password provider (one seeded account, no signup flow) is the actual requirement, not a preference |
+| Single-user product vs a real identity system | Resolved differently depending on the data layer — under Postgres (v2.0), the client had no DB access at all, so a hand-rolled cookie sufficed. Under Convex (v3.0), the client calls functions directly, so Convex Auth's password provider was the actual requirement, not a preference. As of Amendment 3, that same password provider now backs multiple accounts, gated by invite code rather than by "exactly one seed" |
 
 ## Scope risk
 

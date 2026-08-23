@@ -16,10 +16,11 @@ original Convex draft.
   position, and the Today's-shape layout are computed on read from
   `scheduleBlocks` + `tasks` + `calendarCache`. Storing them creates two sources
   of truth and one of them is always stale.
-- **One user.** Convex Auth's `users` table holds exactly one account, seeded
-  during setup, not created through a signup flow. No other table references it
-  — every query and mutation checks `ctx.auth.getUserIdentity()` directly rather
-  than joining against a user id.
+- **Multi-user, invite-gated.** Convex Auth's `users` table holds one row per
+  account, created through the invite-gated `/signup` flow (`00-intake.md`
+  Amendment 3). Every other table carries a `userId` and is queried through a
+  `userId`-scoped index — no cross-user reads, and ownership is checked before
+  any mutation touches an existing row. See §Auth.
 - **Times are minutes past local midnight** (`0`–`1439`) for recurring schedule
   blocks, and epoch ms for anything dated. Recurring blocks must not be
   timestamps — a class at 09:00 is at 09:00 across a DST boundary.
@@ -33,12 +34,14 @@ import { v } from "convex/values";
 
 export default defineSchema({
   courses: defineTable({
+    userId: v.id("users"),
     code: v.string(),                 // "BIO 210" — shown on cards
     name: v.optional(v.string()),     // "Intro to Cell Biology"
     active: v.boolean(),
-  }).index("by_active", ["active"]),
+  }).index("by_user_active", ["userId", "active"]),
 
   tasks: defineTable({
+    userId: v.id("users"),
     title: v.string(),                // cleaned, display
     rawText: v.string(),              // exactly what was typed — never overwritten
     courseId: v.optional(v.id("courses")),
@@ -56,12 +59,13 @@ export default defineSchema({
     createdAt: v.number(),
     completedAt: v.optional(v.number()),
   })
-    .index("by_status_order", ["status", "laneOrder"])
-    .index("by_due", ["dueAt"])
+    .index("by_user_status_order", ["userId", "status", "laneOrder"])
+    .index("by_user_due", ["userId", "dueAt"])
     .index("by_parent", ["parentId", "stepIndex"])
-    .index("by_completed", ["completedAt"]),
+    .index("by_user_completed", ["userId", "completedAt"]),
 
   scheduleBlocks: defineTable({
+    userId: v.id("users"),
     weekday: v.number(),              // 0 = Sunday … 6
     startMin: v.number(),             // minutes past local midnight
     endMin: v.number(),
@@ -70,19 +74,21 @@ export default defineSchema({
                   v.literal("commute"), v.literal("other")),
     activeFrom: v.number(),           // epoch ms
     activeTo: v.optional(v.number()), // null = current
-  }).index("by_weekday", ["weekday"]),
+  }).index("by_user_weekday", ["userId", "weekday"]),
 
   calendarCache: defineTable({
+    userId: v.id("users"),
     gcalId: v.string(),
     startsAt: v.number(),             // epoch ms
     endsAt: v.number(),
     title: v.string(),
     fetchedAt: v.number(),
-  }).index("by_gcal_id", ["gcalId"])
-    .index("by_range", ["startsAt", "endsAt"]),
+  }).index("by_user_gcal_id", ["userId", "gcalId"])
+    .index("by_user_range", ["userId", "startsAt", "endsAt"]),
   // pure cache — replaced wholesale on every sync, safe to clear entirely
 
   aiLog: defineTable({
+    userId: v.id("users"),
     kind: v.union(v.literal("parse"), v.literal("breakdown"),
                   v.literal("focus")),
     input: v.string(),
@@ -93,9 +99,10 @@ export default defineSchema({
     error: v.optional(v.string()),
     latencyMs: v.number(),
     createdAt: v.number(),
-  }).index("by_created", ["createdAt"]),
+  }).index("by_user_created", ["userId", "createdAt"]),
 
-  settings: defineTable({             // exactly one row
+  settings: defineTable({             // one row per user, not a singleton
+    userId: v.id("users"),
     theme: v.union(v.literal("light"), v.literal("dark"), v.literal("auto")),
     aiProvider: v.string(),
     aiModel: v.string(),
@@ -103,7 +110,7 @@ export default defineSchema({
     googleConnectedAt: v.optional(v.number()),
     googleLastSyncedAt: v.optional(v.number()),
     googleSyncStatus: v.optional(v.string()),   // "ok" | "expired" | "error"
-  }),
+  }).index("by_user", ["userId"]),
 });
 ```
 
@@ -116,7 +123,7 @@ export default defineSchema({
 | `scheduleBlocks` | Capacity engine, Today's shape, S4 | S4 only | Entered once per semester. Half of the v1 time model |
 | `calendarCache` | Capacity engine, Today's shape | Calendar sync only (S7 "Sync now" or a Convex action on focus) | The other half. Pure cache — if empty or stale, capacity falls back to the manual schedule alone, silently |
 | `aiLog` | S6 review list, manual quality review | Every AI call | **The only honest measure of whether the core promise works.** Without it, parse quality is a guess |
-| `settings` | S6, theme boot, Calendar status everywhere | S6, the OAuth callback, sync | Singleton. Holds the one encrypted refresh token — this app's only secret-shaped piece of user data |
+| `settings` | S6, theme boot, Calendar status everywhere | S6, the OAuth callback, sync | One row per user. Holds that user's encrypted refresh token — the only secret-shaped piece of user data |
 
 ## Ordering within a lane
 
@@ -145,19 +152,31 @@ express cross-document rules:
 
 ## Auth
 
-Convex Auth, password provider, one account seeded during setup — no public
-signup route exists. Every query and mutation opens with:
+Convex Auth, password provider, invite-gated signup at `/signup`
+(`docs/00-intake.md`'s Amendment 3). Every query and mutation opens with:
 
 ```ts
-const identity = await ctx.auth.getUserIdentity();
-if (!identity) throw new Error("Not signed in");
+const userId = await getAuthUserId(ctx);
+if (!userId) throw new Error("Not signed in");
 ```
 
-This is the entire authorization model, and it's a real identity check rather
-than a hand-rolled cookie, because Convex functions are called directly from the
-React client for live queries — there's no server-only boundary to hide behind
-the way there was with a Postgres service-role key. With one user there's still
-no ownership to check and no policy set to write beyond "is anyone signed in."
+`getAuthUserId` (from `@convex-dev/auth/server`) decodes the user id directly
+out of the identity's JWT subject — no extra round trip. This is a real
+identity check rather than a hand-rolled cookie, because Convex functions are
+called directly from the React client for live queries — there's no
+server-only boundary to hide behind the way there was with a Postgres
+service-role key.
+
+With multiple users, "is anyone signed in" is no longer sufficient — every
+table carries a `userId`, every query filters by it, and every mutation that
+takes an existing document's id (`complete`, `uncomplete`, `remove`, `move`)
+re-fetches that document and checks `doc.userId === userId` before touching
+it, no-op'ing silently on a mismatch. This is the actual ownership layer; a
+signed-in identity alone no longer implies the right to touch a given row.
+Who may sign up at all is a separate, earlier gate: the Password provider's
+`profile` callback in `convex/auth.ts` rejects `flow === "signUp"` unless the
+submitted invite code matches the `SIGNUP_INVITE_CODE` Convex environment
+variable, before any account or user row is created.
 
 ## Calendar OAuth
 

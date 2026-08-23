@@ -4,19 +4,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository state
 
-**Slices 1–3 built, plus a public landing surface.** Next.js (App Router) +
-Convex + Convex Auth (password provider, one seeded account) are wired up;
-`DESIGN.md`'s tokens are in `ui/tokens.css`. Task capture (heuristic parser
-only), lanes, complete, delete+undo, and drag all work. No schedule editor,
+**Slices 1–3 built, plus a public landing surface and multi-user auth.**
+Next.js (App Router) + Convex + Convex Auth (password provider, invite-gated
+signup — `docs/00-intake.md`'s Amendment 3) are wired up; `DESIGN.md`'s tokens
+are in `ui/tokens.css`. Task capture (heuristic parser only), lanes, complete,
+delete+undo, and drag all work, scoped per account. No schedule editor,
 capacity math, timeline, Calendar, or AI yet — those are Slices 4–7 per
 `docs/04-tdd.md` §Build order.
 
-**Routing:** `/` is the public marketing landing page, `/login` is public, and
-the board lives at **`/board`**. `proxy.ts` is the only redirect authority —
-authed visitors to `/` or `/login` go to `/board`; unauthed visitors to anything
-else go to `/login`. Never express these as `next.config.ts` `redirects()`:
-those default to 308 permanent and browsers cache them indefinitely, which would
-lock you out of the landing page on that browser.
+**Routing:** `/` is the public marketing landing page, `/login` and `/signup`
+are public, and the board lives at **`/board`**. `proxy.ts` is the only
+redirect authority — authed visitors to `/`, `/login`, or `/signup` go to
+`/board`; unauthed visitors to anything else go to `/login`. Never express
+these as `next.config.ts` `redirects()`: those default to 308 permanent and
+browsers cache them indefinitely, which would lock you out of the landing
+page on that browser.
 
 `/icon` and `/apple-icon` (Next's generated routes for `app/icon.tsx` and
 `app/apple-icon.tsx`) are also in `proxy.ts`'s public list. Both are dot-less
@@ -30,15 +32,19 @@ run alongside `npm run dev` in a separate terminal — writes `.env.local`),
 `npm run lint`, `npx tsc --noEmit`, `npm run build` (`next build`), `npm test`
 (Vitest, whole suite). Single test file: `npx vitest run path/to/file.test.ts`;
 filter by name within it with `-t "pattern"`. Tests cover `core/heuristic.ts`,
-the Convex task mutations, and `ui/landing/copy.ts`'s fixtures. `vitest.config.mts`
-includes `**/*.test.ts` only — **no `.tsx`, and no environment is configured**,
-so component tests need a config change first; keep new tests pure and they don't.
+the Convex task mutations (including cross-user isolation), and
+`ui/landing/copy.ts`'s fixtures. `vitest.config.mts` includes `**/*.test.ts`
+only — **no `.tsx`, and no environment is configured**, so component tests
+need a config change first; keep new tests pure and they don't.
 
-The one seeded account is created by `SEED_EMAIL=... SEED_PASSWORD=...
-node scripts/seed-admin.mjs`, run once after `npx convex dev` has written
-`.env.local`. `convex/auth.ts`'s `createOrUpdateUser` guard rejects every
-signup after the first, so re-running the script is a no-op error, not a way
-to add a second account — there is no signup route to test.
+Signup at `/signup` requires an invite code checked against the Convex
+deployment env var `SIGNUP_INVITE_CODE` — set it with `npx convex env set
+SIGNUP_INVITE_CODE <value>` before anyone can sign up, including the first
+account. `scripts/seed-admin.mjs` goes through that same gate now:
+`SEED_EMAIL=... SEED_PASSWORD=... SIGNUP_INVITE_CODE=... node
+scripts/seed-admin.mjs`. It's no longer a one-time-only script — re-running
+it with a different email creates another account, the same as using
+`/signup` directly.
 
 `proxy.ts` at the repo root is Next.js 16's replacement for `middleware.ts`
 (renamed in this version — see the breaking-change notes `AGENTS.md`
@@ -90,9 +96,13 @@ password provider (one seeded account)** — not a preference, but a real
 consequence of Convex's client-calls-functions-directly model, which has no
 server-only boundary for a bespoke cookie check to hide behind.
 
-`docs/00-intake.md` carries both amendment texts. Unaffected by either: budget
-(zero), single-user scope, and the read-only Calendar sync direction — none of
-those were ever about skill level or infrastructure availability.
+`docs/00-intake.md` carries both amendment texts, plus a third: **Amendment
+3 — multi-user (2026-08-23).** The single-account, no-signup model was
+reversed — `/signup` now creates new accounts behind a shared invite code
+(`SIGNUP_INVITE_CODE`), and every table is scoped by `userId`. Unaffected by
+any of the three: budget (zero) and the read-only Calendar sync direction —
+neither was ever about skill level, infrastructure availability, or user
+count.
 
 `docs/design/prototype.html` is a reference artifact, not shipping code — it is
 plain HTML/CSS/JS with hardcoded fixture data. Port its *behavior and tokens*
@@ -100,8 +110,9 @@ into the real app; do not import the file.
 
 ## What this app is
 
-A single-user daily planner for one student. You type one sentence; the app infers
-course, effort, deadline, and steps. The day has a finite capacity derived from a
+A daily planner for a student, one account per student (invite-gated signup,
+no cross-account sharing). You type one sentence; the app infers course,
+effort, deadline, and steps. The day has a finite capacity derived from a
 manual weekly schedule plus a read-only Google Calendar overlay, and
 overcommitment is visible in the layout rather than announced.
 
@@ -113,15 +124,15 @@ suspect no matter how smart it is.
 ## Chosen stack
 
 Next.js (App Router) on Vercel · **Convex** for data, server functions, and auth
-· Convex Auth, password provider, one seeded account · Google Gemini (free tier,
+· Convex Auth, password provider, invite-gated signup · Google Gemini (free tier,
 via a swappable `AiProvider` adapter — not Anthropic) · hand-written CSS using
 `DESIGN.md` tokens, no component library.
 
 Access is Convex Auth's password provider, not a hand-rolled cookie — the React
 client calls Convex functions directly for live reactive queries, so there's no
 server-only boundary a bespoke check could hide behind, and Convex functions
-need a real identity to check via `ctx.auth`. There is still only one account,
-seeded at setup, with no public signup route. Google OAuth exists *only* to
+need a real identity to check via `ctx.auth`. Signup is gated by
+`SIGNUP_INVITE_CODE`, not open to the public internet. Google OAuth exists *only* to
 obtain a `calendar.readonly` refresh token for the **v1** Calendar overlay —
 the token exchange runs in a Convex HTTP action, not a Next.js API route. See
 `docs/00-stack-decision.md` v3.0 for the full reasoning and the two-reversal
@@ -269,11 +280,14 @@ AI will save it.
 Each of these was considered and cut for product reasons, not deferred for
 build-time convenience. Re-proposing one needs a reason, not an oversight.
 **Reading** from Google Calendar is in v1 (see the amendment above) —
-**writing** to it remains out, a separate decision about sync direction:
+**writing** to it remains out, a separate decision about sync direction.
+**Multiple accounts** are in (Amendment 3 above, invite-gated signup) —
+**sharing or collaboration between accounts** remains out; every account's
+data stays isolated from every other's:
 
 gamification of any kind (XP, levels, streaks, confetti) · writing to Google
-Calendar · notifications and reminders · a native mobile app · multi-user or
-sharing · productivity analytics · recurring tasks.
+Calendar · notifications and reminders · a native mobile app · sharing or
+collaboration between accounts · productivity analytics · recurring tasks.
 
 ## Working here
 

@@ -6,11 +6,11 @@ import { useRouter } from "next/navigation";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { ThemeToggle } from "@/ui/theme/ThemeToggle";
 import { DayMark } from "@/ui/graphics/DayMark";
-import styles from "./login.module.css";
+import styles from "./signup.module.css";
 
-const ERROR_ID = "login-error";
+const ERROR_ID = "signup-error";
 
-export default function LoginPage() {
+export default function SignupPage() {
   const { signIn } = useAuthActions();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
@@ -21,29 +21,30 @@ export default function LoginPage() {
     setError(null);
     setSubmitting(true);
     const formData = new FormData(e.currentTarget);
-    formData.set("flow", "signIn");
+    formData.set("flow", "signUp");
     try {
       await signIn("password", formData);
-      // Explicit navigation: previously this "worked" only because
-      // AuthProvider's onChange:invalidateCache fires a server action whose
-      // POST happens to trip the middleware — emergent behavior across three
-      // layers. Navigate on purpose instead. replace, not push: Back must
-      // not return to the login form.
       router.replace("/board");
     } catch (err) {
-      // Convex Auth surfaces a credential rejection as InvalidAccountId /
-      // InvalidSecret in the thrown error's message. Anything else — a
-      // network failure, a cold Convex deployment, a 500 — is not the
-      // user's password being wrong, and saying so would violate "Name the
-      // real thing" (docs/05-design-brief.md).
+      // Convex Auth throws distinct messages per rejection reason (verified
+      // against the installed @convex-dev/auth package, the same way
+      // ../login/page.tsx verified its own InvalidAccountId/InvalidSecret
+      // check): "Invalid invite code." is thrown by this app's own profile
+      // callback in convex/auth.ts; "Invalid password" is the provider's
+      // default 8-character minimum; "already exists" is an email already
+      // in use. Anything else is a network/server failure, not the user's
+      // input being wrong — see login's own comment for why that
+      // distinction matters here.
       const message = err instanceof Error ? err.message : String(err);
-      const isCredentialRejection =
-        message.includes("InvalidAccountId") || message.includes("InvalidSecret");
-      setError(
-        isCredentialRejection
-          ? "Wrong email or password."
-          : "Could not reach the server. Try again.",
-      );
+      if (message.includes("Invalid invite code")) {
+        setError("That invite code isn't valid.");
+      } else if (message.includes("Invalid password")) {
+        setError("Password must be at least 8 characters.");
+      } else if (message.includes("already exists")) {
+        setError("An account with that email already exists.");
+      } else {
+        setError("Could not reach the server. Try again.");
+      }
     } finally {
       setSubmitting(false);
     }
@@ -64,7 +65,7 @@ export default function LoginPage() {
           Ledger
         </Link>
         <form className={styles.card} onSubmit={handleSubmit}>
-          <h1 className={styles.title}>Sign in</h1>
+          <h1 className={styles.title}>Create an account</h1>
           <label className={styles.fieldRow}>
             <span className={styles.label}>Email</span>
             <input
@@ -84,11 +85,25 @@ export default function LoginPage() {
               className={styles.input}
               name="password"
               type="password"
-              autoComplete="current-password"
+              autoComplete="new-password"
+              minLength={8}
               required
               aria-invalid={error ? true : undefined}
               aria-describedby={error ? ERROR_ID : undefined}
             />
+          </label>
+          <label className={styles.fieldRow}>
+            <span className={styles.label}>Invite code</span>
+            <input
+              className={styles.input}
+              name="inviteCode"
+              type="text"
+              autoComplete="off"
+              required
+              aria-invalid={error ? true : undefined}
+              aria-describedby={error ? ERROR_ID : undefined}
+            />
+            <span className={styles.hint}>Ask whoever invited you for this.</span>
           </label>
           {error && (
             <p className={styles.error} role="alert" id={ERROR_ID}>
@@ -96,12 +111,12 @@ export default function LoginPage() {
             </p>
           )}
           <button className={styles.submit} type="submit" disabled={submitting}>
-            {submitting ? "Signing in…" : "Sign in"}
+            {submitting ? "Creating account…" : "Create account"}
           </button>
           <p className={styles.switch}>
-            Don&rsquo;t have an account?{" "}
-            <Link href="/signup" className={styles.switchLink}>
-              Sign up
+            Already have an account?{" "}
+            <Link href="/login" className={styles.switchLink}>
+              Sign in
             </Link>
           </p>
         </form>

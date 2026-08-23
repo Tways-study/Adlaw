@@ -97,6 +97,17 @@
   color: var(--ink-3);
 }
 
+/* One deliberate hero-only line stating who this is for — sentence case, not
+   tracked uppercase, so it reads as a sentence rather than the tiny-kicker
+   pattern DESIGN.md's ban list calls out. Not reused per-section. */
+.audience {
+  margin: 0 0 4px;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.006em;
+  color: var(--ink-2);
+}
+
 /* ── Top bar ─────────────────────────────────────────────── */
 
 /* Deliberately not sticky: a bar that follows the reader down a quiet page is
