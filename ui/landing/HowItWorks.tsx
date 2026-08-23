@@ -23,8 +23,9 @@ export function HowItWorks() {
       <div>
         <h2 className={styles.d2}>One sentence in, structure out.</h2>
         <p className={styles.lead} style={{ marginTop: 14 }}>
-          No project picker, no priority dropdown, no estimate field. The course, the effort and
-          the deadline are read out of the sentence you would have typed anyway.
+          No project picker, no priority dropdown, no estimate field to fill in. Just type the
+          task the way you&rsquo;d normally describe it — the subject, how long it&rsquo;ll take,
+          and the deadline all come from that one sentence.
         </p>
       </div>
 
