@@ -376,18 +376,27 @@ shape read a different way. A hairline ring stands for the day; one solid arc in
 that commitment ends — the same relationship as the slot's fill/spill/notch, and
 the timeline's dashed edge line, just wrapped into a circle instead of a bar. No
 clock face, no numerals, no percentage label anywhere near it — a mark, not a
-stat, so it can never be misread as one. Two scales, one motif, no motion:
+stat, so it can never be misread as one. Two scales, one motif:
 
 - *Mark* (~20–26px) — paired with the "Ledger" wordmark wherever it appears.
   `stroke-width: 1.6`, real pixels via `vector-effect="non-scaling-stroke"`
   (SVG stroke-width is otherwise in viewBox units and inflates or vanishes with
   the rendered size — get this wrong and the two scales come out backwards).
+  No motion — a logo mark shouldn't animate every render.
 - *Ambient* (~420px) — sits large and quiet behind the landing hero's empty
   side, `z-index: -1` so it never competes with the headline or the capture
   demo. Thinner and fainter than the mark scale (`stroke-width: 1`, arc at
   `opacity: 0.4`) — texture for the section, not a second thing to read.
   Hidden under `prefers-contrast: more`, same reasoning as the login sweep: a
-  diffuse hairline is what that mode can't rely on rendering.
+  diffuse hairline is what that mode can't rely on rendering. This scale
+  carries the hero's one orchestrated moment: the mark fades and scales in
+  once on load (`scale(0.92) → 1`, 900ms, `ease-out-expo`-family curve), then
+  the whole dial turns as a single rigid body — track, arc, and notch
+  together, orientation only — at 140s per rotation, slow enough to be
+  imperceptible moment-to-moment. The fill fraction between the three shapes
+  never changes, only where the assembly points; a filling arc would read as
+  a live stat loading, which is exactly what the fixed-fraction rule above
+  exists to prevent. Both stop under `prefers-reduced-motion: reduce`.
 
 Public surfaces only (`/` and `/login`) — there's no wordmark inside the board
 to attach it to, and it isn't proposed for one.

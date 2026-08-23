@@ -61,22 +61,28 @@ export function DayMark({
           fixed pixel value regardless of which scale a given usage renders
           at, so the mark and ambient variants can each set their own
           physical thickness in DayMark.module.css. */}
-      <circle
-        cx={CENTER}
-        cy={CENTER}
-        r={RADIUS}
-        vectorEffect="non-scaling-stroke"
-        className={styles.track}
-      />
-      <path d={ARC_D} vectorEffect="non-scaling-stroke" className={styles.arc} />
-      <line
-        x1={NOTCH_INNER.x}
-        y1={NOTCH_INNER.y}
-        x2={NOTCH_OUTER.x}
-        y2={NOTCH_OUTER.y}
-        vectorEffect="non-scaling-stroke"
-        className={styles.notch}
-      />
+      {/* Grouped so the ambient variant's slow rotation (DayMark.module.css)
+          can transform the whole dial as one rigid body, independently of
+          the outer <svg>'s own entrance fade/scale — two transforms on one
+          element would fight each other. */}
+      <g className={styles.dial}>
+        <circle
+          cx={CENTER}
+          cy={CENTER}
+          r={RADIUS}
+          vectorEffect="non-scaling-stroke"
+          className={styles.track}
+        />
+        <path d={ARC_D} vectorEffect="non-scaling-stroke" className={styles.arc} />
+        <line
+          x1={NOTCH_INNER.x}
+          y1={NOTCH_INNER.y}
+          x2={NOTCH_OUTER.x}
+          y2={NOTCH_OUTER.y}
+          vectorEffect="non-scaling-stroke"
+          className={styles.notch}
+        />
+      </g>
     </svg>
   );
 }
