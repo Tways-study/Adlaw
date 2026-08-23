@@ -39,15 +39,20 @@ Re-proposing one needs a reason.
 **Writing to Google Calendar** — a deliberate, separate decision about sync
 direction (read-only avoids the hardest conflict-resolution problem in the app
 for a benefit it doesn't need). Gamification of any kind (XP, levels, streaks,
-confetti) · notifications and reminders · a native mobile app · multi-user,
-sharing, or collaboration · productivity analytics about yourself · recurring
+confetti) · notifications and reminders · a native mobile app · sharing or
+collaboration between accounts (multiple accounts exist as of
+`00-intake.md`'s Amendment 3, but each is fully isolated — no feature lets one
+see another's data) · productivity analytics about yourself · recurring
 tasks · time tracking.
 
 ## Actors
 
-One: **the student**, authenticated by a single shared password. There is no
-second role in the system. Any feature implying one is out of scope by
-definition.
+**The student**, one per account, authenticated by password
+(`00-intake.md`'s Amendment 3 moved signup from one seeded account to an
+invite-gated flow — multiple students can each hold their own account, fully
+isolated from one another). There is still no second *role*: every account is
+the same kind of user, with no admin/viewer distinction. Any feature implying
+a role split is out of scope by definition.
 
 ## Features — v1 (full scope, per 2026-08-17 amendment)
 

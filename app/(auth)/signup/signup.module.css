@@ -1,21 +1,13 @@
-/* ============================================================
-   Two planes and a seam: the board's own --rail / --desk / --groove
-   device, scaled to full screen. .rail is the dim left plane the card
-   sits on; .field is the brighter right plane, joined to .rail by the
-   same directional --groove inset shadow that seams .day to the board's
-   rail. overflow: hidden is required — the oversized .sweep layer would
-   otherwise create horizontal scroll.
-   ============================================================ */
+/* Same two-plane-and-seam shell as ../login/login.module.css — see that
+   file's header comment for the rationale. Duplicated rather than shared:
+   these are two independent screens that happen to look alike today, not
+   one component with a variant prop, and DESIGN.md's landing-surface
+   addendum is the shared source of truth both read the --d2 clamp from. */
 .screen {
   min-height: 100dvh;
   position: relative;
   overflow: hidden;
   background: var(--desk);
-
-  /* Display type for .echo below — the same --d2 clamp as
-     ui/landing/landing.module.css. Duplicated rather than shared across a
-     module boundary for two consumers: DESIGN.md's landing-surface addendum
-     is the source of truth both read from, and it's three lines. */
   --d2: clamp(1.625rem, 1.23rem + 1.7vw, 2.5rem);
 }
 
@@ -33,9 +25,6 @@
   box-shadow: var(--groove);
 }
 
-/* Off-axis composition: the card centers within the left (rail) plane,
-   not within the viewport, so it sits on the dim plane with the wider
-   bright field to its right. */
 .content {
   position: relative;
   z-index: 1;
@@ -48,11 +37,6 @@
   gap: 20px;
 }
 
-/* The ambient light sweep: a single oversized radial-gradient layer.
-   Transform and opacity only, so the gradient rasterizes once into a
-   promoted layer and every frame after that is compositor-only — zero
-   repaint. Animating background-position instead would be the obvious
-   approach and is paint-bound; don't. */
 .sweep {
   position: absolute;
   inset: -20% -40%;
@@ -76,13 +60,6 @@
   }
 }
 
-/* The empty half of the screen at wide viewports gets content, not
-   decoration: the product's own thesis, resting off-axis in the field
-   plane's lower-left — the same asymmetry the card uses on the rail
-   plane, so the composition reads as one deliberate idea rather than two
-   centered things floating apart. z-index:1 (matching .content) keeps it
-   painting above .sweep regardless of where the sweep's animation is,
-   so its contrast against --desk never fluctuates. */
 .echo {
   position: absolute;
   z-index: 1;
@@ -130,9 +107,6 @@
   color: var(--ink-2);
 }
 
-/* Bottom-right, on the bright --desk field rather than the rail plane:
-   bottom-left is where Next's dev indicator sits, and it covers the
-   control during development. */
 .toggle {
   position: absolute;
   right: 24px;
@@ -157,6 +131,7 @@
   font-weight: 550;
   letter-spacing: -0.018em;
   color: var(--ink);
+  text-align: center;
 }
 
 .fieldRow {
@@ -168,6 +143,12 @@
 .label {
   font-size: 12px;
   font-weight: 500;
+  color: var(--ink-3);
+}
+
+.hint {
+  margin: -2px 0 0;
+  font-size: 11.5px;
   color: var(--ink-3);
 }
 
@@ -189,7 +170,8 @@
 .error {
   margin: 0;
   font-size: 12.5px;
-  color: var(--alert);
+  color: var(--alert-ink);
+  text-align: center;
 }
 
 .submit {
@@ -235,9 +217,6 @@
   color: var(--primary-fill);
 }
 
-/* Reduced motion: a genuine alternative, not a removal — the sheen stays,
-   at its mid-state, permanently still. Composition is unchanged; only
-   movement stops. */
 @media (prefers-reduced-motion: reduce) {
   .sweep {
     animation: none;
@@ -246,18 +225,12 @@
   }
 }
 
-/* Reduced transparency: the sweep is a soft light effect, closer to
-   transparency than to opaque color — remove it and let the two solid
-   planes stand on their own. */
 @media (prefers-reduced-transparency: reduce) {
   .sweep {
     display: none;
   }
 }
 
-/* High contrast: a diffuse inner shadow (the sweep, and --groove's soft
-   seam) is exactly what a high-contrast user cannot see — give them a
-   real line and real borders instead. */
 @media (prefers-contrast: more) {
   .sweep {
     display: none;
@@ -276,10 +249,6 @@
   }
 }
 
-/* Below 720px a 46% plane is ~172px — narrower than the card itself.
-   Two planes need room for two planes, so the rail goes full-width and
-   the seam disappears rather than rotating (which would need a new
-   horizontal --groove token). */
 @media (max-width: 720px) {
   .rail {
     width: 100%;

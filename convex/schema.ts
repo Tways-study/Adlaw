@@ -6,12 +6,14 @@ export default defineSchema({
   ...authTables,
 
   courses: defineTable({
+    userId: v.id("users"),
     code: v.string(), // "BIO 210" — shown on cards
     name: v.optional(v.string()), // "Intro to Cell Biology"
     active: v.boolean(),
-  }).index("by_active", ["active"]),
+  }).index("by_user_active", ["userId", "active"]),
 
   tasks: defineTable({
+    userId: v.id("users"),
     title: v.string(), // cleaned, display
     rawText: v.string(), // exactly what was typed — never overwritten
     courseId: v.optional(v.id("courses")),
@@ -32,12 +34,13 @@ export default defineSchema({
     createdAt: v.number(),
     completedAt: v.optional(v.number()),
   })
-    .index("by_status_order", ["status", "laneOrder"])
-    .index("by_due", ["dueAt"])
+    .index("by_user_status_order", ["userId", "status", "laneOrder"])
+    .index("by_user_due", ["userId", "dueAt"])
     .index("by_parent", ["parentId", "stepIndex"])
-    .index("by_completed", ["completedAt"]),
+    .index("by_user_completed", ["userId", "completedAt"]),
 
   scheduleBlocks: defineTable({
+    userId: v.id("users"),
     weekday: v.number(), // 0 = Sunday … 6
     startMin: v.number(), // minutes past local midnight
     endMin: v.number(),
@@ -45,20 +48,22 @@ export default defineSchema({
     kind: v.union(v.literal("class"), v.literal("work"), v.literal("commute"), v.literal("other")),
     activeFrom: v.number(), // epoch ms
     activeTo: v.optional(v.number()), // null = current
-  }).index("by_weekday", ["weekday"]),
+  }).index("by_user_weekday", ["userId", "weekday"]),
 
   calendarCache: defineTable({
+    userId: v.id("users"),
     gcalId: v.string(),
     startsAt: v.number(), // epoch ms
     endsAt: v.number(),
     title: v.string(),
     fetchedAt: v.number(),
   })
-    .index("by_gcal_id", ["gcalId"])
-    .index("by_range", ["startsAt", "endsAt"]),
+    .index("by_user_gcal_id", ["userId", "gcalId"])
+    .index("by_user_range", ["userId", "startsAt", "endsAt"]),
   // pure cache — replaced wholesale on every sync, safe to clear entirely
 
   aiLog: defineTable({
+    userId: v.id("users"),
     kind: v.union(v.literal("parse"), v.literal("breakdown"), v.literal("focus")),
     input: v.string(),
     output: v.optional(v.string()), // raw model text, pre-validation
@@ -68,10 +73,11 @@ export default defineSchema({
     error: v.optional(v.string()),
     latencyMs: v.number(),
     createdAt: v.number(),
-  }).index("by_created", ["createdAt"]),
+  }).index("by_user_created", ["userId", "createdAt"]),
 
   settings: defineTable({
-    // exactly one row
+    // one row per user, not a global singleton
+    userId: v.id("users"),
     theme: v.union(v.literal("light"), v.literal("dark"), v.literal("auto")),
     aiProvider: v.string(),
     aiModel: v.string(),
@@ -79,5 +85,5 @@ export default defineSchema({
     googleConnectedAt: v.optional(v.number()),
     googleLastSyncedAt: v.optional(v.number()),
     googleSyncStatus: v.optional(v.string()), // "ok" | "expired" | "error"
-  }),
+  }).index("by_user", ["userId"]),
 });
