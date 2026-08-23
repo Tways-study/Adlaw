@@ -170,6 +170,9 @@ ui/
   landing/              S0 sections, copy.ts fixtures, demos/ miniatures
   theme/                shared theme toggle + applyTheme (storage key lives here)
   graphics/             DayMark — the one graphic, public surfaces only (S0 + S1)
+  type/                 TaglineWord — the rotating "A day that ___" word,
+                        public surfaces only. Readings live in its CSS as
+                        ::after content on purpose; see docs/07
   timeline/              Today's shape                             (Slice 5, not built)
   capture/               input + live preview. Built, heuristic-only
   settings/               S6 + S7 (Calendar connect)                (Slice 8, not built)
