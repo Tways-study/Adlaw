@@ -121,7 +121,9 @@ export default function SignupPage() {
             </p>
           )}
           <button className={styles.submit} type="submit" disabled={submitting}>
-            {submitting ? "Creating account…" : "Create account"}
+            <span key={submitting ? "pending" : "idle"} className={styles.submitLabel}>
+              {submitting ? "Creating account…" : "Create account"}
+            </span>
           </button>
           <p className={styles.switch}>
             Already have an account?{" "}

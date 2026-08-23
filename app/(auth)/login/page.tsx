@@ -96,7 +96,9 @@ export default function LoginPage() {
             </p>
           )}
           <button className={styles.submit} type="submit" disabled={submitting}>
-            {submitting ? "Signing in…" : "Sign in"}
+            <span key={submitting ? "pending" : "idle"} className={styles.submitLabel}>
+              {submitting ? "Signing in…" : "Sign in"}
+            </span>
           </button>
           <p className={styles.switch}>
             Don&rsquo;t have an account?{" "}
