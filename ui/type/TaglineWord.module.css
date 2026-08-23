@@ -1,15 +1,20 @@
-/* All four readings occupy ONE grid cell, so the container is sized by the
-   widest of them and the line never reflows as words swap. This is what
-   keeps the animation to transform/opacity only — a rotator that resized to
-   each word would be animating width, which DESIGN.md bans outright. */
+/* The four readings live here as ::after content rather than as DOM text.
+   That is deliberate, and the reason is the landing page: its <h1> is the
+   most index-relevant string on the public marketing surface, and text
+   inside the rotator would make that heading read
+   "A day that fits. fits. adds up. balances. closes out." to a crawler —
+   contradicting the metadata.title set right above it in app/page.tsx.
+   Generated content is not DOM text, so the heading's only real text is the
+   canonical sentence in .srOnly. That also makes selection and copy/paste
+   yield one clean sentence with no extra handling.
+
+   The trade is that the words sit in CSS instead of TSX. They belong here
+   anyway: the keyframe percentages below already hard-encode a four-item
+   cycle, so the word list and the timing are one coupled thing, and
+   splitting them across two files is what would let them drift. */
 .rotator {
   display: inline-grid;
   vertical-align: baseline;
-  /* All four readings live in the DOM at once, so without this, selecting
-     the tagline copies "fits. adds up. balances. closes out." The srOnly
-     span beside this one is still selectable, so a copy yields the single
-     canonical sentence — the same thing screen readers get. */
-  user-select: none;
 }
 
 .word {
@@ -20,6 +25,34 @@
   transform: translateY(6px);
   animation: taglineWord 18s var(--ease) infinite;
   animation-delay: calc(var(--i) * 4.5s);
+}
+
+.word:nth-child(1) {
+  --i: 0;
+}
+.word:nth-child(1)::after {
+  content: "fits.";
+}
+
+.word:nth-child(2) {
+  --i: 1;
+}
+.word:nth-child(2)::after {
+  content: "adds up.";
+}
+
+.word:nth-child(3) {
+  --i: 2;
+}
+.word:nth-child(3)::after {
+  content: "balances.";
+}
+
+.word:nth-child(4) {
+  --i: 3;
+}
+.word:nth-child(4)::after {
+  content: "closes out.";
 }
 
 /* 18s / 4 words = one word every 4.5s, each holding ~4s with a ~0.5s

@@ -4,6 +4,7 @@ import { ThemeToggle } from "@/ui/theme/ThemeToggle";
 import { DayMark } from "@/ui/graphics/DayMark";
 import { CaptureDemo } from "@/ui/landing/CaptureDemo";
 import { SmoothScroll } from "@/ui/landing/SmoothScroll";
+import { TaglineWord } from "@/ui/type/TaglineWord";
 import { Failure } from "@/ui/landing/Failure";
 import { HowItWorks } from "@/ui/landing/HowItWorks";
 import { CapacitySlot } from "@/ui/landing/demos/CapacitySlot";
@@ -58,7 +59,9 @@ export default function LandingPage() {
               Built for students juggling requirements, org work, and a class schedule that never
               has room for anything else.
             </p>
-            <h1 className={styles.d1}>A day that fits.</h1>
+            <h1 className={styles.d1}>
+              A day that <TaglineWord />
+            </h1>
             <p className={styles.lead}>
               Type what you need to do, the way you&rsquo;d actually say it — &ldquo;finish bio lab
               report by Thursday.&rdquo; Ledger works out the subject, how long it&rsquo;ll really

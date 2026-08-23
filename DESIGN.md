@@ -318,12 +318,13 @@ counters · typewriter effects · staggered list cascades · more than one ambie
 layer per screen · any animation of `background-position`, `width`, `height`,
 `top`, or `left`.
 
-**(c) One rotating word, in the tagline only.** Added 2026-08-23. `/login`
-and `/signup`'s echo line cycles the final word of "A day that ___" through
-four ledger-native readings. Strictly scoped: one instance per screen, one
-word, `transform` and `opacity` only, ≥ 4s per word (an 18s cycle), and the
-words are stacked in a single CSS grid cell so the container is sized by the
-widest and *nothing* animates layout — the `width`/`height` ban is not bent.
+**(c) One rotating word, in the tagline only.** Added 2026-08-23. The final
+word of "A day that ___" cycles through four ledger-native readings — in the
+landing hero's `<h1>` and in `/login` and `/signup`'s echo line. Strictly
+scoped: one instance per screen, one word, `transform` and `opacity` only,
+≥ 4s per word (an 18s cycle), and the readings are stacked in a single CSS
+grid cell so the container is sized by the widest and *nothing* animates
+layout — the `width`/`height` ban is not bent.
 
 This is **not** the banned typewriter effect, which reveals per character
 with a cursor and draws the eye letter by letter; this is a whole-word
@@ -387,13 +388,14 @@ render in alert.
 **Segmented control, capture bar, shelf item** — standard affordances, standard
 behavior. Product UI earns trust through familiarity, not invention.
 
-**The rotating tagline** (`ui/type/TaglineWord.tsx`) — on `/login` and
-`/signup`, the echo line's final word cycles: *A day that* **fits · adds up ·
-balances · closes out**. The four readings are a set, not a thesaurus dump —
-"fits" is the product's capacity thesis, and the other three are accounting
-terms the name Ledger already invokes, so the rotation says something rather
-than just moving. It replaced the ambient day-mark in this plane on
-2026-08-23 (see the day-mark entry below for why that came out).
+**The rotating tagline** (`ui/type/TaglineWord.tsx`) — the final word of
+*A day that ___* cycles through **fits · adds up · balances · closes out**,
+in the landing hero's `<h1>` and in `/login` and `/signup`'s echo line. The
+four readings are a set, not a thesaurus dump — "fits" is the product's
+capacity thesis, and the other three are accounting terms the name Ledger
+already invokes, so the rotation says something rather than just moving. On
+the auth screens it replaced the ambient day-mark on 2026-08-23 (see the
+day-mark entry below for why that came out).
 
 Mechanics, and why they satisfy §Motion rather than bend it: the four
 readings are stacked in a **single CSS grid cell**, so the container is sized
@@ -401,11 +403,20 @@ by the widest and the line never reflows — the animation is `opacity` and
 `translateY(6px)` only, and the `width`/`height` ban stays intact. 18s cycle,
 4.5s per reading, ~0.5s crossfade where each word's fade-out window is
 exactly the next one's fade-in, so there is no blank beat. No JavaScript: it
-is keyframes plus a `--i` index per word, so it works in a server component.
-The rotator is `aria-hidden` with a visually hidden static copy carrying the
-accessible name — verified against the real accessibility tree, which
-contains only "fits." — and it is `user-select: none`, so selecting the
-tagline copies one clean sentence instead of all four readings. Under
+is keyframes plus a `--i` index per slot, so it renders inside the landing
+page's server component unchanged.
+
+**The readings live in the stylesheet as `::after` content, not as DOM
+text** — this is load-bearing, and the landing hero is why. Text inside the
+rotator would make the page's `<h1>` read *"A day that fits. fits. adds up.
+balances. closes out."* to a crawler, contradicting the `metadata.title` set
+a few lines above it in `app/page.tsx`. Generated content is not DOM text, so
+the heading's only real text is the canonical sentence in the visually hidden
+span beside it — which does triple duty as the accessible name, the
+indexable heading text, and what a selection copies. Verified three ways:
+`h1.textContent` is `"A day that fits."`, the server-rendered HTML ships the
+rotator slots empty, and the real accessibility tree (read via CDP, not
+inferred) contains only that one heading string. Under
 `prefers-reduced-motion: reduce` the cycle stops and "fits." holds.
 
 **The day-mark** (`ui/graphics/DayMark.tsx`) — the one graphic in the product,
