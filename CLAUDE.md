@@ -27,11 +27,12 @@ the same check before assuming it's reachable while signed out.
 
 Commands: `npm run dev` (Next + Turbopack), `npx convex dev` (Convex functions,
 run alongside `npm run dev` in a separate terminal — writes `.env.local`),
-`npm run lint`, `npx tsc --noEmit`, `npm test` (Vitest). Tests cover
-`core/heuristic.ts`, the Convex task mutations, and `ui/landing/copy.ts`'s
-fixtures. `vitest.config.mts` includes `**/*.test.ts` only — **no `.tsx`, and no
-environment is configured**, so component tests need a config change first; keep
-new tests pure and they don't.
+`npm run lint`, `npx tsc --noEmit`, `npm run build` (`next build`), `npm test`
+(Vitest, whole suite). Single test file: `npx vitest run path/to/file.test.ts`;
+filter by name within it with `-t "pattern"`. Tests cover `core/heuristic.ts`,
+the Convex task mutations, and `ui/landing/copy.ts`'s fixtures. `vitest.config.mts`
+includes `**/*.test.ts` only — **no `.tsx`, and no environment is configured**,
+so component tests need a config change first; keep new tests pure and they don't.
 
 The one seeded account is created by `SEED_EMAIL=... SEED_PASSWORD=...
 node scripts/seed-admin.mjs`, run once after `npx convex dev` has written
@@ -69,6 +70,7 @@ stack or scope sections.
 | `PRODUCT.md` | Register, users, the four failures the product exists to prevent, anti-references, a11y floor |
 | `DESIGN.md` | Every color token (both themes), type scale, elevation, spring parameters, the ban list |
 | `docs/design/prototype.html` | The approved interface, as a working prototype. Open it in a browser rather than guessing at layout |
+| `CONTEXT.md` | The domain glossary — Task/Step/Status, Free window/Capacity/Cutline, `parseState`, Course. Use these terms as defined; don't drift to synonyms it explicitly avoids (e.g. "card" for Task, "gap" for Free window) |
 
 ### The 2026-08-17 amendments (two, same day)
 
@@ -139,16 +141,16 @@ app/                    Next.js routes. Thin — layout and data wiring only
 convex/
   schema.ts             03-backend-schema
   tasks.ts              queries + mutations, invariants enforced here
-  schedule.ts           schedule block CRUD
-  ai.ts                 actions: parse, breakdown, focus (network lives here)
-  calendar.ts           actions: sync, disconnect
+  schedule.ts           schedule block CRUD                      (Slice 4, not built)
+  ai.ts                 actions: parse, breakdown, focus          (Slice 7, not built)
+  calendar.ts           actions: sync, disconnect                 (Slice 6, not built)
   http.ts               HTTP action: Google OAuth callback (*.convex.site URL)
   auth.ts               Convex Auth config, password provider
 core/                   PURE. No I/O, no React, no Convex imports
-  time.ts               free-window derivation from schedule blocks + calendar cache
-  capacity.ts           totals, overage, cutline index, plan-track layout
-  heuristic.ts          rules-based parser — the fallback
-ai/
+  time.ts               free-window derivation                    (Slice 4, not built)
+  capacity.ts           totals, overage, cutline index             (Slice 4, not built)
+  heuristic.ts          rules-based parser — the fallback. Built, and the only parser today
+ai/                      (Slice 7, not built)
   types.ts              ParsedTask, BreakdownResult, FocusPick + Zod schemas
   gemini.ts             provider adapter
   index.ts              provider selection
@@ -157,12 +159,15 @@ ui/
   landing/              S0 sections, copy.ts fixtures, demos/ miniatures
   theme/                shared theme toggle + applyTheme (storage key lives here)
   graphics/             DayMark — the one graphic, public surfaces only (S0 + S1)
-  timeline/              Today's shape
-  capture/               input + live preview
-  settings/               S6 + S7 (Calendar connect)
-  drag/                  pointer tracking, spring, FLIP
+  timeline/              Today's shape                             (Slice 5, not built)
+  capture/               input + live preview. Built, heuristic-only
+  settings/               S6 + S7 (Calendar connect)                (Slice 8, not built)
+  drag/                  pointer tracking, spring, FLIP. Built
   tokens.css             DESIGN.md, verbatim
 ```
+
+Lines marked "not built" are `docs/04-tdd.md`'s target locations for later slices —
+don't `Read` them expecting content; check `git status`/the directory first.
 
 **`ui/landing/` may not import from `ui/board/`.** Every board component is
 `"use client"` + `useQuery` against `api.tasks`, and `convex/tasks.ts` throws
