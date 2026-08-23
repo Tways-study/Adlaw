@@ -74,15 +74,31 @@
   }
 }
 
+/* Centred in the field plane — 73% is the midpoint of the 46%→100% span —
+   mirroring the card's centring in the rail plane, so the screen reads as
+   two planes with one centred element each rather than one centred thing
+   and one bottom-anchored thing.
+
+   The text inside stays left-aligned on purpose. .echoLine's rotating word
+   sits in a container sized to its widest reading, so centre-aligned text
+   would drift left by half the unused width whenever a shorter reading
+   showed. Centring the block and keeping the text ragged-right avoids that:
+   the block's width is constant regardless of which reading is up, so
+   nothing shifts as it cycles.
+
+   z-index: 1 keeps it above .sweep so its contrast can't fluctuate as the
+   ambient animation runs (DESIGN.md §Motion allowance (a)). */
 .echo {
   position: absolute;
   z-index: 1;
-  inset: auto 64px 88px calc(46% + 64px);
-  max-width: 30ch;
+  top: 50%;
+  left: 73%;
+  transform: translate(-50%, -50%);
+  max-width: 32ch;
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   pointer-events: none;
 }
 

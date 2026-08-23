@@ -94,15 +94,21 @@
    centered things floating apart. z-index:1 (matching .content) keeps it
    painting above .sweep regardless of where the sweep's animation is,
    so its contrast against --desk never fluctuates. */
+/* Centred in the field plane (73% is the midpoint of the 46%→100% span),
+   mirroring the card's centring in the rail plane. Text stays left-aligned
+   because .echoLine's rotating word is sized to its widest reading — see
+   ../signup/signup.module.css for the full reasoning. */
 .echo {
   position: absolute;
   z-index: 1;
-  inset: auto 64px 88px calc(46% + 64px);
-  max-width: 30ch;
+  top: 50%;
+  left: 73%;
+  transform: translate(-50%, -50%);
+  max-width: 32ch;
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   pointer-events: none;
 }
 
