@@ -4,6 +4,7 @@ import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import type { Doc, Id } from "@/convex/_generated/dataModel";
 import { TaskCard } from "./TaskCard";
+import { SkeletonCard } from "./Skeleton";
 import { useRegisterDropLane } from "@/ui/drag/DragContext";
 import styles from "./EverythingRail.module.css";
 
@@ -19,6 +20,11 @@ export function EverythingRail() {
       <aside className={styles.rail}>
         <div className={styles.railHead}>
           <h1>Everything</h1>
+        </div>
+        <div className={styles.railScroll}>
+          {Array.from({ length: 4 }, (_, i) => (
+            <SkeletonCard key={i} compact index={i} />
+          ))}
         </div>
       </aside>
     );

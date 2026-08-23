@@ -1,0 +1,57 @@
+/* Shared by EverythingRail / StartHere / ThenQueue while their Convex query
+   is still loading — a calm pulse, not a shimmer sweep, matching "quiet at
+   rest, expressive only under interaction" (PRODUCT.md) rather than a
+   glossy generic-SaaS loading effect. --busy already exists in tokens.css
+   for exactly this and was unused until now. */
+.card {
+  background: var(--card);
+  border-radius: var(--r-m);
+  box-shadow: var(--edge);
+  margin-bottom: 8px;
+  padding: 11px 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.compactRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  margin-bottom: 2px;
+}
+
+.bar {
+  display: block;
+  height: 10px;
+  border-radius: 3px;
+  background: var(--busy);
+  animation: skeletonPulse 1.8s ease-in-out infinite;
+}
+
+.barSm {
+  height: 8px;
+}
+
+.compactRow .bar:last-child {
+  flex: none;
+  width: 34px;
+}
+
+@keyframes skeletonPulse {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar {
+    animation: none;
+    opacity: 0.75;
+  }
+}

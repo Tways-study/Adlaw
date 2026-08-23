@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ThemeToggle } from "@/ui/theme/ThemeToggle";
 import { DayMark } from "@/ui/graphics/DayMark";
 import { CaptureDemo } from "@/ui/landing/CaptureDemo";
+import { SmoothScroll } from "@/ui/landing/SmoothScroll";
 import { Failure } from "@/ui/landing/Failure";
 import { HowItWorks } from "@/ui/landing/HowItWorks";
 import { CapacitySlot } from "@/ui/landing/demos/CapacitySlot";
@@ -24,7 +25,8 @@ export const metadata: Metadata = {
   },
 };
 
-// A server component: only CaptureDemo and ThemeToggle ship JavaScript.
+// A server component: only CaptureDemo, ThemeToggle, and SmoothScroll ship
+// JavaScript.
 //
 // Nothing from ui/board/ is imported here. Those components are "use client" +
 // useQuery against api.tasks, and convex/tasks.ts throws "Not signed in" for an
@@ -34,6 +36,7 @@ export const metadata: Metadata = {
 export default function LandingPage() {
   return (
     <div className={styles.landing}>
+      <SmoothScroll />
       <div className={styles.shell}>
         <header className={styles.topBar}>
           <span className={styles.wordmark}>
