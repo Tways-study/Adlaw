@@ -14,11 +14,15 @@ export default function SignupPage() {
   const { signIn } = useAuthActions();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+  const [errorField, setErrorField] = useState<
+    "email" | "password" | "inviteCode" | null
+  >(null);
   const [submitting, setSubmitting] = useState(false);
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
+    setErrorField(null);
     setSubmitting(true);
     const formData = new FormData(e.currentTarget);
     formData.set("flow", "signUp");
@@ -34,14 +38,19 @@ export default function SignupPage() {
       // default 8-character minimum; "already exists" is an email already
       // in use. Anything else is a network/server failure, not the user's
       // input being wrong — see login's own comment for why that
-      // distinction matters here.
+      // distinction matters here. errorField drives which single input gets
+      // aria-invalid: a network failure isn't any field's fault, and lumping
+      // all three together under one rejection reason misleads screen readers.
       const message = err instanceof Error ? err.message : String(err);
       if (message.includes("Invalid invite code")) {
         setError("That invite code isn't valid.");
+        setErrorField("inviteCode");
       } else if (message.includes("Invalid password")) {
         setError("Password must be at least 8 characters.");
+        setErrorField("password");
       } else if (message.includes("already exists")) {
         setError("An account with that email already exists.");
+        setErrorField("email");
       } else {
         setError("Could not reach the server. Try again.");
       }
@@ -75,8 +84,8 @@ export default function SignupPage() {
               autoComplete="email"
               autoFocus
               required
-              aria-invalid={error ? true : undefined}
-              aria-describedby={error ? ERROR_ID : undefined}
+              aria-invalid={errorField === "email" ? true : undefined}
+              aria-describedby={errorField === "email" ? ERROR_ID : undefined}
             />
           </label>
           <label className={styles.fieldRow}>
@@ -88,9 +97,10 @@ export default function SignupPage() {
               autoComplete="new-password"
               minLength={8}
               required
-              aria-invalid={error ? true : undefined}
-              aria-describedby={error ? ERROR_ID : undefined}
+              aria-invalid={errorField === "password" ? true : undefined}
+              aria-describedby={errorField === "password" ? ERROR_ID : undefined}
             />
+            <span className={styles.hint}>At least 8 characters.</span>
           </label>
           <label className={styles.fieldRow}>
             <span className={styles.label}>Invite code</span>
@@ -100,8 +110,8 @@ export default function SignupPage() {
               type="text"
               autoComplete="off"
               required
-              aria-invalid={error ? true : undefined}
-              aria-describedby={error ? ERROR_ID : undefined}
+              aria-invalid={errorField === "inviteCode" ? true : undefined}
+              aria-describedby={errorField === "inviteCode" ? ERROR_ID : undefined}
             />
             <span className={styles.hint}>Ask whoever invited you for this.</span>
           </label>

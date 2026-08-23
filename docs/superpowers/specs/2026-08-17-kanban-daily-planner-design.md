@@ -1,4 +1,4 @@
-# Kanban Daily Planner — Design Spec
+# Ledger — Design Spec
 
 **Date:** 2026-08-17
 **Status:** Approved for planning
