@@ -1,4 +1,4 @@
-> **Project:** Ledger · **Doc:** App Flow · **Version:** 2.0 · **Date:** 2026-08-17
+> **Project:** Adlaw · **Doc:** App Flow · **Version:** 2.0 · **Date:** 2026-08-17
 > **Status:** Draft
 > **Upstream:** `01-prd.md`
 

@@ -1,4 +1,4 @@
-> **Project:** Ledger · **Doc:** Design Brief · **Version:** 1.0 · **Date:** 2026-08-17
+> **Project:** Adlaw · **Doc:** Design Brief · **Version:** 1.0 · **Date:** 2026-08-17
 > **Status:** Draft
 > **Upstream:** `01-prd.md`, `02-app-flow.md`, `PRODUCT.md`
 > **Token authority:** `DESIGN.md`. Values are not restated here — this document covers intent, and `DESIGN.md` covers implementation

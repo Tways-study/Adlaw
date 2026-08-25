@@ -4,11 +4,12 @@ import styles from "./TaglineWord.module.css";
 // <h1> and in the auth screens' echo line. Documented in DESIGN.md
 // §Components → rotating tagline and §Motion allowance (c).
 //
-// The four readings are all ledger-native rather than a thesaurus dump:
+// The four readings are all about how a day resolves, not a thesaurus dump:
 // "fits" is capacity (the product's actual thesis), while "adds up",
-// "balances", and "closes out" are accounting terms the product's name
-// already invokes. They are a set that means something together, not four
-// ways to say the same thing.
+// "balances", and "closes out" describe a day the way a ledger describes a
+// set of entries — things that sum, settle, and get closed out by day's end.
+// They are a set that means something together, not four ways to say the
+// same thing.
 //
 // The readings themselves live in TaglineWord.module.css as ::after
 // content — see that file's header for why (short version: keeping them out

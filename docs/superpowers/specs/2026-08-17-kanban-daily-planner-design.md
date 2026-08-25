@@ -1,4 +1,4 @@
-# Ledger — Design Spec
+# Adlaw — Design Spec
 
 **Date:** 2026-08-17
 **Status:** Approved for planning

@@ -1,12 +1,12 @@
 <div align="center">
 
-# Ledger
+# Adlaw
 
 ---
 
 *"One sentence in, a finite day out."*
 
-Type a task in plain language — Ledger infers the course, effort, and deadline
+Type a task in plain language — Adlaw infers the course, effort, and deadline
 for you. Your day has a fixed capacity, and when you've taken on too much, the
 board shows it in the layout instead of an alert.
 
@@ -25,7 +25,7 @@ board shows it in the layout instead of an alert.
 
 ## Overview
 
-Ledger infers course, effort, deadline, and steps from one typed sentence —
+Adlaw infers course, effort, deadline, and steps from one typed sentence —
 capacity from your schedule + a read-only Calendar overlay, overcommitment
 visible in the layout, not announced.
 

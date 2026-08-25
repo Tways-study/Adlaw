@@ -20,9 +20,9 @@ const sourceSerif = Source_Serif_4({
 });
 
 export const metadata: Metadata = {
-  // `template` lets each route name itself ("Today · Ledger") while the
+  // `template` lets each route name itself ("Today · Adlaw") while the
   // landing page overrides `default` outright.
-  title: { default: "Ledger", template: "%s · Ledger" },
+  title: { default: "Adlaw", template: "%s · Adlaw" },
   description: "One sentence in, a finite day out.",
 };
 

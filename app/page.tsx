@@ -17,11 +17,11 @@ import styles from "@/ui/landing/landing.module.css";
 export const metadata: Metadata = {
   title: "A day that fits",
   description:
-    "A daily planner built for students. Type your task in one sentence and Ledger works out the subject, the time it'll take, and the deadline — then shows you if it actually fits in today.",
+    "A daily planner built for students. Type your task in one sentence and Adlaw works out the subject, the time it'll take, and the deadline — then shows you if it actually fits in today.",
   openGraph: {
-    title: "Ledger — a day that fits",
+    title: "Adlaw — a day that fits",
     description:
-      "A daily planner built for students. Type your task in one sentence and Ledger works out the subject, the time it'll take, and the deadline — then shows you if it actually fits in today.",
+      "A daily planner built for students. Type your task in one sentence and Adlaw works out the subject, the time it'll take, and the deadline — then shows you if it actually fits in today.",
     type: "website",
   },
 };
@@ -42,7 +42,7 @@ export default function LandingPage() {
         <header className={styles.topBar}>
           <span className={styles.wordmark}>
             <DayMark size={18} />
-            Ledger
+            Adlaw
           </span>
           <div className={styles.topRight}>
             <ThemeToggle />
@@ -64,7 +64,7 @@ export default function LandingPage() {
             </h1>
             <p className={styles.lead}>
               Type what you need to do, the way you&rsquo;d actually say it — &ldquo;finish bio lab
-              report by Thursday.&rdquo; Ledger works out the subject, how long it&rsquo;ll really
+              report by Thursday.&rdquo; Adlaw works out the subject, how long it&rsquo;ll really
               take, and the deadline. Then it tells you, honestly, whether today can fit it.
             </p>
             {/* The only --primary-fill call-to-action on the entire document. */}
@@ -88,7 +88,7 @@ export default function LandingPage() {
             evidence={<FocusCard />}
             flip
           >
-            Instead of a wall of tasks to sort through, Ledger hands you one: the thing to do right
+            Instead of a wall of tasks to sort through, Adlaw hands you one: the thing to do right
             now, with a plain reason why. No re-sorting your list at midnight trying to figure out
             what actually matters.
           </Failure>

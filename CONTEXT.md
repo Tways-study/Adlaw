@@ -1,4 +1,4 @@
-# Ledger
+# Adlaw
 
 A single-user daily planner that turns one typed sentence into a structured
 task, and holds the day to a finite, visible capacity.

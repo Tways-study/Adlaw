@@ -1,4 +1,4 @@
-> **Project:** Ledger · **Doc:** Backend Schema · **Version:** 3.0 · **Date:** 2026-08-17
+> **Project:** Adlaw · **Doc:** Backend Schema · **Version:** 3.0 · **Date:** 2026-08-17
 > **Status:** Draft — reverted to Convex; see `00-stack-decision.md` v3.0
 > **Upstream:** `01-prd.md`, `02-app-flow.md`, `00-stack-decision.md`
 

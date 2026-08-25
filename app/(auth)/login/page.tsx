@@ -64,7 +64,7 @@ export default function LoginPage() {
       <div className={styles.content}>
         <Link href="/" className={styles.wordmark}>
           <DayMark size={26} />
-          Ledger
+          Adlaw
         </Link>
         <form className={styles.card} onSubmit={handleSubmit}>
           <h1 className={styles.title}>Sign in</h1>

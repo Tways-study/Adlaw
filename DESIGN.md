@@ -319,7 +319,7 @@ layer per screen · any animation of `background-position`, `width`, `height`,
 `top`, or `left`.
 
 **(c) One rotating word, in the tagline only.** Added 2026-08-23. The final
-word of "A day that ___" cycles through four ledger-native readings — in the
+word of "A day that ___" cycles through four readings of how a day resolves — in the
 landing hero's `<h1>` and in `/login` and `/signup`'s echo line. Strictly
 scoped: one instance per screen, one word, `transform` and `opacity` only,
 ≥ 4s per word (an 18s cycle), and the readings are stacked in a single CSS
@@ -392,8 +392,9 @@ behavior. Product UI earns trust through familiarity, not invention.
 *A day that ___* cycles through **fits · adds up · balances · closes out**,
 in the landing hero's `<h1>` and in `/login` and `/signup`'s echo line. The
 four readings are a set, not a thesaurus dump — "fits" is the product's
-capacity thesis, and the other three are accounting terms the name Ledger
-already invokes, so the rotation says something rather than just moving. On
+capacity thesis, and the other three describe a day the same way a ledger
+describes a set of entries (things that sum, settle, and get closed out at
+day's end), so the rotation says something rather than just moving. On
 the auth screens it replaced the ambient day-mark on 2026-08-23 (see the
 day-mark entry below for why that came out).
 
@@ -428,7 +429,7 @@ the timeline's dashed edge line, just wrapped into a circle instead of a bar. No
 clock face, no numerals, no percentage label anywhere near it — a mark, not a
 stat, so it can never be misread as one. Two scales, one motif:
 
-- *Mark* (~20–26px) — paired with the "Ledger" wordmark wherever it appears.
+- *Mark* (~20–26px) — paired with the "Adlaw" wordmark wherever it appears.
   `stroke-width: 1.6`, real pixels via `vector-effect="non-scaling-stroke"`
   (SVG stroke-width is otherwise in viewBox units and inflates or vanishes with
   the rendered size — get this wrong and the two scales come out backwards).

@@ -37,6 +37,16 @@ the Convex task mutations (including cross-user isolation), and
 only — **no `.tsx`, and no environment is configured**, so component tests
 need a config change first; keep new tests pure and they don't.
 
+`convex/tasks.test.ts` uses `convex-test` to fake identity rather than going
+through Convex Auth: `t.withIdentity({ subject: "<usersId>|test-session" })`.
+The `|` divider matters — `getAuthUserId` (what `requireUserId` calls) splits
+`identity.subject` on it and never checks the `users` table, so the half
+before `|` must be a real `users._id` inserted into the same `convexTest`
+instance, or the query-by-id silently returns nothing instead of erroring.
+Cross-user tests need one shared `t` with two `withIdentity` calls off it —
+two separate `convexTest(schema, modules)` instances are isolated databases
+and can't prove one user's mutation reaches another's rows.
+
 Signup at `/signup` requires an invite code checked against the Convex
 deployment env var `SIGNUP_INVITE_CODE` — set it with `npx convex env set
 SIGNUP_INVITE_CODE <value>` before anyone can sign up, including the first

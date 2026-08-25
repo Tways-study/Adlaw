@@ -1,4 +1,4 @@
-> **Project:** Ledger · **Doc:** Intake & Constraints · **Version:** 1.2 · **Date:** 2026-08-17
+> **Project:** Adlaw · **Doc:** Intake & Constraints · **Version:** 1.2 · **Date:** 2026-08-17
 > **Status:** Confirmed — 4 unresolved placeholders
 > **Upstream:** conversation of 2026-08-17, `PRODUCT.md`, `DESIGN.md`, `docs/superpowers/specs/2026-08-17-kanban-daily-planner-design.md`
 
@@ -52,7 +52,7 @@ client-calls-functions-directly model rather than a preference.
 
 ## Amendment 3 — 2026-08-23
 
-The author directed a real reversal of the single-user constraint: Ledger now
+The author directed a real reversal of the single-user constraint: Adlaw now
 supports multiple accounts through an invite-gated signup flow at `/signup`,
 rather than the one account seeded at setup. This is not the open, anyone-can-
 join signup a consumer product would ship — with zero budget and no

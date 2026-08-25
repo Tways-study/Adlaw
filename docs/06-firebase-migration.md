@@ -1,4 +1,4 @@
-> **Project:** Ledger · **Doc:** Firebase Migration Plan · **Version:** 1.0 · **Date:** 2026-08-23
+> **Project:** Adlaw · **Doc:** Firebase Migration Plan · **Version:** 1.0 · **Date:** 2026-08-23
 > **Status:** Approved — not yet executed
 > **Upstream:** `00-intake.md`, `00-stack-decision.md`, `03-backend-schema.md`, `04-tdd.md`
 

@@ -1,4 +1,4 @@
-> **Project:** Ledger · **Doc:** Product PRD · **Version:** 2.1 · **Date:** 2026-08-17
+> **Project:** Adlaw · **Doc:** Product PRD · **Version:** 2.1 · **Date:** 2026-08-17
 > **Status:** Draft — 2 unresolved placeholders
 > **Upstream:** `00-intake.md`, `PRODUCT.md`
 
