@@ -1,12 +1,11 @@
 "use client";
 
 import { createContext, useCallback, useContext, useRef, useState } from "react";
-import type { Id } from "@/convex/_generated/dataModel";
 import type { MovableStatus } from "./types";
 
 interface DragContextValue {
-  draggingId: Id<"tasks"> | null;
-  setDraggingId: (id: Id<"tasks"> | null) => void;
+  draggingId: string | null;
+  setDraggingId: (id: string | null) => void;
   registerDropLane: (status: MovableStatus, el: HTMLElement | null) => void;
   getLaneElement: (status: MovableStatus) => HTMLElement | null;
 }
@@ -27,7 +26,7 @@ export function useRegisterDropLane(status: MovableStatus) {
 }
 
 export function DragProvider({ children }: { children: React.ReactNode }) {
-  const [draggingId, setDraggingId] = useState<Id<"tasks"> | null>(null);
+  const [draggingId, setDraggingId] = useState<string | null>(null);
   const lanesRef = useRef(new Map<MovableStatus, HTMLElement>());
 
   const registerDropLane = useCallback((status: MovableStatus, el: HTMLElement | null) => {

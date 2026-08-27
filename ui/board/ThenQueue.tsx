@@ -1,7 +1,6 @@
 "use client";
 
-import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { useTasksByStatus } from "@/firebase/hooks";
 import { TaskCard } from "./TaskCard";
 import { SkeletonCard } from "./Skeleton";
 import { useRegisterDropLane } from "@/ui/drag/DragContext";
@@ -10,7 +9,7 @@ import styles from "./lane.module.css";
 // Wired for real; resolves empty for the whole of Slice 2 since nothing can
 // reach "next" without Slice 3's drag/keyboard movement. See StartHere.tsx.
 export function ThenQueue() {
-  const tasks = useQuery(api.tasks.listByStatus, { status: "next" });
+  const tasks = useTasksByStatus("next");
   // Registering this lane is what makes it a drop target at all —
   // dropDetection's resolveDropTarget skips any lane it wasn't handed an
   // element for. "next" is also the only lane with meaningful ordering

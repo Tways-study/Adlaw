@@ -1,4 +1,4 @@
-import type { Doc } from "@/convex/_generated/dataModel";
+import type { Task } from "@/core/types";
 import { TaskCard } from "./TaskCard";
 import styles from "./lane.module.css";
 
@@ -6,7 +6,7 @@ import styles from "./lane.module.css";
 // (docs/02-app-flow.md). Data-driven now — app/page.tsx decides whether it
 // renders at all, since that decision also drives the lanes grid's column
 // count (lane.module.css's [data-done] rule).
-export function DoneLane({ tasks }: { tasks: Doc<"tasks">[] }) {
+export function DoneLane({ tasks }: { tasks: Task[] }) {
   if (tasks.length === 0) return null;
 
   return (

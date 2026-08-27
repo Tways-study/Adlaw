@@ -1,4 +1,3 @@
-import type { Id } from "@/convex/_generated/dataModel";
 import type { DropTarget, MovableStatus } from "./types";
 
 interface Point {
@@ -15,7 +14,7 @@ const LANE_ORDER: MovableStatus[] = ["shelf", "next", "now"];
 export function resolveDropTarget(
   point: Point,
   lanes: Partial<Record<MovableStatus, HTMLElement | null>>,
-  excludeTaskId: Id<"tasks">,
+  excludeTaskId: string,
 ): DropTarget | null {
   for (const status of LANE_ORDER) {
     const el = lanes[status];
@@ -34,12 +33,12 @@ export function resolveDropTarget(
       (card) => card.dataset.taskId !== excludeTaskId,
     );
 
-    let beforeId: Id<"tasks"> | undefined;
-    let afterId: Id<"tasks"> | undefined;
+    let beforeId: string | undefined;
+    let afterId: string | undefined;
     for (const card of cards) {
       const cardRect = card.getBoundingClientRect();
       const midY = cardRect.top + cardRect.height / 2;
-      const id = card.dataset.taskId as Id<"tasks">;
+      const id = card.dataset.taskId as string;
       if (point.y < midY) {
         afterId = id;
         break;
@@ -65,8 +64,8 @@ export function currentNeighbors(cardEl: HTMLElement, status: MovableStatus): Dr
   const next = cardEl.nextElementSibling as HTMLElement | null;
   return {
     status,
-    beforeId: (prev?.dataset.taskId as Id<"tasks"> | undefined) ?? undefined,
-    afterId: (next?.dataset.taskId as Id<"tasks"> | undefined) ?? undefined,
+    beforeId: (prev?.dataset.taskId as string | undefined) ?? undefined,
+    afterId: (next?.dataset.taskId as string | undefined) ?? undefined,
   };
 }
 

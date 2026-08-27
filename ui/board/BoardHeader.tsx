@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useAuthActions } from "@convex-dev/auth/react";
+import { signOut } from "@/firebase/auth";
 import { ThemeToggle } from "@/ui/theme/ThemeToggle";
 import styles from "./BoardHeader.module.css";
 
@@ -11,7 +11,6 @@ import styles from "./BoardHeader.module.css";
 // the CSS and the data-theme mechanism itself (ui/tokens.css) don't change,
 // only who sets it.
 export function BoardHeader() {
-  const { signOut } = useAuthActions();
   const router = useRouter();
 
   return (

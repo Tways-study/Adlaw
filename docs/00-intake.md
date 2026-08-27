@@ -1,4 +1,4 @@
-> **Project:** Adlaw · **Doc:** Intake & Constraints · **Version:** 1.2 · **Date:** 2026-08-17
+> **Project:** Adlaw · **Doc:** Intake & Constraints · **Version:** 1.3 · **Date:** 2026-08-17
 > **Status:** Confirmed — 4 unresolved placeholders
 > **Upstream:** conversation of 2026-08-17, `PRODUCT.md`, `DESIGN.md`, `docs/superpowers/specs/2026-08-17-kanban-daily-planner-design.md`
 
@@ -76,6 +76,36 @@ one possible owner.
 **What did not change:** budget (zero — an invite code costs nothing to run),
 the read-only Calendar sync direction, and the design system in `DESIGN.md`.
 
+## Amendment 4 — 2026-08-26
+
+The author directed a fourth data-layer decision (Convex → Postgres → Convex →
+**Firebase**): Firestore for data, Firebase Auth for identity, adding **Google
+sign-in**. Four decisions were confirmed before planning — see
+`docs/06-firebase-migration.md` for the full reasoning and the honest tradeoffs
+(the one-`now` invariant stops being server-enforced, moving to a client-side
+Firestore transaction; ownership gets *stronger*, moving from a `userId` field
+checked in handler code to Firestore's structural `users/{uid}/…` subcollection
+paths; Firebase's Spark (no-billing) plan rules out Cloud Functions, so any
+future server-side work — the Calendar OAuth exchange — moves to a Vercel Route
+Handler instead):
+
+- **Firebase plan:** Spark (no billing). No Cloud Functions.
+- **Route gating:** an ID-token cookie, verified with `jose` in `proxy.ts` —
+  keeps `proxy.ts` as the sole redirect authority, unchanged from Amendment 2.
+- **Sign-in methods:** Google + email/password, both paths.
+- **Invite gate: dropped.** Signup is now open — see below.
+
+**The invite-gate reversal, stated honestly:** Amendment 3's shared invite code
+existed to protect the app's free-tier AI/Calendar/database quotas from
+anonymous public signup. Dropping it reopens that exposure; this is a
+deliberate tradeoff the author made knowingly, not an oversight, made easier by
+Firestore's per-user quota shape being harder to exhaust accidentally than a
+single shared deployment's.
+
+**What did not change:** budget (zero), the read-only Calendar sync direction,
+multiple accounts (Amendment 3's account model stands — only the invite gate
+in front of it is gone), and the design system in `DESIGN.md`.
+
 ## Constraints
 
 | Constraint | Value | Source | Architectural consequence |
@@ -84,9 +114,9 @@ the read-only Calendar sync direction, and the design system in `DESIGN.md`.
 | Who builds | Author is new to full-stack; agent drives. **Not a scoping constraint as of the amendment** | stated, amended | Components chosen on technical merit. Setup/learning cost documented per choice, not avoided |
 | Budget | Zero | stated | Free tiers only. Rules out paid LLM APIs, always-on workers, managed queues |
 | AI provider | Google Gemini, free tier | stated | Schema-constrained JSON output. Rate-limited per minute/day — fine at one user. Free-tier content may be used for product improvement; accepted knowingly |
-| Accounts held | Vercel, Supabase (blocked — free-project limit reached) | stated | Supabase unused as of Amendment 2. New: Convex, Google Cloud project for Calendar OAuth, AI Studio key |
-| Google Calendar | **In v1**, read-only overlay | amended | OAuth flow, encrypted refresh-token storage, a sync cache table, a connect/disconnect screen |
-| Users | Multiple, invite-gated | amended (3) | No RLS in the Supabase-product sense — ownership is checked directly in each Convex mutation/query via `userId`, not a policy layer. No roles, no sharing between accounts; a shared invite code (not a per-user role) gates who may sign up at all |
+| Accounts held | Vercel, Firebase (Spark, no billing) | stated | Supabase and Convex both unused as of Amendment 4. Google Cloud project for Calendar OAuth (Slice 6, not built) and AI Studio key remain |
+| Google Calendar | **In v1**, read-only overlay | amended | OAuth flow (a Vercel Route Handler under Firebase's Spark plan — see Amendment 4), encrypted refresh-token storage, a sync cache table, a connect/disconnect screen |
+| Users | Multiple, open signup | amended (3, 4) | Ownership is structural — Firestore subcollection paths (`users/{uid}/…`), enforced by `firestore.rules`'s `request.auth.uid` check, not a `userId` field checked in handler code. No roles, no sharing between accounts; signup is open as of Amendment 4, no invite code required |
 | Data sensitivity | Author's own coursework titles | inferred from description | No third-party PII, no regulated data, no compliance surface, no residency requirement |
 | Scale | ~40 live tasks, ~1 session/day | inferred from single user | Every candidate database is over-specified. Postgres is chosen for fit with the held account and the relational shape of the data, not for scale |
 | Offline | Not required | spec §7 | No sync engine, no CRDT, no local-first database. `localStorage` capture queue only |
@@ -111,7 +141,7 @@ When two design choices conflict, the higher-ranked failure wins.
 | Full feature/config scope vs a 2–4 week casual timeline | **Not resolved by fiat.** Documented honestly in `01-prd.md` §Scope check with a real build-order estimate. Proceeding at the author's direction; the timeline is the thing most likely to move, not the scope |
 | Zero budget vs an AI-dependent core promise | Gemini free tier, behind a provider-agnostic adapter. Heuristic parser ships as the permanent fallback, not a placeholder |
 | "Personal tool" simplicity vs hosted infrastructure + OAuth | Hosting and Calendar both stand. An app you must start from a terminal, or one whose capacity is wrong because it can't see your calendar, is an app you stop opening — and abandonment is failure mode #1 |
-| Single-user product vs a real identity system | Resolved differently depending on the data layer — under Postgres (v2.0), the client had no DB access at all, so a hand-rolled cookie sufficed. Under Convex (v3.0), the client calls functions directly, so Convex Auth's password provider was the actual requirement, not a preference. As of Amendment 3, that same password provider now backs multiple accounts, gated by invite code rather than by "exactly one seed" |
+| Single-user product vs a real identity system | Resolved differently depending on the data layer — under Postgres (v2.0), the client had no DB access at all, so a hand-rolled cookie sufficed. Under Convex (v3.0), the client calls functions directly, so Convex Auth's password provider was the actual requirement, not a preference. Amendment 3 backed multiple accounts with that same password provider, gated by invite code. Under Firebase (v4.0, Amendment 4), Firebase Auth (Google + email/password) backs multiple accounts with open signup — no invite code, no server-only boundary needed since ownership is now structural |
 
 ## Scope risk
 
@@ -130,5 +160,7 @@ silently to make the number look right.
   to build it. Seeded with fixture data during development.
 - `[[TBD: Google Cloud OAuth client ID/secret]]` — needed for Calendar. Setup
   steps are in `00-stack-decision.md`.
-- `[[TBD: Convex deployment]]` — created via `npx convex dev` at scaffold time.
-  No manual setup beyond running that command.
+- `[[TBD: Firebase project]]` — created manually in the Firebase console
+  (Spark plan, Firestore + Google/Email-Password Auth providers enabled), then
+  its Web app config copied into `.env.local` as six `NEXT_PUBLIC_FIREBASE_*`
+  values. No CLI scaffold does this step for you, unlike Convex's.

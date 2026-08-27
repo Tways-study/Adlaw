@@ -1,8 +1,7 @@
 "use client";
 
-import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import type { Doc, Id } from "@/convex/_generated/dataModel";
+import { useTasksByStatus, useCourses } from "@/firebase/hooks";
+import type { Course, Task } from "@/core/types";
 import { TaskCard } from "./TaskCard";
 import { SkeletonCard } from "./Skeleton";
 import { useRegisterDropLane } from "@/ui/drag/DragContext";
@@ -11,8 +10,8 @@ import styles from "./EverythingRail.module.css";
 const NO_COURSE_KEY = "__no_course__";
 
 export function EverythingRail() {
-  const tasks = useQuery(api.tasks.listByStatus, { status: "shelf" });
-  const courses = useQuery(api.tasks.listCourses, {});
+  const tasks = useTasksByStatus("shelf");
+  const courses = useCourses();
   const dropRef = useRegisterDropLane("shelf");
 
   if (tasks === undefined || courses === undefined) {
@@ -43,8 +42,8 @@ export function EverythingRail() {
     );
   }
 
-  const courseById = new Map<Id<"courses">, Doc<"courses">>(courses.map((c) => [c._id, c]));
-  const groups = new Map<string, { label: string; tasks: Doc<"tasks">[] }>();
+  const courseById = new Map<string, Course>(courses.map((c) => [c._id, c]));
+  const groups = new Map<string, { label: string; tasks: Task[] }>();
 
   for (const task of tasks) {
     const key = task.courseId ?? NO_COURSE_KEY;

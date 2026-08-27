@@ -47,9 +47,10 @@ tasks · time tracking.
 
 ## Actors
 
-**The student**, one per account, authenticated by password
-(`00-intake.md`'s Amendment 3 moved signup from one seeded account to an
-invite-gated flow — multiple students can each hold their own account, fully
+**The student**, one per account, authenticated by Google or email/password
+(`00-intake.md`'s Amendment 3 moved signup from one seeded account to
+multi-user; Amendment 4 moved auth to Firebase and dropped the invite gate for
+open signup — multiple students can each hold their own account, fully
 isolated from one another). There is still no second *role*: every account is
 the same kind of user, with no admin/viewer distinction. Any feature implying
 a role split is out of scope by definition.
@@ -72,7 +73,7 @@ convenience; see *Scope check* for the honest timeline consequence of that.
 | M9 | **Complete.** Mark done and undo | — | Done shows only tasks completed today; older ones archive out of view automatically |
 | M10 | **Horizon.** Deadlines for the next 14 days, with ≤ 2 days in the alert colour | ambush | Read-only list in the rail |
 | M11 | **Themes.** Light, dark, auto | abandonment | Both independently tuned per `DESIGN.md`. Choice persists |
-| M12 | **Access.** Single shared password | — | Convex Auth, password provider, one account seeded during setup. No public signup flow |
+| M12 | **Access.** Multi-user, open signup | — | Firebase Auth — Google + email/password. No invite code as of Amendment 4; `docs/00-intake.md` |
 | M13 | **Google Calendar overlay.** Read-only. Connect via OAuth, see events merged into Today's shape's committed track and into free-window derivation | overcommit | A **Sync now** action plus revalidation on page focus. Connect/disconnect from Settings. Board stays fully correct on the manual schedule alone if disconnected or if sync fails |
 | M14 | **Inline edit.** Title, course, estimate, due date editable from the expanded card | — | No separate edit route |
 | M15 | **Delete with undo.** ~6s undo toast, no confirmation dialog | — | Nothing here is destructive enough to need a modal |
@@ -106,7 +107,7 @@ Rough sizing, using the build-order slices in `04-tdd.md` §Build order:
 
 | Slice | Features | Rough effort |
 |---|---|---|
-| Skeleton (auth, Convex, deploy) | M12 | 3–5h |
+| Skeleton (auth, Firebase, deploy) | M12 | 3–5h |
 | Tasks + board | M1 (heuristic only), M2, M9, M15 | 8–12h |
 | Movement | drag/keyboard/order (part of M2) | 4–6h |
 | Time | M3, M4, M5 | 6–10h |

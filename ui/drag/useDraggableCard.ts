@@ -8,9 +8,9 @@ import {
   type CSSProperties,
   type PointerEvent as ReactPointerEvent,
 } from "react";
-import { useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import type { Doc } from "@/convex/_generated/dataModel";
+import { move } from "@/firebase/tasks";
+import { useAuth } from "@/firebase/hooks";
+import type { Task } from "@/core/types";
 import { useDragContext } from "./DragContext";
 import { resolveDropTarget, currentNeighbors, sameDropTarget } from "./dropDetection";
 import type { DropTarget, MovableStatus } from "./types";
@@ -64,8 +64,8 @@ export interface DraggableCard {
   didDrag: () => boolean;
 }
 
-export function useDraggableCard(task: Doc<"tasks">): DraggableCard {
-  const move = useMutation(api.tasks.move);
+export function useDraggableCard(task: Task): DraggableCard {
+  const { user } = useAuth();
   const { getLaneElement, setDraggingId } = useDragContext();
 
   const elRef = useRef<HTMLElement | null>(null);
@@ -144,8 +144,8 @@ export function useDraggableCard(task: Doc<"tasks">): DraggableCard {
         { shelf: getLaneElement("shelf"), next: getLaneElement("next"), now: getLaneElement("now") },
         task._id,
       );
-      if (target && !sameDropTarget(target, s.origin)) {
-        void move({ id: task._id, status: target.status, beforeId: target.beforeId, afterId: target.afterId });
+      if (target && !sameDropTarget(target, s.origin) && user) {
+        void move(user.uid, task._id, target.status, target.beforeId, target.afterId);
       }
 
       setDraggingId(null);
@@ -169,7 +169,7 @@ export function useDraggableCard(task: Doc<"tasks">): DraggableCard {
         phase: "start",
       });
     },
-    [getLaneElement, move, setDraggingId, task._id],
+    [getLaneElement, user, setDraggingId, task._id],
   );
 
   // Two-phase FLIP-style settle: paint at the release point using a

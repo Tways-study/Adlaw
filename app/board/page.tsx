@@ -1,7 +1,6 @@
 "use client";
 
-import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { useDoneToday } from "@/firebase/hooks";
 import { EverythingRail } from "@/ui/board/EverythingRail";
 import { StartHere } from "@/ui/board/StartHere";
 import { ThenQueue } from "@/ui/board/ThenQueue";
@@ -15,7 +14,7 @@ import laneStyles from "@/ui/board/lane.module.css";
 import shell from "@/ui/board/shell.module.css";
 
 export default function BoardPage() {
-  const doneTasks = useQuery(api.tasks.listDoneToday, { startOfDayMs: startOfLocalDay() });
+  const doneTasks = useDoneToday(startOfLocalDay());
 
   // DragProvider must wrap the whole board, not just the lanes: every
   // TaskCard calls useDraggableCard, which calls useDragContext, and the

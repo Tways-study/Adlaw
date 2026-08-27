@@ -1,41 +1,50 @@
-import {
-  convexAuthNextjsMiddleware,
-  createRouteMatcher,
-  nextjsMiddlewareRedirect,
-} from "@convex-dev/auth/nextjs/server";
+import { NextRequest, NextResponse } from "next/server";
+import { createRemoteJWKSet, jwtVerify } from "jose";
 
-const isAuthPage = createRouteMatcher(["/login", "/signup"]);
-const isLanding = createRouteMatcher(["/"]);
-// /icon and /apple-icon are Next's generated routes for app/icon.tsx and
-// app/apple-icon.tsx — no dot in the URL, so the matcher below doesn't
-// exclude them the way it excludes /favicon.ico. Without this, a signed-out
-// request for either (e.g. a browser fetching the tab favicon while on
-// /login) gets 307'd to /login instead of returned as image bytes, and the
-// favicon silently breaks on the one page that most needs it to work.
-const isPublicRoute = createRouteMatcher(["/", "/login", "/signup", "/icon", "/apple-icon"]);
+const PROJECT_ID = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!;
+const JWKS = createRemoteJWKSet(
+  new URL("https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com"),
+);
 
-// Three rules, authed checked first:
-//   1. Authed hitting /login, /signup, or / (the landing page) → bounce to
-//      /board. There's nothing for a signed-in user to do on any public
-//      route.
-//   2. Unauthed hitting anything that isn't public (/, /login, /signup) →
-//      bounce to /login. This must run after rule 1 or an authed user would
-//      never reach /board from /.
-//   3. Otherwise fall through — public routes for the unauthed, /board
-//      (and everything else) for the authed.
-export default convexAuthNextjsMiddleware(async (request, { convexAuth }) => {
-  const authed = await convexAuth.isAuthenticated();
-  if (authed && (isAuthPage(request) || isLanding(request))) {
-    return nextjsMiddlewareRedirect(request, "/board");
+const AUTH_PAGES = ["/login", "/signup"];
+const LANDING = ["/"];
+// Preserved verbatim from the Convex version — /icon and /apple-icon are
+// Next's generated routes for app/icon.tsx / app/apple-icon.tsx, dot-less
+// URLs the matcher's dot-exclusion doesn't catch. See CLAUDE.md.
+const PUBLIC_ROUTES = ["/", "/login", "/signup", "/icon", "/apple-icon"];
+
+async function isAuthed(request: NextRequest): Promise<boolean> {
+  const token = request.cookies.get("session")?.value;
+  if (!token) return false;
+  try {
+    await jwtVerify(token, JWKS, {
+      issuer: `https://securetoken.google.com/${PROJECT_ID}`,
+      audience: PROJECT_ID,
+    });
+    return true;
+  } catch {
+    return false;
   }
-  if (!authed && !isPublicRoute(request)) {
-    return nextjsMiddlewareRedirect(request, "/login");
-  }
-});
+}
 
-// Keep "/(api|trpc)(.*)" — the middleware IS the auth endpoint
-// (shouldProxyAuthAction runs before the handler above); dropping it
-// breaks sign-in silently, with no error at the source.
+// Same three rules, same order, as the Convex version. The old "middleware
+// IS the auth endpoint" concern doesn't apply here — there's no server-side
+// POST interception for sign-in under Firebase, this is a pure cryptographic
+// JWT check against the cookie. The /(api|trpc)(.*) matcher entry is kept
+// for parity even though no route lives there today.
+export default async function proxy(request: NextRequest) {
+  const path = request.nextUrl.pathname;
+  const authed = await isAuthed(request);
+
+  if (authed && (AUTH_PAGES.includes(path) || LANDING.includes(path))) {
+    return NextResponse.redirect(new URL("/board", request.url));
+  }
+  if (!authed && !PUBLIC_ROUTES.includes(path)) {
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
+  return NextResponse.next();
+}
+
 export const config = {
   matcher: ["/((?!.*\\..*|_next).*)", "/", "/(api|trpc)(.*)"],
 };

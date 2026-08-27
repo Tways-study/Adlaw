@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, type KeyboardEvent } from "react";
-import { useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import type { Doc } from "@/convex/_generated/dataModel";
+import { complete, uncomplete, move } from "@/firebase/tasks";
+import { useAuth } from "@/firebase/hooks";
+import type { Task } from "@/core/types";
 import { useDeleteUndo } from "./DeleteUndoContext";
 import { formatEstimate, formatDue } from "./format";
 import { useDraggableCard } from "@/ui/drag/useDraggableCard";
@@ -11,7 +11,7 @@ import type { MovableStatus } from "@/ui/drag/types";
 import styles from "./TaskCard.module.css";
 
 interface TaskCardProps {
-  task: Doc<"tasks">;
+  task: Task;
   courseLabel?: string;
   compact?: boolean;
   variant?: "default" | "done";
@@ -26,19 +26,17 @@ const KEY_TO_STATUS: Record<string, MovableStatus> = { "1": "shelf", "2": "next"
 // docs/04-tdd.md's "the same mutation runs either way."
 export function TaskCard({ task, courseLabel, compact = false, variant = "default" }: TaskCardProps) {
   const [expanded, setExpanded] = useState(false);
-  const complete = useMutation(api.tasks.complete);
-  const uncomplete = useMutation(api.tasks.uncomplete);
-  const move = useMutation(api.tasks.move);
+  const { user } = useAuth();
   const { requestDelete } = useDeleteUndo();
   // Done cards are excluded from movement entirely — only complete/uncomplete
-  // ever touch that state (see convex/tasks.ts's movableStatus validator).
+  // ever touch that state (see core/types.ts's MovableStatus).
   const draggable = useDraggableCard(task);
 
   if (variant === "done") {
     return (
       <article className={styles.doneCard}>
         <h4>{task.title}</h4>
-        <button className={styles.undo} onClick={() => uncomplete({ id: task._id })}>
+        <button className={styles.undo} onClick={() => user && uncomplete(user.uid, task._id)}>
           Undo
         </button>
       </article>
@@ -61,7 +59,7 @@ export function TaskCard({ task, courseLabel, compact = false, variant = "defaul
     const target = KEY_TO_STATUS[e.key];
     if (!target || target === task.status) return;
     e.preventDefault();
-    void move({ id: task._id, status: target });
+    if (user) void move(user.uid, task._id, target);
   }
 
   if (compact) {
@@ -93,7 +91,7 @@ export function TaskCard({ task, courseLabel, compact = false, variant = "defaul
                 )}
               </div>
               <div className={styles.actions} data-drag-ignore>
-                <button className={styles.btn} onClick={() => complete({ id: task._id })}>
+                <button className={styles.btn} onClick={() => user && complete(user.uid, task._id)}>
                   Complete
                 </button>
                 <button className={styles.ghostbtn} onClick={() => requestDelete(task)}>
@@ -133,7 +131,7 @@ export function TaskCard({ task, courseLabel, compact = false, variant = "defaul
         </button>
         {expanded && (
           <div className={styles.actions} data-drag-ignore>
-            <button className={styles.btn} onClick={() => complete({ id: task._id })}>
+            <button className={styles.btn} onClick={() => user && complete(user.uid, task._id)}>
               Complete
             </button>
             <button className={styles.ghostbtn} onClick={() => requestDelete(task)}>

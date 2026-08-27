@@ -3,7 +3,9 @@
     "allow": [
       "Bash(node .claude/skills/impeccable/scripts/context.mjs --target \"app/\\(auth\\)/signup\")",
       "Bash(find /Users/virnajanem.navarro/.claude/skills/impeccable -maxdepth 1 2>/dev/null && echo \"---\" && ls /Users/virnajanem.navarro/Downloads/adlaw/.claude 2>/dev/null)",
-      "Read(//Users/virnajanem.navarro/.claude/skills/impeccable/**)"
+      "Read(//Users/virnajanem.navarro/.claude/skills/impeccable/**)",
+      "Bash(npx vitest *)",
+      "Bash(npm install *)"
     ]
   }
 }

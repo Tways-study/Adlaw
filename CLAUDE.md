@@ -5,12 +5,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Repository state
 
 **Slices 1–3 built, plus a public landing surface and multi-user auth.**
-Next.js (App Router) + Convex + Convex Auth (password provider, invite-gated
-signup — `docs/00-intake.md`'s Amendment 3) are wired up; `DESIGN.md`'s tokens
-are in `ui/tokens.css`. Task capture (heuristic parser only), lanes, complete,
-delete+undo, and drag all work, scoped per account. No schedule editor,
-capacity math, timeline, Calendar, or AI yet — those are Slices 4–7 per
-`docs/04-tdd.md` §Build order.
+Next.js (App Router) + Firebase (Firestore + Firebase Auth — Google and
+email/password, open signup as of `docs/00-intake.md`'s Amendment 4) are wired
+up; `DESIGN.md`'s tokens are in `ui/tokens.css`. Task capture (heuristic parser
+only), lanes, complete, delete+undo, and drag all work, scoped per account. No
+schedule editor, capacity math, timeline, Calendar, or AI yet — those are
+Slices 4–7 per `docs/04-tdd.md` §Build order.
 
 **Routing:** `/` is the public marketing landing page, `/login` and `/signup`
 are public, and the board lives at **`/board`**. `proxy.ts` is the only
@@ -27,39 +27,36 @@ the way it excludes `/favicon.ico` — doesn't exclude them on its own. Adding a
 new file-convention route under `app/` (an OG image, another icon size) needs
 the same check before assuming it's reachable while signed out.
 
-Commands: `npm run dev` (Next + Turbopack), `npx convex dev` (Convex functions,
-run alongside `npm run dev` in a separate terminal — writes `.env.local`),
-`npm run lint`, `npx tsc --noEmit`, `npm run build` (`next build`), `npm test`
-(Vitest, whole suite). Single test file: `npx vitest run path/to/file.test.ts`;
-filter by name within it with `-t "pattern"`. Tests cover `core/heuristic.ts`,
-the Convex task mutations (including cross-user isolation), and
-`ui/landing/copy.ts`'s fixtures. `vitest.config.mts` includes `**/*.test.ts`
-only — **no `.tsx`, and no environment is configured**, so component tests
-need a config change first; keep new tests pure and they don't.
+Commands: `npm run dev` (Next + Turbopack — no separate backend dev process;
+Firestore/Firebase Auth are serverless), `npm run lint`, `npx tsc --noEmit`,
+`npm run build` (`next build`), `npm test` (Vitest, pure suite). Single test
+file: `npx vitest run path/to/file.test.ts`; filter by name within it with
+`-t "pattern"`. Tests cover `core/heuristic.ts`, `core/order.ts`'s laneOrder
+arithmetic, and `ui/landing/copy.ts`'s fixtures. `vitest.config.mts` includes
+`**/*.test.ts` only — **no `.tsx`, and no environment is configured**, so
+component tests need a config change first; keep new tests pure and they
+don't. `npm run test:rules` runs `firestore.rules.test.ts` (cross-user
+isolation, field validation) against the Firebase emulator — needs Java and
+`firebase-tools`, kept off the fast `npm test` loop for that reason.
 
-`convex/tasks.test.ts` uses `convex-test` to fake identity rather than going
-through Convex Auth: `t.withIdentity({ subject: "<usersId>|test-session" })`.
-The `|` divider matters — `getAuthUserId` (what `requireUserId` calls) splits
-`identity.subject` on it and never checks the `users` table, so the half
-before `|` must be a real `users._id` inserted into the same `convexTest`
-instance, or the query-by-id silently returns nothing instead of erroring.
-Cross-user tests need one shared `t` with two `withIdentity` calls off it —
-two separate `convexTest(schema, modules)` instances are isolated databases
-and can't prove one user's mutation reaches another's rows.
+`.env.local` needs six `NEXT_PUBLIC_FIREBASE_*` values from Firebase console →
+Project settings → Your apps → Web app (API key, auth domain, project id,
+storage bucket, messaging sender id, app id) before the app will hydrate in
+the browser — `firebase/client.ts`'s `getAuth()` throws synchronously on a
+malformed or missing key, which breaks every route including the public
+landing page, since `app/FirebaseProvider.tsx` wraps the whole layout.
 
-Signup at `/signup` requires an invite code checked against the Convex
-deployment env var `SIGNUP_INVITE_CODE` — set it with `npx convex env set
-SIGNUP_INVITE_CODE <value>` before anyone can sign up, including the first
-account. `scripts/seed-admin.mjs` goes through that same gate now:
-`SEED_EMAIL=... SEED_PASSWORD=... SIGNUP_INVITE_CODE=... node
-scripts/seed-admin.mjs`. It's no longer a one-time-only script — re-running
-it with a different email creates another account, the same as using
-`/signup` directly.
+Signup at `/signup` is open — no invite code, no env var to set (Amendment 4
+in `docs/00-intake.md` dropped Amendment 3's gate). Create an account through
+`/signup` or the "Continue with Google" button directly; there is no seed
+script.
 
 `proxy.ts` at the repo root is Next.js 16's replacement for `middleware.ts`
 (renamed in this version — see the breaking-change notes `AGENTS.md`
-points at). It's what gates every route behind Convex Auth and redirects
-to `/login`; don't add a `middleware.ts` expecting it to do this job.
+points at). It verifies the `session` cookie (an ID token) with `jose`
+against Google's Secure Token JWKS — no Admin SDK, no service-account
+secret — and redirects to `/login` on failure; don't add a `middleware.ts`
+expecting it to do this job.
 
 `AGENTS.md` at the repo root is generated and rewritten by `next dev` itself
 (framework/version-specific breaking-change notes) — it's not a second
@@ -80,7 +77,7 @@ stack or scope sections.
 | `docs/00-stack-decision.md` | The stack, and why — this is current, not the older design spec |
 | `docs/01-prd.md` | Full v1 feature list, non-goals, the honest scope-vs-timeline call |
 | `docs/02-app-flow.md` | Every screen, panel, and state machine — defines surfaces S1–S7 (Lock, Board, First run, Schedule editor, Task detail, Settings, Calendar connect), referenced by shorthand throughout `04-tdd.md` |
-| `docs/03-backend-schema.md` | Convex schema, invariants, how access control works without RLS |
+| `docs/03-backend-schema.md` | Firestore schema, invariants, how access control works without RLS |
 | `docs/04-tdd.md` | Module map, data flow, error handling, testing, build order |
 | `docs/05-design-brief.md` | Design intent — pairs with `DESIGN.md` for values |
 | `PRODUCT.md` | Register, users, the four failures the product exists to prevent, anti-references, a11y floor |
@@ -106,13 +103,17 @@ password provider (one seeded account)** — not a preference, but a real
 consequence of Convex's client-calls-functions-directly model, which has no
 server-only boundary for a bespoke cookie check to hide behind.
 
-`docs/00-intake.md` carries both amendment texts, plus a third: **Amendment
-3 — multi-user (2026-08-23).** The single-account, no-signup model was
-reversed — `/signup` now creates new accounts behind a shared invite code
-(`SIGNUP_INVITE_CODE`), and every table is scoped by `userId`. Unaffected by
-any of the three: budget (zero) and the read-only Calendar sync direction —
-neither was ever about skill level, infrastructure availability, or user
-count.
+`docs/00-intake.md` carries both amendment texts, plus two more. **Amendment
+3 — multi-user (2026-08-23)** reversed the single-account, no-signup model —
+`/signup` created new accounts behind a shared invite code
+(`SIGNUP_INVITE_CODE`), and every table was scoped by `userId`. **Amendment 4
+— Firebase (2026-08-26)** moved the data layer a fourth time (Convex →
+Postgres → Convex → **Firebase**), added Google sign-in, and **dropped
+Amendment 3's invite gate** — signup is open now, and ownership moved from a
+`userId` field to Firestore's structural `users/{uid}/…` subcollection paths.
+Unaffected by any of the four: budget (zero) and the read-only Calendar sync
+direction — neither was ever about skill level, infrastructure availability,
+or user count.
 
 `docs/design/prototype.html` is a reference artifact, not shipping code — it is
 plain HTML/CSS/JS with hardcoded fixture data. Port its *behavior and tokens*
@@ -120,8 +121,8 @@ into the real app; do not import the file.
 
 ## What this app is
 
-A daily planner for a student, one account per student (invite-gated signup,
-no cross-account sharing). You type one sentence; the app infers course,
+A daily planner for a student, one account per student (open signup as of
+Amendment 4, no cross-account sharing). You type one sentence; the app infers course,
 effort, deadline, and steps. The day has a finite capacity derived from a
 manual weekly schedule plus a read-only Google Calendar overlay, and
 overcommitment is visible in the layout rather than announced.
@@ -133,20 +134,24 @@ suspect no matter how smart it is.
 
 ## Chosen stack
 
-Next.js (App Router) on Vercel · **Convex** for data, server functions, and auth
-· Convex Auth, password provider, invite-gated signup · Google Gemini (free tier,
-via a swappable `AiProvider` adapter — not Anthropic) · hand-written CSS using
-`DESIGN.md` tokens, no component library.
+Next.js (App Router) on Vercel · **Firebase** — Firestore for data, Firebase
+Auth for identity (Google + email/password, open signup) · an ID-token cookie
+verified with `jose` in `proxy.ts` · Google Gemini (free tier, via a swappable
+`AiProvider` adapter — not Anthropic) · hand-written CSS using `DESIGN.md`
+tokens, no component library.
 
-Access is Convex Auth's password provider, not a hand-rolled cookie — the React
-client calls Convex functions directly for live reactive queries, so there's no
-server-only boundary a bespoke check could hide behind, and Convex functions
-need a real identity to check via `ctx.auth`. Signup is gated by
-`SIGNUP_INVITE_CODE`, not open to the public internet. Google OAuth exists *only* to
-obtain a `calendar.readonly` refresh token for the **v1** Calendar overlay —
-the token exchange runs in a Convex HTTP action, not a Next.js API route. See
-`docs/00-stack-decision.md` v3.0 for the full reasoning and the two-reversal
-history (Convex → Postgres → Convex).
+Access is Firestore's own rules, not a hand-rolled cookie check or a `userId`
+column — the client calls Firestore directly, and `firestore.rules`'s
+`request.auth.uid` check against the `users/{uid}/…` path is the entire
+ownership model. No path bypasses it, because there's no application code in
+the loop to bypass. Signup is open to the public internet as of Amendment 4 —
+a deliberate reopening of the quota exposure Amendment 3's invite gate existed
+to prevent. Google OAuth for the **v1** Calendar overlay's `calendar.readonly`
+refresh token is a separate consent step from sign-in (Firebase Auth's own
+Google provider returns no refresh token) — that exchange is deferred to a
+Vercel Route Handler (Slice 6, not built; Firebase's Spark plan has no Cloud
+Functions). See `docs/00-stack-decision.md` v4.0 for the full reasoning and the
+three-reversal history (Convex → Postgres → Convex → Firebase).
 
 ## Module map
 
@@ -159,15 +164,24 @@ app/                    Next.js routes. Thin — layout and data wiring only
   board/page.tsx        S2 board (+ board/layout.tsx, metadata only)
   icon.tsx              favicon, generated from the day-mark (next/og)
   apple-icon.tsx         iOS home-screen icon, same source, opaque
-convex/
-  schema.ts             03-backend-schema
-  tasks.ts              queries + mutations, invariants enforced here
-  schedule.ts           schedule block CRUD                      (Slice 4, not built)
-  ai.ts                 actions: parse, breakdown, focus          (Slice 7, not built)
-  calendar.ts           actions: sync, disconnect                 (Slice 6, not built)
-  http.ts               HTTP action: Google OAuth callback (*.convex.site URL)
-  auth.ts               Convex Auth config, password provider
-core/                   PURE. No I/O, no React, no Convex imports
+  FirebaseProvider.tsx  thin wrapper around firebase/hooks.tsx's AuthProvider
+  api/                   Vercel Route Handlers — the server boundary Firebase's
+                         Spark plan needs in place of Cloud Functions
+    calendar/callback/    OAuth code exchange                     (Slice 6, not built)
+    ai/                   keeps the Gemini API key off the client (Slice 7, not built)
+firebase/
+  client.ts              app/auth/firestore init from NEXT_PUBLIC_FIREBASE_* env
+  auth.ts                signInWithGoogle / signInWithEmail / signUpWithEmail /
+                         signOut, plus the session-cookie sync
+  tasks.ts               typed writes; move() is the client-side runTransaction
+                         enforcing one-"now"
+  hooks.tsx              useAuth, useTasksByStatus / useDoneToday / useCourses —
+                         onSnapshot wrappers returning T[] | undefined
+core/                   PURE. No I/O, no React, no Firebase imports
+  types.ts              Task, Course, TaskStatus, ParseState — plain data,
+                         replaces generated Doc<>/Id<> types
+  order.ts               laneOrder arithmetic — computeLaneOrder, unit-tested
+                         with no backend or emulator
   time.ts               free-window derivation                    (Slice 4, not built)
   capacity.ts           totals, overage, cutline index             (Slice 4, not built)
   heuristic.ts          rules-based parser — the fallback. Built, and the only parser today
@@ -186,7 +200,7 @@ ui/
                         DOM is what stops the landing <h1> indexing as all
                         four at once. Don't "simplify" them back inline
   timeline/              Today's shape                             (Slice 5, not built)
-  capture/               input + live preview. Built, heuristic-only
+  capture/               input + live preview. Built, Firebase-wired
   settings/               S6 + S7 (Calendar connect)                (Slice 8, not built)
   drag/                  pointer tracking, spring, FLIP. Built
   tokens.css             DESIGN.md, verbatim
@@ -196,19 +210,19 @@ Lines marked "not built" are `docs/04-tdd.md`'s target locations for later slice
 don't `Read` them expecting content; check `git status`/the directory first.
 
 **`ui/landing/` may not import from `ui/board/`.** Every board component is
-`"use client"` + `useQuery` against `api.tasks`, and `convex/tasks.ts` throws
-`"Not signed in"` for an unauthenticated caller — importing one into the public
-page gives a signed-out visitor console errors and permanently-undefined
-queries. The two exceptions are the pure modules: `core/heuristic.ts` (the
-landing hero runs the real parser live) and `ui/board/format.ts`. The miniatures
-under `ui/landing/demos/` are static reproductions ported from
-`docs/design/prototype.html`.
+`"use client"` + a `firebase/hooks.tsx` listener that resolves to `undefined`
+forever for a signed-out visitor with no `uid` to query — importing one into
+the public page gives a signed-out visitor a permanently-empty board instead
+of the page it expected. The two exceptions are the pure modules:
+`core/heuristic.ts` (the landing hero runs the real parser live) and
+`ui/board/format.ts`. The miniatures under `ui/landing/demos/` are static
+reproductions ported from `docs/design/prototype.html`.
 
 The boundary that matters: **`core/` has no imports outside itself.** It is
 plain functions over plain data, testable without a browser, a database, a
-network, or a mock. This boundary is what made the two prior data-layer swaps
-(Convex → Postgres → Convex) mechanical rather than rewrites — `core/` never
-moved.
+network, or a mock. This boundary is what made all three prior data-layer
+swaps (Convex → Postgres → Convex → Firebase) mechanical rather than
+rewrites — `core/` never moved.
 
 ## Architecture rules that are easy to violate
 
@@ -233,7 +247,9 @@ reading any single module.
   background.
 - **All AI responses are Zod-validated before touching the DB,** and logged to
   `ai_log` — that table is the only honest measure of whether the core promise works.
-- **`status = 'now'` holds at most one task.** Enforced in the mutation layer.
+- **`status = 'now'` holds at most one task.** Enforced client-side in a
+  Firestore transaction (`firebase/tasks.ts`'s `move()`), not server-enforced —
+  see `docs/00-stack-decision.md` v4.0's tradeoffs.
 - **Every drag needs a keyboard equivalent.** The primary loop (capture, move,
   complete) must be fully operable without a pointer.
 
@@ -271,7 +287,7 @@ From `docs/04-tdd.md` §Build order. Each slice ends with something usable —
 sized estimates live in `01-prd.md` §Scope check, this is the sequencing, not
 the timeline:
 
-1. **Skeleton.** Next + Convex + Convex Auth + tokens. Log in, see an empty board.
+1. **Skeleton.** Next + Firebase + Firebase Auth + tokens. Log in, see an empty board.
 2. **Tasks.** Schema, capture with heuristic only, lanes, complete, delete+undo.
    *Usable here.*
 3. **Movement.** Drag, keyboard, ordering, Done filtering.
@@ -296,7 +312,8 @@ Each of these was considered and cut for product reasons, not deferred for
 build-time convenience. Re-proposing one needs a reason, not an oversight.
 **Reading** from Google Calendar is in v1 (see the amendment above) —
 **writing** to it remains out, a separate decision about sync direction.
-**Multiple accounts** are in (Amendment 3 above, invite-gated signup) —
+**Multiple accounts** are in (Amendment 3 above; the invite gate in front of
+signup is gone as of Amendment 4, but the account model itself stands) —
 **sharing or collaboration between accounts** remains out; every account's
 data stays isolated from every other's:
 

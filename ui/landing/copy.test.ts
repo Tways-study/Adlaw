@@ -9,7 +9,7 @@
 
 import { describe, it, expect } from "vitest";
 // Relative, not "@/" — vitest.config.mts configures no path alias, and the
-// existing tests (core/heuristic.test.ts, convex/tasks.test.ts) import this way.
+// existing tests (core/heuristic.test.ts, core/order.test.ts) import this way.
 import { parseHeuristic } from "../../core/heuristic";
 import { formatEstimate, formatDue } from "../board/format";
 import {

@@ -1,15 +1,15 @@
 "use client";
 
 import { createContext, useCallback, useContext, useRef, useState } from "react";
-import { useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import type { Doc } from "@/convex/_generated/dataModel";
+import { remove, restore } from "@/firebase/tasks";
+import { useAuth } from "@/firebase/hooks";
+import type { Task } from "@/core/types";
 import styles from "./DeleteUndoContext.module.css";
 
 const UNDO_WINDOW_MS = 6000;
 
 interface DeleteUndoContextValue {
-  requestDelete: (task: Doc<"tasks">) => void;
+  requestDelete: (task: Task) => void;
 }
 
 const DeleteUndoContext = createContext<DeleteUndoContextValue | null>(null);
@@ -21,31 +21,30 @@ export function useDeleteUndo(): DeleteUndoContextValue {
 }
 
 export function DeleteUndoProvider({ children }: { children: React.ReactNode }) {
-  const remove = useMutation(api.tasks.remove);
-  const restore = useMutation(api.tasks.restore);
-  const [pending, setPending] = useState<{ task: Doc<"tasks">; id: number } | null>(null);
+  const { user } = useAuth();
+  const [pending, setPending] = useState<{ task: Task; id: number } | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const idRef = useRef(0);
 
   const requestDelete = useCallback(
-    (task: Doc<"tasks">) => {
+    (task: Task) => {
       if (timerRef.current) clearTimeout(timerRef.current);
       const id = ++idRef.current;
       setPending({ task, id });
-      void remove({ id: task._id });
+      if (user) void remove(user.uid, task._id);
       timerRef.current = setTimeout(() => {
         setPending((current) => (current?.id === id ? null : current));
       }, UNDO_WINDOW_MS);
     },
-    [remove],
+    [user],
   );
 
   const handleUndo = useCallback(() => {
-    if (!pending) return;
+    if (!pending || !user) return;
     if (timerRef.current) clearTimeout(timerRef.current);
     const { task } = pending;
     setPending(null);
-    void restore({
+    void restore(user.uid, {
       rawText: task.rawText,
       title: task.title,
       courseId: task.courseId,
@@ -57,7 +56,7 @@ export function DeleteUndoProvider({ children }: { children: React.ReactNode }) 
       createdAt: task.createdAt,
       completedAt: task.completedAt,
     });
-  }, [pending, restore]);
+  }, [pending, user]);
 
   return (
     <DeleteUndoContext.Provider value={{ requestDelete }}>

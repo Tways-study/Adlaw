@@ -30,10 +30,9 @@ export const metadata: Metadata = {
 // JavaScript.
 //
 // Nothing from ui/board/ is imported here. Those components are "use client" +
-// useQuery against api.tasks, and convex/tasks.ts throws "Not signed in" for an
-// unauthenticated caller — a signed-out visitor would get console errors and
-// permanently-undefined queries. The miniatures under ui/landing/demos/ are
-// static reproductions instead.
+// firebase/hooks' onSnapshot listeners, which resolve to undefined forever
+// for a signed-out visitor with no uid to query — the miniatures under
+// ui/landing/demos/ are static reproductions instead.
 export default function LandingPage() {
   return (
     <div className={styles.landing}>

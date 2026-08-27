@@ -1,15 +1,15 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { create } from "@/firebase/tasks";
+import { useAuth } from "@/firebase/hooks";
 import { parseHeuristic } from "@/core/heuristic";
 import { formatEstimate, formatDue } from "@/ui/board/format";
 import styles from "./CaptureBar.module.css";
 
 export function CaptureBar() {
   const [value, setValue] = useState("");
-  const create = useMutation(api.tasks.create);
+  const { user } = useAuth();
 
   const preview = useMemo(() => {
     const trimmed = value.trim();
@@ -27,14 +27,16 @@ export function CaptureBar() {
     if (!rawText) return;
 
     const parsed = preview ?? parseHeuristic(rawText, Date.now());
-    void create({
-      rawText,
-      title: parsed.title,
-      courseCode: parsed.courseCode,
-      estimateMin: parsed.estimateMin,
-      dueAt: parsed.dueAt,
-      parseState: "fallback",
-    });
+    if (user) {
+      void create(user.uid, {
+        rawText,
+        title: parsed.title,
+        courseCode: parsed.courseCode,
+        estimateMin: parsed.estimateMin,
+        dueAt: parsed.dueAt,
+        parseState: "fallback",
+      });
+    }
     setValue("");
   }
 
