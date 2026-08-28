@@ -80,7 +80,12 @@ users/{uid}                     — Firebase Auth manages this identity; no
     latencyMs: number
     createdAt: number
 
-  settings/prefs                  // Slice 8, not built — single fixed-id doc
+  settings/prefs                  // single fixed-id doc. dayEndMin is written
+                                     from Slice 4's schedule editor; the rest
+                                     is Slice 6/7/8 and not written yet
+    dayEndMin?: number             // evening cutoff, minutes past local
+                                     // midnight. Absent = the caller's 1260
+                                     // (21:00) default. See 04-tdd.md §core/time
     theme: "light" | "dark" | "auto"
     aiProvider: string
     aiModel: string
@@ -103,7 +108,7 @@ Composite indexes for `tasks` (`status` + `laneOrder` ascending, `status` +
 | `scheduleBlocks` | Capacity engine, Today's shape, S4 | S4 only | Entered once per semester. Half of the v1 time model |
 | `calendarCache` | Capacity engine, Today's shape | Calendar sync only (S7 "Sync now" or a Vercel Route Handler on focus) | The other half. Pure cache — if empty or stale, capacity falls back to the manual schedule alone, silently |
 | `aiLog` | S6 review list, manual quality review | Every AI call | **The only honest measure of whether the core promise works.** Without it, parse quality is a guess |
-| `settings` | S6, theme boot, Calendar status everywhere | S6, the OAuth callback, sync | One document per user (`settings/prefs`). Would hold that user's encrypted refresh token — see §Calendar OAuth for why that field is currently unreachable |
+| `settings` | S6, theme boot, Calendar status everywhere, **the capacity engine** (`dayEndMin`) | **S4** (`dayEndMin`), S6, the OAuth callback, sync | One document per user (`settings/prefs`). Would hold that user's encrypted refresh token — see §Calendar OAuth for why that field is currently unreachable |
 
 ## Ordering within a lane
 

@@ -117,8 +117,11 @@ windows, capacity zero) · **an empty or stale `calendarCache`** (degrade to
 schedule-only silently, never throw).
 
 `dayEnd` in v1 is the start of the first `work` block after now, falling back to
-a configured evening cutoff. `[[TBD: default evening cutoff — 21:00 assumed
-until the author's real schedule exists]]`
+a configured evening cutoff. **Resolved (Slice 4):** that cutoff is
+`settings/prefs.dayEndMin`, editable from the schedule editor and defaulting to
+`1260` (21:00). The default is applied by the caller — `ui/board/useDayPlan.ts` —
+not by `resolveDayEnd`, which keeps `core/time` free of any product default and
+lets tests state the cutoff explicitly.
 
 ## `core/capacity`
 

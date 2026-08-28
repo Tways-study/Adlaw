@@ -66,3 +66,61 @@
   color: var(--ink-3);
   line-height: 1.5;
 }
+
+/* ---------------- cutline ---------------- */
+.cutline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 3px 2px 12px;
+}
+
+.cutlineRule {
+  flex: 1;
+  height: 1px;
+  background: var(--alert);
+  opacity: 0.5;
+}
+
+.cutlineLabel {
+  font-size: 10.5px;
+  font-weight: 600;
+  /* Text on a tint (--alert-soft) — --alert itself misses the AA floor
+     against its own soft tint in light theme (DESIGN.md: 3.88:1). */
+  color: var(--alert-ink);
+  background: var(--alert-soft);
+  padding: 3px 7px;
+  border-radius: var(--r-s);
+  flex: none;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Cards past the cutline — dimmed, never hidden. Opacity is tuned
+   per-theme by design (CLAUDE.md): dark grounds destroy legibility much
+   faster than light ones at the same opacity, so the two values differ. */
+.past {
+  opacity: 0.45;
+  transition: opacity 160ms var(--ease);
+}
+
+.past:hover {
+  opacity: 0.72;
+}
+
+:root[data-theme="dark"] .past {
+  opacity: 0.6;
+}
+
+:root[data-theme="dark"] .past:hover {
+  opacity: 0.85;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .past {
+    opacity: 0.6;
+  }
+
+  :root:not([data-theme="light"]) .past:hover {
+    opacity: 0.85;
+  }
+}

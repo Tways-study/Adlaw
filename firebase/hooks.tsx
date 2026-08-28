@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import { onIdTokenChanged, type User } from "firebase/auth";
 import {
   collection,
+  doc,
   onSnapshot,
   orderBy,
   query,
@@ -12,7 +13,7 @@ import {
 } from "firebase/firestore";
 import { auth, db } from "./client";
 import { syncSessionCookie } from "./auth";
-import type { Course, Task, TaskStatus } from "@/core/types";
+import type { Course, Prefs, ScheduleBlock, Task, TaskStatus } from "@/core/types";
 
 interface AuthContextValue {
   user: User | null;
@@ -100,4 +101,43 @@ export function useCourses(): Course[] | undefined {
     });
   }, [uid]);
   return resolved?.uid === uid ? resolved.courses : undefined;
+}
+
+export function useScheduleBlocks(): ScheduleBlock[] | undefined {
+  const { user } = useAuth();
+  const uid = user?.uid ?? null;
+  const [resolved, setResolved] = useState<{ uid: string; blocks: ScheduleBlock[] } | undefined>(undefined);
+  useEffect(() => {
+    if (!uid) return;
+    // Fetched whole, unfiltered — core/time.ts does the weekday / activeFrom
+    // / activeTo selection. A bare collection listener needs no composite
+    // index; a semester's schedule is tens of documents. Don't add a
+    // where()/orderBy() here — that's the missing-index bug CLAUDE.md says
+    // not to repeat.
+    return onSnapshot(collection(db, "users", uid, "scheduleBlocks"), (snap) => {
+      setResolved({
+        uid,
+        blocks: snap.docs.map((d) => ({ _id: d.id, ...(d.data() as Omit<ScheduleBlock, "_id">) })),
+      });
+    });
+  }, [uid]);
+  return resolved?.uid === uid ? resolved.blocks : undefined;
+}
+
+export function usePrefs(): Prefs | undefined {
+  const { user } = useAuth();
+  const uid = user?.uid ?? null;
+  const [resolved, setResolved] = useState<{ uid: string; prefs: Prefs } | undefined>(undefined);
+  useEffect(() => {
+    if (!uid) return;
+    // Single fixed-id document, not a collection — onSnapshot on a doc ref
+    // still fires (with exists()===false) before the user has ever touched
+    // /schedule, so this resolves to { _id: "prefs" } with every field
+    // undefined rather than staying undefined forever. Defaulting
+    // dayEndMin to 1260 (21:00) is a caller concern, not this hook's.
+    return onSnapshot(doc(db, "users", uid, "settings", "prefs"), (snap) => {
+      setResolved({ uid, prefs: { _id: "prefs", ...(snap.data() as Omit<Prefs, "_id"> | undefined) } });
+    });
+  }, [uid]);
+  return resolved?.uid === uid ? resolved.prefs : undefined;
 }

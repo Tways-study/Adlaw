@@ -29,3 +29,14 @@ export function startOfLocalDay(now: number = Date.now()): number {
   d.setHours(0, 0, 0, 0);
   return d.getTime();
 }
+
+// core/time.ts stays in minutes past local midnight; this is the ui-layer
+// conversion to a clock label, used by the cutline's text equivalent.
+export function formatClock(min: number): string {
+  const clamped = Math.max(0, Math.min(1439, Math.round(min)));
+  const h = Math.floor(clamped / 60);
+  const m = clamped % 60;
+  const h12 = ((h + 11) % 12) + 1;
+  const period = h < 12 ? "AM" : "PM";
+  return `${h12}:${String(m).padStart(2, "0")} ${period}`;
+}

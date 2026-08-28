@@ -45,13 +45,69 @@ service cloud.firestore {
         allow read, write: if isOwner(uid);
       }
 
-      // Schema-only stubs (Slices 4/6/7/8, not built) — ownership-only rules
-      // for forward compatibility. No field validation yet; add it in the
-      // slice that starts writing to these.
-      match /scheduleBlocks/{blockId} { allow read, write: if isOwner(uid); }
+      match /scheduleBlocks/{blockId} {
+        allow read, delete: if isOwner(uid);
+
+        allow create: if isOwner(uid)
+          && request.resource.data.keys().hasOnly([
+               'weekday','startMin','endMin','label','kind','activeFrom','activeTo'
+             ])
+          && request.resource.data.keys().hasAll(
+               ['weekday','startMin','endMin','label','kind','activeFrom'])
+          && request.resource.data.weekday is number
+          && request.resource.data.weekday >= 0
+          && request.resource.data.weekday <= 6
+          && request.resource.data.startMin is number
+          && request.resource.data.endMin is number
+          && request.resource.data.startMin >= 0
+          && request.resource.data.startMin < request.resource.data.endMin
+          && request.resource.data.endMin <= 1440
+          && request.resource.data.label is string
+          && request.resource.data.kind in ['class','work','commute','other']
+          && request.resource.data.activeFrom is number
+          && (!('activeTo' in request.resource.data)
+              || request.resource.data.activeTo is number);
+
+        allow update: if isOwner(uid)
+          && request.resource.data.keys().hasOnly([
+               'weekday','startMin','endMin','label','kind','activeFrom','activeTo'
+             ])
+          && request.resource.data.keys().hasAll(
+               ['weekday','startMin','endMin','label','kind','activeFrom'])
+          && request.resource.data.weekday is number
+          && request.resource.data.weekday >= 0
+          && request.resource.data.weekday <= 6
+          && request.resource.data.startMin is number
+          && request.resource.data.endMin is number
+          && request.resource.data.startMin >= 0
+          && request.resource.data.startMin < request.resource.data.endMin
+          && request.resource.data.endMin <= 1440
+          && request.resource.data.label is string
+          && request.resource.data.kind in ['class','work','commute','other']
+          && request.resource.data.activeFrom is number
+          && (!('activeTo' in request.resource.data)
+              || request.resource.data.activeTo is number);
+      }
+
+      // Schema-only stubs (Slices 6/7, not built) — ownership-only rules for
+      // forward compatibility. No field validation yet; add it in the slice
+      // that starts writing to these.
       match /calendarCache/{eventId} { allow read, write: if isOwner(uid); }
       match /aiLog/{logId}           { allow read, write: if isOwner(uid); }
-      match /settings/{docId}        { allow read, write: if isOwner(uid); }
+
+      // settings/prefs grows one field per slice (dayEndMin now; theme,
+      // aiProvider, googleRefreshTokenEncrypted, … in Slices 6–8). No
+      // hasOnly here on purpose — unlike scheduleBlocks, this doc's full
+      // shape isn't introduced in one slice, so each slice validates only
+      // the field it starts writing, per this file's existing convention.
+      match /settings/{docId} {
+        allow read, delete: if isOwner(uid);
+        allow create, update: if isOwner(uid)
+          && (!('dayEndMin' in request.resource.data)
+              || (request.resource.data.dayEndMin is number
+                  && request.resource.data.dayEndMin >= 0
+                  && request.resource.data.dayEndMin <= 1440));
+      }
     }
   }
 }
