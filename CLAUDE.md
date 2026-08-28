@@ -4,13 +4,24 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository state
 
-**Slices 1–3 built, plus a public landing surface and multi-user auth.**
+**Slices 1–5 built, plus a public landing surface and multi-user auth.**
 Next.js (App Router) + Firebase (Firestore + Firebase Auth — Google and
 email/password, open signup as of `docs/00-intake.md`'s Amendment 4) are wired
 up; `DESIGN.md`'s tokens are in `ui/tokens.css`. Task capture (heuristic parser
-only), lanes, complete, delete+undo, and drag all work, scoped per account. No
-schedule editor, capacity math, timeline, Calendar, or AI yet — those are
-Slices 4–7 per `docs/04-tdd.md` §Build order.
+only), lanes, complete, delete+undo, and drag all work, scoped per account.
+The weekly schedule editor (`/schedule`), capacity math, cutline, and Today's
+shape are built — the day has a real capacity figure on the manual schedule
+alone. **No Calendar and no AI yet** — those are Slices 6–7 per
+`docs/04-tdd.md` §Build order, which means capture is still heuristic-only and
+nothing breaks a large task into steps or picks a focus task.
+
+**The one computation rule.** `ui/board/useDayPlan.ts` is the single place
+that calls `core/capacity`'s `layout()`. The capacity slot, the cutline, and
+Today's shape all read its result; none may recompute. `CapacityResult`
+guarantees `overageMin > 0` **exactly when** `cutIndex !== null`, so "does the
+day fit" is always `cutIndex === null` and the over-by number is always
+`overageMin` — never `plannedMin - freeMin`, which disagrees whenever packing
+strands a window remainder too small for the next task.
 
 **Routing:** `/` is the public marketing landing page, `/login` and `/signup`
 are public, and the board lives at **`/board`**. `proxy.ts` is the only
@@ -31,7 +42,8 @@ Commands: `npm run dev` (Next + Turbopack — no separate backend dev process;
 Firestore/Firebase Auth are serverless), `npm run lint`, `npx tsc --noEmit`,
 `npm run build` (`next build`), `npm test` (Vitest, pure suite). Single test
 file: `npx vitest run path/to/file.test.ts`; filter by name within it with
-`-t "pattern"`. Tests cover `core/heuristic.ts`, `core/order.ts`'s laneOrder
+`-t "pattern"`. Tests cover `core/heuristic.ts`, `core/time.ts`,
+`core/capacity.ts`, `core/order.ts`'s laneOrder
 arithmetic, and `ui/landing/copy.ts`'s fixtures. `vitest.config.mts` includes
 `**/*.test.ts` only — **no `.tsx`, and no environment is configured**, so
 component tests need a config change first; keep new tests pure and they
@@ -179,22 +191,30 @@ firebase/
                          signOut, plus the session-cookie sync
   tasks.ts               typed writes; move() is the client-side runTransaction
                          enforcing one-"now"
-  hooks.tsx              useAuth, useTasksByStatus / useDoneToday / useCourses —
-                         onSnapshot wrappers returning T[] | undefined
+  schedule.ts            scheduleBlocks writes + setDayEnd. endBlock() sets
+                         activeTo rather than deleting, so a semester change
+                         doesn't destroy history
+  hooks.tsx              useAuth, useTasksByStatus / useDoneToday / useCourses /
+                         useScheduleBlocks / usePrefs — onSnapshot wrappers
+                         returning T[] | undefined
 core/                   PURE. No I/O, no React, no Firebase imports
   types.ts              Task, Course, TaskStatus, ParseState — plain data,
                          replaces generated Doc<>/Id<> types
   order.ts               laneOrder arithmetic — computeLaneOrder, unit-tested
                          with no backend or emulator
-  time.ts               free-window derivation                    (Slice 4, not built)
-  capacity.ts           totals, overage, cutline index             (Slice 4, not built)
+  time.ts               free-window derivation — busyIntervals, resolveDayEnd,
+                         freeWindows. Minutes past local midnight throughout
+  capacity.ts           layout() — totals, overage, cutline index, per-task
+                         start/end. The ONLY caller is ui/board/useDayPlan.ts
   heuristic.ts          rules-based parser — the fallback. Built, and the only parser today
 ai/                      (Slice 7, not built)
   types.ts              ParsedTask, BreakdownResult, FocusPick + Zod schemas
   gemini.ts             provider adapter
   index.ts              provider selection
 ui/
-  board/                lanes, cards, cutline (+ shell.module.css, the .app/.day grid)
+  board/                lanes, cards, cutline (+ shell.module.css, the .app/.day
+                        grid). useDayPlan.ts lives here — the single layout()
+                        call site every capacity surface reads
   landing/              S0 sections, copy.ts fixtures, demos/ miniatures
   theme/                shared theme toggle + applyTheme (storage key lives here)
   graphics/             DayMark — the one graphic, public surfaces only (S0 + S1)
@@ -203,7 +223,10 @@ ui/
                         ::after content on purpose — keeping them out of the
                         DOM is what stops the landing <h1> indexing as all
                         four at once. Don't "simplify" them back inline
-  timeline/              Today's shape                             (Slice 5, not built)
+  timeline/              Today's shape — committed vs planned tracks, now-line,
+                         day edge. Rendered inside ui/board/StartHere.tsx
+  schedule/              S4 week grid + the editable day edge. Writes commit
+                         per edit, no save button
   capture/               input + live preview. Built, Firebase-wired
   settings/               S6 + S7 (Calendar connect)                (Slice 8, not built)
   drag/                  pointer tracking, spring, FLIP. Built

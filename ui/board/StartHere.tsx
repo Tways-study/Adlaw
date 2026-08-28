@@ -4,6 +4,7 @@ import { useTasksByStatus } from "@/firebase/hooks";
 import { TaskCard } from "./TaskCard";
 import { SkeletonCard } from "./Skeleton";
 import { useRegisterDropLane } from "@/ui/drag/DragContext";
+import { TodaysShape } from "@/ui/timeline/TodaysShape";
 import styles from "./lane.module.css";
 
 // "now" is reachable by drag/keyboard promotion (Slice 3, this file) or a
@@ -28,6 +29,11 @@ export function StartHere() {
         ) : (
           <p className={styles.emptyState}>Nothing queued. Add something, or pull a card from the shelf.</p>
         )}
+        {/* Below the focus card, per docs/02-app-flow.md S2's region list —
+            "Start here ... Below it, Today's shape." Same column, same
+            scroll region, matching docs/design/prototype.html's markup
+            (the .shape panel sits inside the "now" lane-body). */}
+        <TodaysShape />
       </div>
     </div>
   );

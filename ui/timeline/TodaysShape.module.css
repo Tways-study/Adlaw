@@ -1,0 +1,234 @@
+/* "Today's shape" (S5) — port of docs/design/prototype.html:177-196's
+   structure. Colors come from ui/tokens.css throughout; the prototype
+   predates the 2026-08-18 palette pivot (hardcoded green primary) and uses
+   --lift-2, a token that no longer exists — this resting panel uses --edge
+   only, per DESIGN.md's "no shadows on content cards" rule. */
+
+.shape {
+  margin-top: 16px;
+  background: var(--card);
+  border-radius: var(--r-l);
+  box-shadow: var(--edge);
+  padding: 14px 15px 12px;
+}
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 11px;
+}
+
+.head h4 {
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.head span {
+  font-size: 11.5px;
+  color: var(--ink-3);
+}
+
+/* ---------------- loading ---------------- */
+.skeleton {
+  height: 120px;
+  border-radius: var(--r-m);
+  background: var(--line-soft);
+}
+
+/* ---------------- empty states ---------------- */
+/* "No schedule at all" (S3's first-run trigger) — the only empty state that
+   can occur here, since blocks.length === 0 is checked before this panel
+   ever tries to render a timeline. Distinct from the calendar callout below,
+   which needs a schedule to already exist. */
+.emptyPanel {
+  margin: 0;
+  padding: 8px 2px;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.emptyLink {
+  color: var(--primary-ink);
+  font-weight: 600;
+}
+
+.emptyLink:hover {
+  text-decoration: underline;
+}
+
+/* ---------------- calendar-connect callout ---------------- */
+/* Quiet and dismissible, never blocking — Slice 6 (OAuth + calendarCache)
+   isn't built, so this deliberately links nowhere yet (see the comment
+   beside its JSX). Persisted in localStorage once dismissed. */
+.callout {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 11px;
+  padding: 7px 10px;
+  border-radius: var(--r-s);
+  background: var(--line-soft);
+}
+
+.calloutText {
+  font-size: 11.5px;
+  color: var(--ink-2);
+}
+
+.calloutDismiss {
+  flex: none;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-3);
+  padding: 3px 6px;
+  border-radius: var(--r-s);
+}
+
+.calloutDismiss:hover {
+  color: var(--ink);
+  background: oklch(0.5 0 0 / 0.08);
+}
+
+/* ---------------- timeline diagram ---------------- */
+/* aria-hidden in the markup — ui/timeline/TodaysShape.tsx's .srOnly block
+   carries the same information as real, ordered text for assistive tech. */
+.tl {
+  position: relative;
+  display: grid;
+  grid-template-columns: 44px 1fr 1fr;
+  gap: 0 8px;
+  height: 300px;
+}
+
+.gut {
+  position: relative;
+}
+
+.gut b {
+  position: absolute;
+  right: 6px;
+  transform: translateY(-50%);
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--ink-3);
+}
+
+.col {
+  position: relative;
+  border-radius: 5px;
+  background-image: linear-gradient(var(--line-soft) 1px, transparent 1px);
+  background-repeat: repeat;
+  background-position: 0 0;
+}
+
+.colLabel {
+  position: absolute;
+  top: -15px;
+  left: 1px;
+  font-size: 9.5px;
+  font-weight: 600;
+  color: var(--ink-3);
+  letter-spacing: 0.02em;
+}
+
+.blkFixed,
+.blkPlan,
+.blkSpill {
+  position: absolute;
+  left: 0;
+  right: 2px;
+  min-height: 18px;
+  border-radius: 5px;
+  padding: 3px 7px;
+  overflow: hidden;
+  font-size: 10.5px;
+  line-height: 1.25;
+}
+
+.blkFixed {
+  background: var(--busy);
+  color: var(--ink-2);
+}
+
+/* Full-ring inset outlines (never a side-stripe — DESIGN.md's clearest
+   banned tell is border-left/right as an accent) distinguish planned from
+   spilled-past-the-edge by shape as well as color, on top of the spill
+   block's own " · past today's edge" text — spill is never color-only. */
+.blkPlan {
+  background: var(--primary-soft);
+  color: var(--primary-ink);
+  box-shadow: inset 0 0 0 1px oklch(0.568 0.182 254 / 0.22);
+  font-weight: 550;
+}
+
+.blkSpill {
+  background: var(--alert-soft);
+  color: var(--alert-ink);
+  box-shadow: inset 0 0 0 1px oklch(0.59 0.22 31 / 0.28);
+  font-weight: 550;
+}
+
+.blkTitle {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.blkTime {
+  display: block;
+  font-size: 9.5px;
+  opacity: 0.8;
+  font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nowline {
+  position: absolute;
+  left: 44px;
+  right: 0;
+  height: 1px;
+  background: var(--ink);
+  opacity: 0.8;
+  z-index: 3;
+}
+
+.nowline::after {
+  content: "";
+  position: absolute;
+  left: -3px;
+  top: -2.5px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ink);
+}
+
+/* The edge of the day — dashed so it reads distinctly from the solid
+   now-line even without the color difference. */
+.endline {
+  position: absolute;
+  left: 44px;
+  right: 0;
+  border-top: 1.5px dashed var(--alert);
+  z-index: 3;
+}
+
+/* ---------------- screen-reader summary ---------------- */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}

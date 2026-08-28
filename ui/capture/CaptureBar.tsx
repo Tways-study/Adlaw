@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { create } from "@/firebase/tasks";
-import { useAuth } from "@/firebase/hooks";
+import { useAuth, useScheduleBlocks } from "@/firebase/hooks";
 import { parseHeuristic } from "@/core/heuristic";
 import { formatEstimate, formatDue } from "@/ui/board/format";
 import styles from "./CaptureBar.module.css";
@@ -10,6 +10,20 @@ import styles from "./CaptureBar.module.css";
 export function CaptureBar() {
   const [value, setValue] = useState("");
   const { user } = useAuth();
+  const scheduleBlocks = useScheduleBlocks();
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // S3's first run: "capture is pre-focused" when zero schedule blocks
+  // exist — not a wizard, just this one autofocus. Fires once, the first
+  // time scheduleBlocks resolves from undefined to a real array, so it
+  // never steals focus back after the user has clicked elsewhere (e.g.
+  // once they've gone to set up the schedule and returned).
+  const hasAutoFocused = useRef(false);
+  useEffect(() => {
+    if (hasAutoFocused.current || scheduleBlocks === undefined) return;
+    hasAutoFocused.current = true;
+    if (scheduleBlocks.length === 0) inputRef.current?.focus();
+  }, [scheduleBlocks]);
 
   const preview = useMemo(() => {
     const trimmed = value.trim();
@@ -52,6 +66,7 @@ export function CaptureBar() {
       )}
       <div className={styles.inner}>
         <input
+          ref={inputRef}
           placeholder="finish bio lab report by thursday"
           autoComplete="off"
           spellCheck={false}
