@@ -37,7 +37,11 @@ arithmetic, and `ui/landing/copy.ts`'s fixtures. `vitest.config.mts` includes
 component tests need a config change first; keep new tests pure and they
 don't. `npm run test:rules` runs `firestore.rules.test.ts` (cross-user
 isolation, field validation) against the Firebase emulator — needs Java and
-`firebase-tools`, kept off the fast `npm test` loop for that reason.
+`firebase-tools`, kept off the fast `npm test` loop for that reason. It uses
+its own `vitest.rules.config.mts`, because `vitest.config.mts` *excludes*
+that file to keep `npm test` emulator-free and a CLI `--exclude` appends to
+the exclude list rather than replacing it. `firebase.json` pins the Firestore
+emulator to **port 8085**; the default 8080 collides with too much else.
 
 `.env.local` needs six `NEXT_PUBLIC_FIREBASE_*` values from Firebase console →
 Project settings → Your apps → Web app (API key, auth domain, project id,

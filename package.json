@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "test:rules": "firebase emulators:exec --only firestore \"vitest run firestore.rules.test.ts\""
+    "test:rules": "firebase emulators:exec --only firestore \"vitest run --config vitest.rules.config.mts\""
   },
   "dependencies": {
     "firebase": "^12.18.0",
