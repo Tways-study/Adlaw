@@ -7,6 +7,9 @@ import { useAuth, useCourses, usePrefs, useScheduleBlocks } from "@/firebase/hoo
 import { parseHeuristic } from "@/core/heuristic";
 import { useSplitSuggestion } from "@/ui/board/SplitSuggestionContext";
 import { formatEstimate, formatDue } from "@/ui/board/format";
+import { enqueueCapture, flushCaptureQueue, queuedCount } from "./offlineQueue";
+import { useOnlineStatus } from "./useOnlineStatus";
+import type { ParseState } from "@/core/types";
 import styles from "./CaptureBar.module.css";
 
 export function CaptureBar() {
@@ -17,6 +20,29 @@ export function CaptureBar() {
   const prefs = usePrefs();
   const { suggest } = useSplitSuggestion();
   const inputRef = useRef<HTMLInputElement>(null);
+  const isOnline = useOnlineStatus();
+  const [pendingCount, setPendingCount] = useState(0);
+  const uid = user?.uid;
+
+  // One-shot sync from localStorage (an external system, read once on
+  // mount) — not a cascading-render risk, same pattern as
+  // ui/timeline/TodaysShape.tsx's dismissed-prompt read.
+  useEffect(() => {
+    if (!uid) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setPendingCount(queuedCount(uid));
+  }, [uid]);
+
+  // Flushes on mount (covers "closed the tab while offline, reopened once
+  // back online") and again every time isOnline flips true — the queue
+  // itself is empty-safe to flush repeatedly, so no separate "was offline"
+  // tracking is needed.
+  useEffect(() => {
+    if (!uid || !isOnline) return;
+    void flushCaptureQueue(uid, (taskId, shouldSplit) => {
+      if (shouldSplit) suggest(taskId);
+    }).then(() => setPendingCount(queuedCount(uid)));
+  }, [uid, isOnline, suggest]);
 
   // S3's first run: "capture is pre-focused" when zero schedule blocks
   // exist — not a wizard, just this one autofocus. Fires once, the first
@@ -49,8 +75,7 @@ export function CaptureBar() {
     // blocks the input (CLAUDE.md). The next sentence can be typed while
     // this one is still in flight; nothing here waits on it.
     setValue("");
-    if (!user) return;
-    const uid = user.uid;
+    if (!uid) return;
     const courseCodes = courses?.map((c) => c.code);
     const now = Date.now();
 
@@ -66,23 +91,57 @@ export function CaptureBar() {
         aiProvider: prefs?.aiProvider,
         aiModel: prefs?.aiModel,
       });
-      const taskId = await create(uid, {
+      const parseState: ParseState = log.ok ? "ok" : "fallback";
+      const draft = {
         rawText,
         title: result.title,
         courseCode: result.courseCode,
         estimateMin: result.estimateMin,
         dueAt: result.dueAt,
-        parseState: log.ok ? "ok" : "fallback",
-      });
-      // PRD M7: "Triggered when the parse flags shouldSplit, or on demand."
-      // A quiet, dismissible offer — ui/board/TaskCard.tsx reads this and
-      // never forces the breakdown.
-      if (result.shouldSplit) suggest(taskId);
+        parseState,
+        shouldSplit: result.shouldSplit,
+      };
+
+      // Known offline: skip the network attempt entirely rather than wait
+      // out a doomed request. Still online per navigator.onLine but the
+      // write itself fails (a connection that drops mid-flight, or was
+      // never really back despite the event firing) — queue there too, so
+      // a capture is never lost either way (CLAUDE.md: capture never
+      // fails).
+      if (!isOnline) {
+        enqueueCapture(uid, draft);
+        setPendingCount(queuedCount(uid));
+        return;
+      }
+      try {
+        const taskId = await create(uid, draft);
+        // PRD M7: "Triggered when the parse flags shouldSplit, or on
+        // demand." A quiet, dismissible offer — ui/board/TaskCard.tsx reads
+        // this and never forces the breakdown.
+        if (result.shouldSplit) suggest(taskId);
+      } catch {
+        enqueueCapture(uid, draft);
+        setPendingCount(queuedCount(uid));
+      }
     })();
   }
 
   return (
     <div className={styles.capture}>
+      {/* docs/02-app-flow.md's cross-cutting "Offline" row: "small persistent
+          marker near capture." Quiet by design — states what's true, no
+          alarm, matching PRODUCT.md's brand personality. Shown while
+          offline, and while a queued capture is still mid-flush right after
+          reconnecting. */}
+      {(!isOnline || pendingCount > 0) && (
+        <p className={styles.offlineNotice}>
+          {!isOnline
+            ? pendingCount > 0
+              ? `Offline — ${pendingCount} queued, will send once you're back.`
+              : "Offline — captures will send once you're back."
+            : `Syncing ${pendingCount} queued capture${pendingCount > 1 ? "s" : ""}…`}
+        </p>
+      )}
       {preview && (
         <div className={styles.parsed}>
           {preview.courseCode && <span className={styles.chip}>{preview.courseCode}</span>}

@@ -8,6 +8,15 @@
   background: linear-gradient(to top, var(--desk) 45%, transparent);
 }
 
+/* Neutral, not --alert — offline isn't a capacity/day-edge signal
+   (DESIGN.md reserves --alert for that), so this is carried by the
+   sentence itself on the same quiet ink as .hint below. */
+.offlineNotice {
+  margin: 0 0 8px 2px;
+  font-size: 11px;
+  color: var(--ink-3);
+}
+
 .parsed {
   display: flex;
   gap: 6px;
