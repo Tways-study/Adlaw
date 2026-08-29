@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { usePrefs, useScheduleBlocks, useTasksByStatus } from "@/firebase/hooks";
-import { busyIntervals, freeWindows, resolveDayEnd, type BusyInterval } from "@/core/time";
+import { busyIntervals, freeWindows, resolveDayEnd, type BusyInterval, type Window } from "@/core/time";
 import { layout, type CapacityResult } from "@/core/capacity";
 import type { Task } from "@/core/types";
 
@@ -39,6 +39,13 @@ export interface DayPlan extends CapacityResult {
   nowMin: number;
   /** [now task, ...next tasks] — the exact queue layout() was packed against. */
   queue: Task[];
+  /**
+   * Today's free windows — the same array freeWindows() derived and layout()
+   * packed against. Exposed so a focus pick (M8, ui/board/FocusContext.tsx)
+   * can hand core/focus.ts's pickFocus the real remaining-time figure without
+   * recomputing it (and risking disagreeing with the capacity slot).
+   */
+  windows: Window[];
 }
 
 /**
@@ -82,6 +89,6 @@ export function useDayPlan(): DayPlan | undefined {
     const queue: Task[] = [...nowTasks, ...nextTasks];
     const result = layout(queue, windows, nowMin);
 
-    return { ...result, busyIntervals: busy, dayEndMin, nowMin, queue };
+    return { ...result, busyIntervals: busy, dayEndMin, nowMin, queue, windows };
   }, [blocks, prefs, nowTasks, nextTasks, nowMin]);
 }

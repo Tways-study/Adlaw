@@ -52,6 +52,15 @@ export function DeleteUndoProvider({ children }: { children: React.ReactNode }) 
       dueAt: task.dueAt,
       status: task.status,
       laneOrder: task.laneOrder,
+      // parentId/stepIndex: without these, undoing a deleted step (PRD M7 —
+      // now visible and deletable in its own right, unlike before Slice 7)
+      // would silently restore it as an orphaned top-level task instead of
+      // putting it back in its parent's breakdown. excludedFromFocusUntil
+      // (M8's "Not this one") is the same kind of state a delete shouldn't
+      // erase out from under an undo.
+      parentId: task.parentId,
+      stepIndex: task.stepIndex,
+      excludedFromFocusUntil: task.excludedFromFocusUntil,
       parseState: task.parseState,
       createdAt: task.createdAt,
       completedAt: task.completedAt,

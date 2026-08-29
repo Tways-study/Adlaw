@@ -2,8 +2,10 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { create } from "@/firebase/tasks";
-import { useAuth, useScheduleBlocks } from "@/firebase/hooks";
+import { requestParse } from "@/firebase/ai";
+import { useAuth, useCourses, useScheduleBlocks } from "@/firebase/hooks";
 import { parseHeuristic } from "@/core/heuristic";
+import { useSplitSuggestion } from "@/ui/board/SplitSuggestionContext";
 import { formatEstimate, formatDue } from "@/ui/board/format";
 import styles from "./CaptureBar.module.css";
 
@@ -11,6 +13,8 @@ export function CaptureBar() {
   const [value, setValue] = useState("");
   const { user } = useAuth();
   const scheduleBlocks = useScheduleBlocks();
+  const courses = useCourses();
+  const { suggest } = useSplitSuggestion();
   const inputRef = useRef<HTMLInputElement>(null);
 
   // S3's first run: "capture is pre-focused" when zero schedule blocks
@@ -40,18 +44,37 @@ export function CaptureBar() {
     const rawText = value.trim();
     if (!rawText) return;
 
-    const parsed = preview ?? parseHeuristic(rawText, Date.now());
-    if (user) {
-      void create(user.uid, {
-        rawText,
-        title: parsed.title,
-        courseCode: parsed.courseCode,
-        estimateMin: parsed.estimateMin,
-        dueAt: parsed.dueAt,
-        parseState: "fallback",
-      });
-    }
+    // Cleared immediately, before the AI call resolves — capture never
+    // blocks the input (CLAUDE.md). The next sentence can be typed while
+    // this one is still in flight; nothing here waits on it.
     setValue("");
+    if (!user) return;
+    const uid = user.uid;
+    const courseCodes = courses?.map((c) => c.code);
+    const now = Date.now();
+
+    // requestParse always resolves — network failure, a non-2xx response,
+    // and the Route Handler's own Gemini-to-heuristic fallback all still
+    // produce a usable ParsedTask (see firebase/ai.ts) — so the card is
+    // created unconditionally either way. `submitting` is real (the capture
+    // state machine's own name for this gap, docs/02-app-flow.md), just
+    // never shown as a spinner/modal: the only visible effect is the input
+    // clearing above and the card appearing once this resolves.
+    void (async () => {
+      const { result, log } = await requestParse(uid, rawText, now, courseCodes);
+      const taskId = await create(uid, {
+        rawText,
+        title: result.title,
+        courseCode: result.courseCode,
+        estimateMin: result.estimateMin,
+        dueAt: result.dueAt,
+        parseState: log.ok ? "ok" : "fallback",
+      });
+      // PRD M7: "Triggered when the parse flags shouldSplit, or on demand."
+      // A quiet, dismissible offer — ui/board/TaskCard.tsx reads this and
+      // never forces the breakdown.
+      if (result.shouldSplit) suggest(taskId);
+    })();
   }
 
   return (

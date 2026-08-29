@@ -9,6 +9,7 @@ import {
   orderBy,
   query,
   runTransaction,
+  updateDoc,
   where,
   writeBatch,
 } from "firebase/firestore";
@@ -37,6 +38,30 @@ async function lastLaneOrder(
   return (snap.docs[0]?.data().laneOrder as number | undefined) ?? null;
 }
 
+// Finds the active course matching `code` (case-insensitive), or stages a
+// new one in `batch` and returns its not-yet-committed id. Shared by
+// create() and applyParse() so a capture and a retried parse resolve a
+// courseCode to the same course the same way — a writeBatch gives the same
+// "course and task land together or not at all" atomicity without
+// requiring any Query-based read inside a Transaction (see
+// lastLaneOrder's comment).
+async function resolveCourseId(
+  coursesCol: ReturnType<typeof collection>,
+  batch: ReturnType<typeof writeBatch>,
+  code: string | undefined,
+): Promise<string | undefined> {
+  const normalized = code?.trim();
+  if (!normalized) return undefined;
+  const existing = await getDocs(query(coursesCol, where("active", "==", true)));
+  const match = existing.docs.find(
+    (d) => (d.data().code as string).toLowerCase() === normalized.toLowerCase(),
+  );
+  if (match) return match.id;
+  const newCourseRef = doc(coursesCol);
+  batch.set(newCourseRef, { code: normalized, active: true });
+  return newCourseRef.id;
+}
+
 export async function create(
   uid: string,
   args: {
@@ -51,30 +76,16 @@ export async function create(
   const tasksCol = collection(db, "users", uid, "tasks");
   const coursesCol = collection(db, "users", uid, "courses");
   const estimateMin = args.estimateMin > 0 ? args.estimateMin : 30;
-  const normalized = args.courseCode?.trim();
-
-  // No transaction needed here — a writeBatch gives the same "course and
-  // task land together or not at all" atomicity without requiring any
-  // Query-based read inside a Transaction (see lastLaneOrder's comment).
-  let courseId: string | undefined;
-  if (normalized) {
-    const existing = await getDocs(query(coursesCol, where("active", "==", true)));
-    const match = existing.docs.find(
-      (d) => (d.data().code as string).toLowerCase() === normalized.toLowerCase(),
-    );
-    courseId = match?.id;
-  }
-  const lastOrder = await lastLaneOrder(tasksCol, "shelf");
 
   const batch = writeBatch(db);
-  const newCourseRef = normalized && !courseId ? doc(coursesCol) : null;
-  if (newCourseRef) batch.set(newCourseRef, { code: normalized, active: true });
+  const courseId = await resolveCourseId(coursesCol, batch, args.courseCode);
+  const lastOrder = await lastLaneOrder(tasksCol, "shelf");
 
   const taskRef = doc(tasksCol);
   batch.set(taskRef, {
     title: args.title,
     rawText: args.rawText,
-    courseId: courseId ?? newCourseRef?.id,
+    courseId,
     estimateMin,
     dueAt: args.dueAt,
     status: "shelf",
@@ -84,6 +95,91 @@ export async function create(
   });
   await batch.commit();
   return taskRef.id;
+}
+
+// Applied by ui/board/TaskCard.tsx's quiet retry affordance (CLAUDE.md:
+// capture never fails, but a `parseState: "fallback"` card offers a retry
+// that re-runs requestParse and, on success, overwrites the fields it got
+// wrong the first time — title, course, estimate, due date, parseState.
+// Never touches status/laneOrder/parentId: a retry corrects a parse, it
+// never moves or re-homes the task.
+export async function applyParse(
+  uid: string,
+  id: string,
+  args: {
+    title: string;
+    courseCode?: string;
+    estimateMin: number;
+    dueAt?: number;
+    parseState: ParseState;
+  },
+): Promise<void> {
+  const tasksCol = collection(db, "users", uid, "tasks");
+  const coursesCol = collection(db, "users", uid, "courses");
+  const estimateMin = args.estimateMin > 0 ? args.estimateMin : 30;
+
+  const batch = writeBatch(db);
+  const courseId = await resolveCourseId(coursesCol, batch, args.courseCode);
+
+  // deleteField(), not `undefined` — ignoreUndefinedProperties only skips
+  // writing a never-set field, it does not clear one that already exists
+  // (see uncomplete()'s identical comment on completedAt below).
+  batch.update(doc(tasksCol, id), {
+    title: args.title,
+    estimateMin,
+    courseId: courseId ?? deleteField(),
+    dueAt: args.dueAt ?? deleteField(),
+    parseState: args.parseState,
+  });
+  await batch.commit();
+}
+
+// "Not this one" (PRD M8) — excludes a task from focus picks for the rest
+// of today without moving or otherwise touching it. requestFocus's own
+// candidate list (built from the live shelf/next tasks) is what actually
+// honours this field; writing it here is the only side effect.
+export async function excludeFromFocusToday(uid: string, id: string, until: number): Promise<void> {
+  await updateDoc(doc(db, "users", uid, "tasks", id), { excludedFromFocusUntil: until });
+}
+
+// Persists an accepted breakdown (PRD M7) as ordered, schedulable child
+// tasks — never called automatically by ai/'s breakdown() or
+// firebase/ai.ts's requestBreakdown, which only ever propose steps; writing
+// them is a separate, explicit action the caller takes once the user
+// accepts the preview. Steps land in "shelf" like any freshly captured
+// task; `parentId` marks the parent unschedulable per
+// docs/03-backend-schema.md's invariant #2 (enforced by callers reading
+// `parentId` to exclude a task from lanes — see firebase/hooks.tsx's
+// useTasksSnapshot, which already filters `parentId === undefined`).
+export async function createSteps(
+  uid: string,
+  parentId: string,
+  steps: Array<{ title: string; estimateMin: number; dueAt?: number }>,
+): Promise<string[]> {
+  const tasksCol = collection(db, "users", uid, "tasks");
+  let order = await lastLaneOrder(tasksCol, "shelf");
+
+  const batch = writeBatch(db);
+  const ids: string[] = [];
+  steps.forEach((step, i) => {
+    const ref = doc(tasksCol);
+    order = computeLaneOrder(null, null, order);
+    batch.set(ref, {
+      title: step.title,
+      rawText: step.title,
+      estimateMin: step.estimateMin,
+      dueAt: step.dueAt,
+      status: "shelf",
+      laneOrder: order,
+      parentId,
+      stepIndex: i,
+      parseState: "ok",
+      createdAt: Date.now(),
+    });
+    ids.push(ref.id);
+  });
+  await batch.commit();
+  return ids;
 }
 
 export async function complete(uid: string, id: string): Promise<void> {

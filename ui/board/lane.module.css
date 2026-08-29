@@ -67,6 +67,36 @@
   line-height: 1.5;
 }
 
+/* Start here's empty state: a user-triggered pick, never automatic (PRD M8 /
+   CLAUDE.md: "every AI call is user-triggered"). Only shown when there is
+   something in shelf/next to pick from at all (FocusContext's canPick). */
+.emptyFocus {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.pickBtn {
+  padding: 7px 15px;
+  border-radius: var(--r-s);
+  font-size: 12.5px;
+  font-weight: 600;
+  background: var(--primary-fill);
+  color: var(--on-fill);
+  box-shadow: var(--lift-1);
+  transition: filter 140ms var(--ease);
+}
+
+.pickBtn:hover {
+  filter: brightness(1.12);
+}
+
+.pickBtn:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+
 /* ---------------- cutline ---------------- */
 .cutline {
   display: flex;

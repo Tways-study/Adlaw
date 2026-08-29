@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { onIdTokenChanged, type User } from "firebase/auth";
 import {
   collection,
@@ -40,6 +40,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return <AuthContext.Provider value={{ user, loading }}>{children}</AuthContext.Provider>;
 }
 
+// A raw, unfiltered listener over every task for this uid — mirrors
+// useScheduleBlocks's "fetch whole, unfiltered" pattern below (a bare
+// collection listener needs no composite index, and a student's total task
+// count is small). Used to work out which top-level tasks have been broken
+// down into steps (useStepParentIds, right below) and, in
+// ui/board/TaskCard.tsx, to look up a step's parent title/due date and its
+// sibling count for the "step 2 of 4" position indicator (PRD M7).
+export function useAllTasks(): Task[] | undefined {
+  const { user } = useAuth();
+  const uid = user?.uid ?? null;
+  const [resolved, setResolved] = useState<{ uid: string; tasks: Task[] } | undefined>(undefined);
+  useEffect(() => {
+    if (!uid) return;
+    return onSnapshot(collection(db, "users", uid, "tasks"), (snap) => {
+      setResolved({ uid, tasks: snap.docs.map((d) => ({ _id: d.id, ...(d.data() as Omit<Task, "_id">) })) });
+    });
+  }, [uid]);
+  return resolved?.uid === uid ? resolved.tasks : undefined;
+}
+
+// Parent ids that currently have at least one step. M7: "Steps are
+// schedulable; the parent is not" — a parent with steps must drop out of
+// every lane and out of the capacity queue once broken down, or its
+// minutes get counted twice (once as the parent, once as its steps).
+function useStepParentIds(): Set<string> | undefined {
+  const allTasks = useAllTasks();
+  return useMemo(() => {
+    if (allTasks === undefined) return undefined;
+    const ids = new Set<string>();
+    for (const t of allTasks) {
+      if (t.parentId !== undefined) ids.add(t.parentId);
+    }
+    return ids;
+  }, [allTasks]);
+}
+
 function useTasksSnapshot(
   uid: string | null,
   buildQuery: (col: ReturnType<typeof collection>) => Query,
@@ -58,11 +94,25 @@ function useTasksSnapshot(
     const q = buildQuery(collection(db, "users", uid, "tasks"));
     return onSnapshot(q, (snap) => {
       const rows = snap.docs.map((d) => ({ _id: d.id, ...(d.data() as Omit<Task, "_id">) }));
-      setResolved({ uid, tasks: rows.filter((t) => t.parentId === undefined) });
+      setResolved({ uid, tasks: rows });
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [uid, ...deps]);
-  return resolved?.uid === uid ? resolved.tasks : undefined;
+
+  const rows = resolved?.uid === uid ? resolved.tasks : undefined;
+  const stepParentIds = useStepParentIds();
+
+  // A step (parentId set) always passes through whatever status query
+  // fetched it. A top-level task (no parentId) drops out the moment it has
+  // at least one step, in every status lane at once (shelf/next/now/done),
+  // so a broken-down parent's minutes are counted exactly once — as its
+  // steps — never twice, in every capacity/cutline/timeline consumer that
+  // reads useTasksByStatus/useDoneToday (ui/board/useDayPlan.ts's queue in
+  // particular). A childless top-level task is unaffected.
+  return useMemo(() => {
+    if (rows === undefined || stepParentIds === undefined) return undefined;
+    return rows.filter((t) => t.parentId !== undefined || !stepParentIds.has(t._id));
+  }, [rows, stepParentIds]);
 }
 
 export function useTasksByStatus(status: TaskStatus): Task[] | undefined {

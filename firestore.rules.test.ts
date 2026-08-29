@@ -170,3 +170,89 @@ describe("settings/prefs — field validation", () => {
     await assertFails(setDoc(doc(owner(), "users/owner/settings/prefs"), { dayEndMin: "late" }));
   });
 });
+
+const baseLog = {
+  kind: "parse",
+  input: '{"text":"finish bio lab"}',
+  provider: "heuristic",
+  model: "heuristic",
+  ok: true,
+  latencyMs: 12,
+  createdAt: Date.now(),
+};
+
+describe("aiLog — cross-user isolation", () => {
+  test("a stranger cannot read another user's aiLog entry", async () => {
+    await testEnv.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), "users/owner/aiLog/l1"), baseLog);
+    });
+    const stranger = testEnv.authenticatedContext("stranger").firestore();
+    await assertFails(getDoc(doc(stranger, "users/owner/aiLog/l1")));
+  });
+
+  test("a stranger cannot write another user's aiLog entry", async () => {
+    const stranger = testEnv.authenticatedContext("stranger").firestore();
+    await assertFails(setDoc(doc(stranger, "users/owner/aiLog/l2"), baseLog));
+  });
+});
+
+describe("aiLog — field validation", () => {
+  const owner = () => testEnv.authenticatedContext("owner").firestore();
+
+  test("a valid entry succeeds", async () => {
+    await assertSucceeds(setDoc(doc(owner(), "users/owner/aiLog/ok1"), baseLog));
+  });
+
+  test("a valid entry succeeds with the optional output and error fields present", async () => {
+    await assertSucceeds(
+      setDoc(doc(owner(), "users/owner/aiLog/ok2"), {
+        ...baseLog,
+        ok: false,
+        output: '{"title":"x"}',
+        error: "gemini request timed out after 3500ms",
+      }),
+    );
+  });
+
+  test("kind must be one of parse, breakdown, or focus", async () => {
+    await assertFails(setDoc(doc(owner(), "users/owner/aiLog/bad"), { ...baseLog, kind: "summarize" }));
+  });
+
+  test("input must be a string", async () => {
+    await assertFails(setDoc(doc(owner(), "users/owner/aiLog/bad2"), { ...baseLog, input: 123 }));
+  });
+
+  test("output, when present, must be a string", async () => {
+    await assertFails(setDoc(doc(owner(), "users/owner/aiLog/bad3"), { ...baseLog, output: 123 }));
+  });
+
+  test("ok must be a boolean", async () => {
+    await assertFails(setDoc(doc(owner(), "users/owner/aiLog/bad4"), { ...baseLog, ok: "true" }));
+  });
+
+  test("error, when present, must be a string", async () => {
+    await assertFails(setDoc(doc(owner(), "users/owner/aiLog/bad5"), { ...baseLog, error: 404 }));
+  });
+
+  test("latencyMs must be a non-negative number", async () => {
+    await assertFails(setDoc(doc(owner(), "users/owner/aiLog/bad6"), { ...baseLog, latencyMs: -1 }));
+    await assertFails(setDoc(doc(owner(), "users/owner/aiLog/bad7"), { ...baseLog, latencyMs: "12" }));
+  });
+
+  test("a missing required field fails", async () => {
+    const noProvider: Record<string, unknown> = { ...baseLog };
+    delete noProvider.provider;
+    await assertFails(setDoc(doc(owner(), "users/owner/aiLog/bad8"), noProvider));
+  });
+
+  test("an unknown field fails", async () => {
+    await assertFails(setDoc(doc(owner(), "users/owner/aiLog/bad9"), { ...baseLog, extra: "nope" }));
+  });
+
+  test("aiLog entries are append-only — update is always rejected", async () => {
+    const db = owner();
+    const ref = doc(db, "users/owner/aiLog/immut");
+    await assertSucceeds(setDoc(ref, baseLog));
+    await assertFails(updateDoc(ref, { ok: false }));
+  });
+});

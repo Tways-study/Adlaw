@@ -31,11 +31,31 @@ service cloud.firestore {
           && (request.resource.data.status == 'done')
              == ('completedAt' in request.resource.data);
 
+        // Held to the same field set and field types as create. Without the
+        // hasOnly, an authenticated user could attach arbitrary extra keys to
+        // their own task documents — up to Firestore's 1 MiB per document,
+        // which is storage abuse against a free-tier project. Without the
+        // type checks, laneOrder could be set to a non-number, breaking
+        // core/order.ts's arithmetic for that board. createdAt is pinned to
+        // its stored value: it records when the task was captured, and an
+        // update is never the moment to change that. scheduleBlocks below
+        // has validated both create and update from the start; this brings
+        // tasks to the same standard.
         allow update: if isOwner(uid)
+          && request.resource.data.keys().hasOnly([
+               'title','rawText','courseId','estimateMin','dueAt','status',
+               'laneOrder','parentId','stepIndex','parseState',
+               'excludedFromFocusUntil','createdAt','completedAt'
+             ])
+          && request.resource.data.keys().hasAll(
+               ['title','rawText','estimateMin','status','laneOrder','parseState','createdAt'])
+          && request.resource.data.title is string
           && request.resource.data.rawText == resource.data.rawText
+          && request.resource.data.createdAt == resource.data.createdAt
           && request.resource.data.estimateMin is number
           && request.resource.data.estimateMin > 0
           && request.resource.data.status in ['shelf','next','now','done']
+          && request.resource.data.laneOrder is number
           && request.resource.data.parseState in ['ok','fallback','failed']
           && (request.resource.data.status == 'done')
              == ('completedAt' in request.resource.data);
@@ -89,11 +109,38 @@ service cloud.firestore {
               || request.resource.data.activeTo is number);
       }
 
-      // Schema-only stubs (Slices 6/7, not built) — ownership-only rules for
+      // Schema-only stub (Slice 6, not built) — ownership-only rule for
       // forward compatibility. No field validation yet; add it in the slice
-      // that starts writing to these.
+      // that starts writing to it.
       match /calendarCache/{eventId} { allow read, write: if isOwner(uid); }
-      match /aiLog/{logId}           { allow read, write: if isOwner(uid); }
+
+      // aiLog (Slice 7). Written by the client, not a Route Handler — there
+      // is no Admin SDK/service account in this project, so app/api/ai/*
+      // returns the log payload and firebase/aiLog.ts writes it here with
+      // the caller's own auth. Append-only: entries are never edited, only
+      // ever created or (via data export/cleanup) deleted.
+      match /aiLog/{logId} {
+        allow read, delete: if isOwner(uid);
+
+        allow create: if isOwner(uid)
+          && request.resource.data.keys().hasOnly([
+               'kind','input','output','provider','model','ok','error','latencyMs','createdAt'
+             ])
+          && request.resource.data.keys().hasAll(
+               ['kind','input','provider','model','ok','latencyMs','createdAt'])
+          && request.resource.data.kind in ['parse','breakdown','focus']
+          && request.resource.data.input is string
+          && (!('output' in request.resource.data) || request.resource.data.output is string)
+          && request.resource.data.provider is string
+          && request.resource.data.model is string
+          && request.resource.data.ok is bool
+          && (!('error' in request.resource.data) || request.resource.data.error is string)
+          && request.resource.data.latencyMs is number
+          && request.resource.data.latencyMs >= 0
+          && request.resource.data.createdAt is number;
+
+        allow update: if false;
+      }
 
       // settings/prefs grows one field per slice (dayEndMin now; theme,
       // aiProvider, googleRefreshTokenEncrypted, … in Slices 6–8). No
