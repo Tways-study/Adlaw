@@ -45,9 +45,9 @@ export interface ScheduleBlock {
 export interface Prefs {
   _id: string;          // always "prefs" — settings is a single fixed-id doc per user
   dayEndMin?: number;   // editable evening cutoff; caller defaults to 1260 (21:00) when absent
-  theme?: "light" | "dark" | "auto";              // Slice 8, not written yet
-  aiProvider?: string;                             // Slice 7/8, not written yet
-  aiModel?: string;                                // Slice 7/8, not written yet
+  theme?: "light" | "dark" | "auto";              // written by ui/settings/ThemeSection.tsx
+  aiProvider?: string;                             // written by ui/settings/AiProviderSection.tsx
+  aiModel?: string;                                // written by ui/settings/AiProviderSection.tsx
   googleRefreshTokenEncrypted?: string;            // Slice 6 — unreachable via Firebase Auth alone
   googleConnectedAt?: number;                      // Slice 6, not written yet
   googleLastSyncedAt?: number;                     // Slice 6, not written yet

@@ -3,7 +3,7 @@
 import { useMemo, useState, type KeyboardEvent } from "react";
 import { complete, uncomplete, move, applyParse, createSteps } from "@/firebase/tasks";
 import { requestParse, requestBreakdown } from "@/firebase/ai";
-import { useAuth, useCourses, useAllTasks } from "@/firebase/hooks";
+import { useAuth, useCourses, useAllTasks, usePrefs } from "@/firebase/hooks";
 import type { Task } from "@/core/types";
 import type { BreakdownResult } from "@/ai/types";
 import { useDeleteUndo } from "./DeleteUndoContext";
@@ -89,6 +89,7 @@ export function TaskCard({ task, courseLabel, compact = false, variant = "defaul
   const [breakdownBusy, setBreakdownBusy] = useState(false);
   const { user } = useAuth();
   const courses = useCourses();
+  const prefs = usePrefs();
   const { requestDelete } = useDeleteUndo();
   const focus = useFocus();
   const splitSuggestion = useSplitSuggestion();
@@ -151,7 +152,10 @@ export function TaskCard({ task, courseLabel, compact = false, variant = "defaul
     setRetrying(true);
     try {
       const courseCodes = courses?.map((c) => c.code);
-      const { result, log } = await requestParse(user.uid, task.rawText, Date.now(), courseCodes);
+      const { result, log } = await requestParse(user.uid, task.rawText, Date.now(), courseCodes, {
+        aiProvider: prefs?.aiProvider,
+        aiModel: prefs?.aiModel,
+      });
       await applyParse(user.uid, task._id, {
         title: result.title,
         courseCode: result.courseCode,
@@ -172,7 +176,10 @@ export function TaskCard({ task, courseLabel, compact = false, variant = "defaul
     if (!user || breakdownBusy) return;
     setBreakdownBusy(true);
     try {
-      const { result } = await requestBreakdown(user.uid, task);
+      const { result } = await requestBreakdown(user.uid, task, {
+        aiProvider: prefs?.aiProvider,
+        aiModel: prefs?.aiModel,
+      });
       setBreakdown(result);
     } finally {
       setBreakdownBusy(false);

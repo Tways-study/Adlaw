@@ -33,6 +33,12 @@ const RequestSchema = z.object({
   text: z.string().min(1).max(MAX_CAPTURE_LEN),
   now: z.number(),
   courseCodes: z.array(z.string().max(64)).max(200).optional(),
+  // The caller's settings/prefs AI preference, threaded through per-request
+  // rather than read server-side — there is no per-user server state here,
+  // just the shared env-var default ai/index.ts's getProviderInfo() falls
+  // back to when neither is sent.
+  aiProvider: z.enum(["gemini", "heuristic"]).optional(),
+  aiModel: z.string().max(64).optional(),
 });
 
 export async function POST(req: Request) {
@@ -46,7 +52,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "invalid request body" }, { status: 400 });
   }
 
-  const { provider, name, model } = getProviderInfo();
+  const { provider, name, model } = getProviderInfo({ provider: body.aiProvider, model: body.aiModel });
   const ctx = { now: body.now, courseCodes: body.courseCodes };
   const input = JSON.stringify({ text: body.text, ctx });
   const started = Date.now();

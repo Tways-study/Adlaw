@@ -36,6 +36,9 @@ const RequestSchema = z.object({
   queue: z.array(FocusQueueTaskSchema).max(MAX_QUEUE),
   windows: z.array(WindowSchema).max(MAX_WINDOWS),
   now: z.number(),
+  // See app/api/ai/parse/route.ts's RequestSchema for what these carry.
+  aiProvider: z.enum(["gemini", "heuristic"]).optional(),
+  aiModel: z.string().max(64).optional(),
 });
 
 export async function POST(req: Request) {
@@ -49,7 +52,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "invalid request body" }, { status: 400 });
   }
 
-  const { provider, name, model } = getProviderInfo();
+  const { provider, name, model } = getProviderInfo({ provider: body.aiProvider, model: body.aiModel });
   const input = JSON.stringify(body);
   const started = Date.now();
 

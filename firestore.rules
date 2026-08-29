@@ -62,7 +62,28 @@ service cloud.firestore {
       }
 
       match /courses/{courseId} {
-        allow read, write: if isOwner(uid);
+        allow read, delete: if isOwner(uid);
+
+        // The auto-create path (firebase/tasks.ts's resolveCourseId, run
+        // inside a writeBatch alongside the task it's resolving a
+        // courseCode for) writes exactly { code, active: true } — no
+        // `name`, which core/types.ts's Course carries but nothing in ui/
+        // reads or writes today (see the plan's "Course rename edits code"
+        // decision). Both create and update accept the same shape, matching
+        // scheduleBlocks/aiLog's convention of parity between the two.
+        allow create: if isOwner(uid)
+          && request.resource.data.keys().hasOnly(['code','name','active'])
+          && request.resource.data.keys().hasAll(['code','active'])
+          && request.resource.data.code is string
+          && (!('name' in request.resource.data) || request.resource.data.name is string)
+          && request.resource.data.active is bool;
+
+        allow update: if isOwner(uid)
+          && request.resource.data.keys().hasOnly(['code','name','active'])
+          && request.resource.data.keys().hasAll(['code','active'])
+          && request.resource.data.code is string
+          && (!('name' in request.resource.data) || request.resource.data.name is string)
+          && request.resource.data.active is bool;
       }
 
       match /scheduleBlocks/{blockId} {

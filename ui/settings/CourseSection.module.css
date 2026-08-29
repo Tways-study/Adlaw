@@ -1,0 +1,120 @@
+.empty {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--ink-3);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin: 0 -22px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 4px 22px;
+}
+
+.row:hover {
+  background: var(--desk);
+}
+
+.codeBtn {
+  padding: 6px 8px;
+  margin: -6px -8px;
+  border-radius: var(--r-s);
+  font-size: 13.5px;
+  color: var(--ink);
+  text-align: left;
+}
+
+.codeBtn:hover {
+  background: var(--line-soft);
+}
+
+.codeBtn:focus-visible,
+.retireBtn:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.editInput {
+  background: var(--card);
+  box-shadow: var(--edge);
+  border-radius: var(--r-s);
+  padding: 5px 8px;
+  font-size: 13.5px;
+  color: var(--ink);
+  flex: 1;
+  max-width: 220px;
+}
+
+.retireBtn {
+  font-size: 12px;
+  color: var(--ink-3);
+  padding: 5px 8px;
+  border-radius: var(--r-s);
+  flex: none;
+}
+
+.retireBtn:hover {
+  color: var(--alert-ink);
+  background: var(--alert-soft);
+}
+
+.addRow {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.addInput {
+  flex: 1;
+  background: var(--desk);
+  box-shadow: var(--edge);
+  border-radius: var(--r-s);
+  padding: 7px 9px;
+  font-size: 13.5px;
+  color: var(--ink);
+}
+
+.addInput::placeholder {
+  color: var(--ink-3);
+}
+
+.addInput:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Not the page's one --primary-fill CTA (that's ExportSection's Download
+   button, per DESIGN.md's one-CTA-per-screen rule) — this is a lower-
+   emphasis inline action, matching ui/schedule/WeekGrid.module.css's
+   ghost-style "+ Add" button. */
+.addBtn {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--primary-ink);
+  background: var(--primary-soft);
+  padding: 7px 14px;
+  border-radius: var(--r-s);
+  flex: none;
+}
+
+.addBtn:hover:not(:disabled) {
+  filter: brightness(1.04);
+}
+
+.addBtn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.addBtn:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}

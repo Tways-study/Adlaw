@@ -1,0 +1,31 @@
+.themes {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--r-m);
+  background: var(--line-soft);
+  width: fit-content;
+}
+
+.themes button {
+  padding: 6px 14px;
+  font-size: 12.5px;
+  border-radius: 6px;
+  color: var(--ink-3);
+  transition: color 140ms var(--ease);
+}
+
+.themes button:hover {
+  color: var(--ink);
+}
+
+.themes button[aria-pressed="true"] {
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: var(--lift-1);
+}
+
+.themes button:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}

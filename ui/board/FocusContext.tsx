@@ -3,7 +3,7 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
 import { requestFocus } from "@/firebase/ai";
 import { excludeFromFocusToday } from "@/firebase/tasks";
-import { useAuth, useTasksByStatus } from "@/firebase/hooks";
+import { useAuth, usePrefs, useTasksByStatus } from "@/firebase/hooks";
 import { useDayPlan } from "./useDayPlan";
 import type { FocusQueueTask } from "@/ai/types";
 
@@ -54,6 +54,7 @@ export function FocusProvider({ children }: { children: ReactNode }) {
   const shelfTasks = useTasksByStatus("shelf");
   const nextTasks = useTasksByStatus("next");
   const plan = useDayPlan();
+  const prefs = usePrefs();
 
   const [reason, setReason] = useState<FocusPickReason | null>(null);
   const [picking, setPicking] = useState(false);
@@ -73,14 +74,17 @@ export function FocusProvider({ children }: { children: ReactNode }) {
   const pick = useCallback(() => {
     if (!user || !plan || picking) return;
     setPicking(true);
-    void requestFocus(user.uid, candidates, plan.windows, Date.now())
+    void requestFocus(user.uid, candidates, plan.windows, Date.now(), {
+      aiProvider: prefs?.aiProvider,
+      aiModel: prefs?.aiModel,
+    })
       .then((outcome) => {
         setReason(
           outcome.result.taskId ? { taskId: outcome.result.taskId, text: outcome.result.reason } : null,
         );
       })
       .finally(() => setPicking(false));
-  }, [user, plan, picking, candidates]);
+  }, [user, plan, picking, candidates, prefs]);
 
   const notThisOne = useCallback(
     (taskId: string) => {

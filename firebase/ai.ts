@@ -11,8 +11,15 @@ import { heuristicProvider } from "@/ai/heuristic";
 import { move } from "./tasks";
 import { writeAiLog } from "./aiLog";
 import type { ParsedTask, BreakdownResult, FocusPick, FocusQueueTask, AiLogPayload } from "@/ai/types";
-import type { Task } from "@/core/types";
+import type { Prefs, Task } from "@/core/types";
 import type { Window } from "@/core/time";
+
+// The subset of settings/prefs each request function threads through to its
+// Route Handler as a per-request override on top of ai/index.ts's
+// getProviderInfo() env-var default. Undefined (the caller passes nothing,
+// or usePrefs() hasn't resolved yet) reproduces today's behavior exactly —
+// the route handler treats absent fields as no override.
+type AiPrefs = Pick<Prefs, "aiProvider" | "aiModel">;
 
 // Same 4s ceiling app/api/ai/* enforces server-side — this is the second,
 // independent layer: a server that never responds at all (not just one
@@ -90,8 +97,9 @@ export async function requestParse(
   text: string,
   now: number,
   courseCodes?: string[],
+  aiPrefs?: AiPrefs,
 ): Promise<ParseOutcome> {
-  const body = { text, now, courseCodes };
+  const body = { text, now, courseCodes, aiProvider: aiPrefs?.aiProvider, aiModel: aiPrefs?.aiModel };
   let outcome: ParseOutcome;
   try {
     outcome = await postJson<ParseOutcome>("/api/ai/parse", body);
@@ -108,8 +116,8 @@ export async function requestParse(
  * anything — the caller shows the steps and, if accepted, calls
  * firebase/tasks.ts's createSteps to write them as schedulable child tasks.
  */
-export async function requestBreakdown(uid: string, task: Task): Promise<BreakdownOutcome> {
-  const body = { task };
+export async function requestBreakdown(uid: string, task: Task, aiPrefs?: AiPrefs): Promise<BreakdownOutcome> {
+  const body = { task, aiProvider: aiPrefs?.aiProvider, aiModel: aiPrefs?.aiModel };
   let outcome: BreakdownOutcome;
   try {
     outcome = await postJson<BreakdownOutcome>("/api/ai/breakdown", body);
@@ -135,8 +143,9 @@ export async function requestFocus(
   queue: FocusQueueTask[],
   windows: Window[],
   now: number,
+  aiPrefs?: AiPrefs,
 ): Promise<FocusOutcome> {
-  const body = { queue, windows, now };
+  const body = { queue, windows, now, aiProvider: aiPrefs?.aiProvider, aiModel: aiPrefs?.aiModel };
   let outcome: FocusOutcome;
   try {
     outcome = await postJson<FocusOutcome>("/api/ai/focus", body);

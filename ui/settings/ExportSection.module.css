@@ -1,0 +1,28 @@
+/* The page's one --primary-fill CTA (DESIGN.md: "Only one --primary-fill
+   call-to-action per screen") — everything else in ui/settings/ is either a
+   segmented control, a radio choice, or a lower-emphasis inline action. */
+.exportBtn {
+  align-self: flex-start;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--on-fill);
+  background: var(--primary-fill);
+  padding: 9px 16px;
+  border-radius: var(--r-s);
+  box-shadow: var(--lift-1);
+  transition: filter 140ms var(--ease);
+}
+
+.exportBtn:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+
+.exportBtn:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+
+.exportBtn:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}

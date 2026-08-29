@@ -1,0 +1,29 @@
+/* Shared section chrome for every ui/settings/*Section.tsx — one card per
+   concern, matching app/schedule/page.module.css's .gridWrap/.hint treatment
+   (--card + --edge, no shadow: DESIGN.md's "resting cards use --edge only").
+   Imported by name into each section's own module so every section reads
+   identically without copy-pasting the same six declarations six times. */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--card);
+  border-radius: var(--r-l);
+  box-shadow: var(--edge);
+  padding: 20px 22px;
+}
+
+.heading {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.006em;
+}
+
+.desc {
+  margin: -4px 0 2px;
+  font-size: 12.5px;
+  color: var(--ink-3);
+  line-height: 1.5;
+}

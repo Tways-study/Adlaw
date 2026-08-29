@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { create } from "@/firebase/tasks";
 import { requestParse } from "@/firebase/ai";
-import { useAuth, useCourses, useScheduleBlocks } from "@/firebase/hooks";
+import { useAuth, useCourses, usePrefs, useScheduleBlocks } from "@/firebase/hooks";
 import { parseHeuristic } from "@/core/heuristic";
 import { useSplitSuggestion } from "@/ui/board/SplitSuggestionContext";
 import { formatEstimate, formatDue } from "@/ui/board/format";
@@ -14,6 +14,7 @@ export function CaptureBar() {
   const { user } = useAuth();
   const scheduleBlocks = useScheduleBlocks();
   const courses = useCourses();
+  const prefs = usePrefs();
   const { suggest } = useSplitSuggestion();
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -61,7 +62,10 @@ export function CaptureBar() {
     // never shown as a spinner/modal: the only visible effect is the input
     // clearing above and the card appearing once this resolves.
     void (async () => {
-      const { result, log } = await requestParse(uid, rawText, now, courseCodes);
+      const { result, log } = await requestParse(uid, rawText, now, courseCodes, {
+        aiProvider: prefs?.aiProvider,
+        aiModel: prefs?.aiModel,
+      });
       const taskId = await create(uid, {
         rawText,
         title: result.title,

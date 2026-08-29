@@ -1,0 +1,80 @@
+.choices {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.choice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--r-m);
+  background: var(--desk);
+  cursor: pointer;
+}
+
+.choice input {
+  margin-top: 3px;
+  accent-color: var(--primary);
+}
+
+.choice input:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.choice > span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.choiceTitle {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.choiceHint {
+  font-size: 12px;
+  color: var(--ink-3);
+  line-height: 1.4;
+}
+
+.modelField {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.modelLabel {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--ink-3);
+}
+
+.modelField input {
+  background: var(--desk);
+  box-shadow: var(--edge);
+  border-radius: var(--r-s);
+  padding: 7px 9px;
+  font-size: 13.5px;
+  color: var(--ink);
+  max-width: 260px;
+}
+
+.modelField input::placeholder {
+  color: var(--ink-3);
+}
+
+.modelField input:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.status {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--ink-3);
+}

@@ -137,3 +137,14 @@ export const AiLogPayloadSchema = z.object({
   latencyMs: z.number().min(0),
 });
 export type AiLogPayload = z.infer<typeof AiLogPayloadSchema>;
+
+// The Firestore document shape once written — AiLogPayload plus the two
+// fields the document itself carries that the payload doesn't:
+// `createdAt` (stamped by firebase/aiLog.ts's writeAiLog, not the caller)
+// and `_id` (the document id, added the same way core/types.ts's Task and
+// Course add `_id` on top of their own base shape). Used by
+// firebase/hooks.tsx's useAiLog for the Settings review list.
+export interface AiLogEntry extends AiLogPayload {
+  _id: string;
+  createdAt: number;
+}

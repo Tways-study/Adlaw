@@ -3,17 +3,11 @@
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { signOut } from "@/firebase/auth";
-import { ThemeToggle } from "@/ui/theme/ThemeToggle";
 import { useDayPlan } from "./useDayPlan";
 import { prefersReducedMotion } from "@/ui/drag/reducedMotion";
 import { formatEstimate } from "./format";
 import styles from "./BoardHeader.module.css";
 
-// Temporary scaffolding: the theme control (ui/theme/) reads/writes
-// localStorage directly. Slice 8 (Settings) relocates it into ui/settings/
-// and switches the source of truth to the persisted `settings.theme` row —
-// the CSS and the data-theme mechanism itself (ui/tokens.css) don't change,
-// only who sets it.
 export function BoardHeader() {
   const router = useRouter();
   const plan = useDayPlan();
@@ -66,7 +60,9 @@ export function BoardHeader() {
         <Link href="/schedule" className={styles.scheduleLink}>
           Schedule
         </Link>
-        <ThemeToggle />
+        <Link href="/settings" className={styles.scheduleLink}>
+          Settings
+        </Link>
         <button
           className={styles.signOut}
           onClick={async () => {

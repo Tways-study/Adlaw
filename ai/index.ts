@@ -19,16 +19,40 @@ export interface ProviderInfo {
   model: string;
 }
 
+export interface ProviderOverride {
+  provider?: "gemini" | "heuristic";
+  model?: string;
+}
+
 /**
  * Chooses the live provider for this request. Reads env fresh on every call
  * (rather than caching a module-level singleton) so a key added or removed
  * between requests — e.g. via Vercel env update — takes effect without a
  * redeploy of this module's own state.
+ *
+ * `override` is the per-user preference from settings/prefs
+ * (`aiProvider`/`aiModel`), threaded through by the app/api/ai/* Route
+ * Handlers on top of this env-var default:
+ *   - `override.provider === "heuristic"` returns the heuristic provider
+ *     unconditionally, ignoring any `override.model` — choosing "heuristic"
+ *     means capture/breakdown/focus never call Gemini for that user,
+ *     regardless of whether a key exists.
+ *   - `override.provider === "gemini"` with no `GEMINI_API_KEY` set falls
+ *     back to heuristic rather than throwing — there is one shared key, not
+ *     per-user keys, so an unsatisfiable preference degrades quietly the
+ *     same way every other AI failure path in this app does.
+ *   - `override.model` only applies when the resolved provider is Gemini.
+ *   - No override, or `override.provider` undefined, reproduces today's
+ *     env-var-only behavior exactly.
  */
-export function getProviderInfo(): ProviderInfo {
+export function getProviderInfo(override?: ProviderOverride): ProviderInfo {
+  if (override?.provider === "heuristic") {
+    return { provider: heuristicProvider, name: "heuristic", model: "heuristic" };
+  }
+
   const apiKey = process.env.GEMINI_API_KEY;
   if (apiKey) {
-    const model = process.env.AI_MODEL || DEFAULT_GEMINI_MODEL;
+    const model = override?.model || process.env.AI_MODEL || DEFAULT_GEMINI_MODEL;
     return { provider: new GeminiProvider(apiKey, model), name: "gemini", model };
   }
   return { provider: heuristicProvider, name: "heuristic", model: "heuristic" };

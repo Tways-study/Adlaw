@@ -203,6 +203,66 @@ describe("settings/prefs — field validation", () => {
   });
 });
 
+const baseCourse = {
+  code: "BIO 210",
+  active: true,
+};
+
+describe("courses — cross-user isolation", () => {
+  test("a stranger cannot read another user's course", async () => {
+    await testEnv.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), "users/owner/courses/c1"), baseCourse);
+    });
+    const stranger = testEnv.authenticatedContext("stranger").firestore();
+    await assertFails(getDoc(doc(stranger, "users/owner/courses/c1")));
+  });
+
+  test("a stranger cannot write another user's course", async () => {
+    const stranger = testEnv.authenticatedContext("stranger").firestore();
+    await assertFails(setDoc(doc(stranger, "users/owner/courses/c2"), baseCourse));
+  });
+});
+
+describe("courses — field validation", () => {
+  const owner = () => testEnv.authenticatedContext("owner").firestore();
+
+  test("a valid course succeeds, with and without name", async () => {
+    await assertSucceeds(setDoc(doc(owner(), "users/owner/courses/ok1"), baseCourse));
+    await assertSucceeds(
+      setDoc(doc(owner(), "users/owner/courses/ok2"), { ...baseCourse, name: "Intro Biology" }),
+    );
+  });
+
+  test("code must be a string", async () => {
+    await assertFails(setDoc(doc(owner(), "users/owner/courses/bad"), { ...baseCourse, code: 210 }));
+  });
+
+  test("name, when present, must be a string", async () => {
+    await assertFails(setDoc(doc(owner(), "users/owner/courses/bad2"), { ...baseCourse, name: 210 }));
+  });
+
+  test("active must be a boolean", async () => {
+    await assertFails(setDoc(doc(owner(), "users/owner/courses/bad3"), { ...baseCourse, active: "true" }));
+  });
+
+  test("a missing required field fails", async () => {
+    const noActive: Record<string, unknown> = { ...baseCourse };
+    delete noActive.active;
+    await assertFails(setDoc(doc(owner(), "users/owner/courses/bad4"), noActive));
+  });
+
+  test("an unknown field fails", async () => {
+    await assertFails(setDoc(doc(owner(), "users/owner/courses/bad5"), { ...baseCourse, extra: "nope" }));
+  });
+
+  test("retiring a course (active: false) still succeeds via update", async () => {
+    const db = owner();
+    const ref = doc(db, "users/owner/courses/retire");
+    await assertSucceeds(setDoc(ref, baseCourse));
+    await assertSucceeds(updateDoc(ref, { code: baseCourse.code, active: false }));
+  });
+});
+
 const baseLog = {
   kind: "parse",
   input: '{"text":"finish bio lab"}',

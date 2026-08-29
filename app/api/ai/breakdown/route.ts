@@ -17,7 +17,12 @@ const TIMEOUT_MS = 4000;
 
 // TaskSchema bounds every user-controlled string and number it carries —
 // see the note above its definition in ai/types.ts.
-const RequestSchema = z.object({ task: TaskSchema });
+const RequestSchema = z.object({
+  task: TaskSchema,
+  // See app/api/ai/parse/route.ts's RequestSchema for what these carry.
+  aiProvider: z.enum(["gemini", "heuristic"]).optional(),
+  aiModel: z.string().max(64).optional(),
+});
 
 export async function POST(req: Request) {
   const gate = guard(req);
@@ -30,7 +35,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "invalid request body" }, { status: 400 });
   }
 
-  const { provider, name, model } = getProviderInfo();
+  const { provider, name, model } = getProviderInfo({ provider: body.aiProvider, model: body.aiModel });
   const input = JSON.stringify({ task: body.task });
   const started = Date.now();
 

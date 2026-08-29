@@ -14,6 +14,7 @@ import {
 import { auth, db } from "./client";
 import { syncSessionCookie } from "./auth";
 import type { Course, Prefs, ScheduleBlock, Task, TaskStatus } from "@/core/types";
+import type { AiLogEntry } from "@/ai/types";
 
 interface AuthContextValue {
   user: User | null;
@@ -172,6 +173,29 @@ export function useScheduleBlocks(): ScheduleBlock[] | undefined {
     });
   }, [uid]);
   return resolved?.uid === uid ? resolved.blocks : undefined;
+}
+
+// Recent aiLog entries, newest first — the Settings review list (PRD M18):
+// "recent parses, whether each needed correction." A single orderBy with no
+// where() clause needs no composite index — Firestore provides the
+// single-field index automatically — so this is the same "fetch modestly,
+// no manual index" shape as useScheduleBlocks/useCourses, just sorted
+// instead of unfiltered.
+export function useAiLog(): AiLogEntry[] | undefined {
+  const { user } = useAuth();
+  const uid = user?.uid ?? null;
+  const [resolved, setResolved] = useState<{ uid: string; entries: AiLogEntry[] } | undefined>(undefined);
+  useEffect(() => {
+    if (!uid) return;
+    const q = query(collection(db, "users", uid, "aiLog"), orderBy("createdAt", "desc"));
+    return onSnapshot(q, (snap) => {
+      setResolved({
+        uid,
+        entries: snap.docs.map((d) => ({ _id: d.id, ...(d.data() as Omit<AiLogEntry, "_id">) })),
+      });
+    });
+  }, [uid]);
+  return resolved?.uid === uid ? resolved.entries : undefined;
 }
 
 export function usePrefs(): Prefs | undefined {
