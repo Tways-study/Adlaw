@@ -64,6 +64,38 @@ describe("field validation", () => {
     await assertSucceeds(setDoc(ref, baseTask));
     await assertFails(updateDoc(ref, { rawText: "changed" }));
   });
+
+  // The update rule used to validate far less than the create rule did,
+  // which let an owner attach arbitrary keys to their own task documents
+  // (storage abuse, up to 1 MiB each) and set laneOrder to a non-number,
+  // breaking core/order.ts's arithmetic. These pin the parity.
+  test("update rejects a field the create rule does not allow", async () => {
+    const db = owner();
+    const ref = doc(db, "users/owner/tasks/extra");
+    await assertSucceeds(setDoc(ref, baseTask));
+    await assertFails(updateDoc(ref, { junk: "x".repeat(1000) }));
+  });
+
+  test("update rejects a non-numeric laneOrder", async () => {
+    const db = owner();
+    const ref = doc(db, "users/owner/tasks/lane");
+    await assertSucceeds(setDoc(ref, baseTask));
+    await assertFails(updateDoc(ref, { laneOrder: "1" }));
+  });
+
+  test("createdAt is immutable after create", async () => {
+    const db = owner();
+    const ref = doc(db, "users/owner/tasks/stamp");
+    await assertSucceeds(setDoc(ref, baseTask));
+    await assertFails(updateDoc(ref, { createdAt: Date.now() + 1000 }));
+  });
+
+  test("a legitimate update still succeeds", async () => {
+    const db = owner();
+    const ref = doc(db, "users/owner/tasks/move");
+    await assertSucceeds(setDoc(ref, baseTask));
+    await assertSucceeds(updateDoc(ref, { status: "next", laneOrder: 128 }));
+  });
 });
 
 const baseBlock = {

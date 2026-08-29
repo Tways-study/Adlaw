@@ -279,6 +279,20 @@ reading any single module.
   see `docs/00-stack-decision.md` v4.0's tradeoffs.
 - **Every drag needs a keyboard equivalent.** The primary loop (capture, move,
   complete) must be fully operable without a pointer.
+- **The `session` cookie is deliberately not HttpOnly.** `firebase/auth.ts`'s
+  `syncSessionCookie` writes the Firebase ID token from client JS because
+  `proxy.ts` has to read it and there is no Admin SDK to mint a server-side
+  session cookie instead. This is accepted, not overlooked: the Firebase SDK
+  already keeps the same token in IndexedDB, so HttpOnly would not remove the
+  exposure. The compensating control is `next.config.ts`'s CSP — specifically
+  `connect-src`, which is what stops injected script from *sending* a token
+  anywhere. Don't "fix" this by making the cookie HttpOnly; that breaks
+  `proxy.ts` and protects nothing.
+- **Never trust a uid from a request body.** `app/api/ai/*` identifies the
+  caller only through the `x-adlaw-uid` header, which `proxy.ts` strips from
+  every inbound request and re-sets from the verified JWT's `sub` claim. That
+  strip-then-set is the whole guarantee — a new Route Handler that reads a uid
+  from JSON instead has no authentication at all.
 
 ## Design constraints that are easy to violate
 

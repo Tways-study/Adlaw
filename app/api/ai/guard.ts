@@ -25,12 +25,12 @@ import { UID_HEADER } from "@/sessionHeader";
 
 // A window long enough that a burst can't just wait it out cheaply, short
 // enough that a real user who hits it is unblocked in a minute.
-const WINDOW_MS = 60_000;
+export const WINDOW_MS = 60_000;
 // Generous against real use: capture is one call per typed sentence, and
 // breakdown/focus are explicit button presses (CLAUDE.md: "Every AI call is
 // user-triggered" — nothing here fires on a timer or on page load).
-const MAX_PER_UID = 20;
-const MAX_GLOBAL = 300;
+export const MAX_PER_UID = 20;
+export const MAX_GLOBAL = 300;
 
 interface Bucket {
   count: number;
@@ -58,6 +58,16 @@ function hit(key: string, limit: number, now: number): boolean {
   if (existing.count >= limit) return false;
   existing.count += 1;
   return true;
+}
+
+/**
+ * Clears all counters. Exists so guard.test.ts can start each case from a
+ * known state — the bucket Map is module-level and would otherwise leak
+ * counts between tests, including the shared global bucket. Not used by
+ * anything at runtime.
+ */
+export function resetRateLimit(): void {
+  buckets.clear();
 }
 
 /**
