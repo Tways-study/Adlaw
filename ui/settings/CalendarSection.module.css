@@ -1,0 +1,89 @@
+.empty {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--ink-3);
+}
+
+.notice {
+  margin: -2px 0 0;
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+
+.statusLine {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Not the page's one --primary-fill CTA (that's ExportSection's Download
+   button) — this is a lower-emphasis action, matching CourseSection's
+   .addBtn treatment. Rendered as a link (this always navigates to start
+   Google's OAuth screen) but styled identically to a button. */
+.connectBtn {
+  display: inline-block;
+  align-self: flex-start;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--primary-ink);
+  background: var(--primary-soft);
+  padding: 7px 14px;
+  border-radius: var(--r-s);
+  transition: filter 140ms var(--ease);
+}
+
+.connectBtn:hover {
+  filter: brightness(1.04);
+}
+
+.connectBtn:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.syncBtn {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ink);
+  padding: 7px 14px;
+  border-radius: var(--r-s);
+  box-shadow: var(--edge);
+  transition: background 140ms var(--ease);
+}
+
+.syncBtn:hover:not(:disabled) {
+  background: var(--desk);
+}
+
+.syncBtn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.syncBtn:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.disconnectBtn {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ink-3);
+  padding: 7px 14px;
+  border-radius: var(--r-s);
+}
+
+.disconnectBtn:hover {
+  color: var(--alert-ink);
+  background: var(--alert-soft);
+}
+
+.disconnectBtn:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}

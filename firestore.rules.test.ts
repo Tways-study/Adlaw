@@ -203,6 +203,136 @@ describe("settings/prefs — field validation", () => {
   });
 });
 
+// Slice 6 — the four google* fields the OAuth callback/sync routes write
+// via the Firestore REST API (app/api/calendar/_firestoreRest.ts), evaluated
+// against the exact same rule as any client SDK write.
+describe("settings/prefs — Slice 6 field validation", () => {
+  const owner = () => testEnv.authenticatedContext("owner").firestore();
+
+  test("a valid set of google* fields succeeds, written together as the callback does", async () => {
+    await assertSucceeds(
+      setDoc(doc(owner(), "users/owner/settings/prefs"), {
+        googleRefreshTokenEncrypted: "base64ciphertext==",
+        googleConnectedAt: Date.now(),
+        googleSyncStatus: "ok",
+      }),
+    );
+  });
+
+  test("googleRefreshTokenEncrypted must be a string", async () => {
+    await assertFails(
+      setDoc(doc(owner(), "users/owner/settings/prefs"), { googleRefreshTokenEncrypted: 12345 }),
+    );
+  });
+
+  test("googleConnectedAt must be a number", async () => {
+    await assertFails(
+      setDoc(doc(owner(), "users/owner/settings/prefs"), { googleConnectedAt: "yesterday" }),
+    );
+  });
+
+  test("googleLastSyncedAt must be a number", async () => {
+    await assertFails(
+      setDoc(doc(owner(), "users/owner/settings/prefs"), { googleLastSyncedAt: "just now" }),
+    );
+  });
+
+  test("googleSyncStatus must be one of ok, expired, or error", async () => {
+    await assertFails(setDoc(doc(owner(), "users/owner/settings/prefs"), { googleSyncStatus: "syncing" }));
+    await assertSucceeds(setDoc(doc(owner(), "users/owner/settings/prefs"), { googleSyncStatus: "ok" }));
+    await assertSucceeds(
+      updateDoc(doc(owner(), "users/owner/settings/prefs"), { googleSyncStatus: "expired" }),
+    );
+    await assertSucceeds(
+      updateDoc(doc(owner(), "users/owner/settings/prefs"), { googleSyncStatus: "error" }),
+    );
+  });
+
+  test("a partial update (sync's status-only patch) still succeeds with no hasOnly", async () => {
+    const db = owner();
+    const ref = doc(db, "users/owner/settings/prefs");
+    await assertSucceeds(setDoc(ref, { dayEndMin: 1260 }));
+    await assertSucceeds(updateDoc(ref, { googleLastSyncedAt: Date.now(), googleSyncStatus: "ok" }));
+  });
+});
+
+const baseEvent = {
+  gcalId: "gcal-event-1",
+  startsAt: Date.now(),
+  endsAt: Date.now() + 60 * 60 * 1000,
+  title: "BIO 210 lab",
+  fetchedAt: Date.now(),
+};
+
+describe("calendarCache — cross-user isolation", () => {
+  test("a stranger cannot read another user's cached event", async () => {
+    await testEnv.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), "users/owner/calendarCache/e1"), baseEvent);
+    });
+    const stranger = testEnv.authenticatedContext("stranger").firestore();
+    await assertFails(getDoc(doc(stranger, "users/owner/calendarCache/e1")));
+  });
+
+  test("a stranger cannot write another user's cached event", async () => {
+    const stranger = testEnv.authenticatedContext("stranger").firestore();
+    await assertFails(setDoc(doc(stranger, "users/owner/calendarCache/e2"), baseEvent));
+  });
+});
+
+describe("calendarCache — field validation", () => {
+  const owner = () => testEnv.authenticatedContext("owner").firestore();
+
+  test("a valid cached event succeeds", async () => {
+    await assertSucceeds(setDoc(doc(owner(), "users/owner/calendarCache/ok1"), baseEvent));
+  });
+
+  test("gcalId must be a string", async () => {
+    await assertFails(setDoc(doc(owner(), "users/owner/calendarCache/bad1"), { ...baseEvent, gcalId: 123 }));
+  });
+
+  test("startsAt must be a number", async () => {
+    await assertFails(
+      setDoc(doc(owner(), "users/owner/calendarCache/bad2"), { ...baseEvent, startsAt: "soon" }),
+    );
+  });
+
+  test("endsAt must be a number", async () => {
+    await assertFails(
+      setDoc(doc(owner(), "users/owner/calendarCache/bad3"), { ...baseEvent, endsAt: "later" }),
+    );
+  });
+
+  test("title must be a string", async () => {
+    await assertFails(setDoc(doc(owner(), "users/owner/calendarCache/bad4"), { ...baseEvent, title: 42 }));
+  });
+
+  test("fetchedAt must be a number", async () => {
+    await assertFails(
+      setDoc(doc(owner(), "users/owner/calendarCache/bad5"), { ...baseEvent, fetchedAt: "now" }),
+    );
+  });
+
+  test("a missing required field fails", async () => {
+    const noTitle: Record<string, unknown> = { ...baseEvent };
+    delete noTitle.title;
+    await assertFails(setDoc(doc(owner(), "users/owner/calendarCache/bad6"), noTitle));
+  });
+
+  test("an unknown field fails — this is a wholesale-replace cache, not a place for extra keys", async () => {
+    await assertFails(
+      setDoc(doc(owner(), "users/owner/calendarCache/bad7"), { ...baseEvent, extra: "nope" }),
+    );
+  });
+
+  test("update is held to the same shape as create — the sync route replaces wholesale via delete+create, but this pins parity anyway", async () => {
+    const db = owner();
+    const ref = doc(db, "users/owner/calendarCache/upd");
+    await assertSucceeds(setDoc(ref, baseEvent));
+    await assertSucceeds(updateDoc(ref, { ...baseEvent, title: "Updated title" }));
+    await assertFails(updateDoc(ref, { junk: "x" }));
+  });
+});
+
 const baseCourse = {
   code: "BIO 210",
   active: true,

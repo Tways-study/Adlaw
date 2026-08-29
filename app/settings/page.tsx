@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { AiLogSection } from "@/ui/settings/AiLogSection";
 import { AiProviderSection } from "@/ui/settings/AiProviderSection";
+import { CalendarSection } from "@/ui/settings/CalendarSection";
 import { CourseSection } from "@/ui/settings/CourseSection";
 import { ExportSection } from "@/ui/settings/ExportSection";
 import { SignOutSection } from "@/ui/settings/SignOutSection";
@@ -29,6 +30,7 @@ export default function SettingsPage() {
       <div className={styles.body}>
         <ThemeSection />
         <AiProviderSection />
+        <CalendarSection />
         <AiLogSection />
         <CourseSection />
         <ExportSection />

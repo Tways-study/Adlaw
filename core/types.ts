@@ -48,8 +48,22 @@ export interface Prefs {
   theme?: "light" | "dark" | "auto";              // written by ui/settings/ThemeSection.tsx
   aiProvider?: string;                             // written by ui/settings/AiProviderSection.tsx
   aiModel?: string;                                // written by ui/settings/AiProviderSection.tsx
-  googleRefreshTokenEncrypted?: string;            // Slice 6 — unreachable via Firebase Auth alone
-  googleConnectedAt?: number;                      // Slice 6, not written yet
-  googleLastSyncedAt?: number;                     // Slice 6, not written yet
-  googleSyncStatus?: "ok" | "expired" | "error";   // Slice 6, not written yet
+  googleRefreshTokenEncrypted?: string;            // written by app/api/calendar/callback, encrypted at rest
+  googleConnectedAt?: number;                      // written by app/api/calendar/callback
+  googleLastSyncedAt?: number;                     // written by app/api/calendar/sync on a successful sync
+  googleSyncStatus?: "ok" | "expired" | "error";   // written by callback (ok) and sync (ok/expired/error)
+}
+
+// Mirrors docs/03-backend-schema.md's calendarCache/{eventId} table
+// field-for-field. Written only by app/api/calendar/sync's wholesale
+// replace; read by firebase/hooks.tsx's useCalendarCache and, via
+// ui/board/useDayPlan.ts's mapping down to core/time.ts's CalendarEvent
+// shape, by freeWindows/busyIntervals.
+export interface CalendarCacheEntry {
+  _id: string;
+  gcalId: string;
+  startsAt: number; // epoch ms
+  endsAt: number;   // epoch ms
+  title: string;
+  fetchedAt: number; // epoch ms — when this sync ran
 }

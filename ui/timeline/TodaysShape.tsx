@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useScheduleBlocks } from "@/firebase/hooks";
+import { usePrefs, useScheduleBlocks } from "@/firebase/hooks";
 import { useDayPlan } from "@/ui/board/useDayPlan";
 import { formatClock } from "@/ui/board/format";
 import type { Task } from "@/core/types";
@@ -95,6 +95,7 @@ function pctOf(min: number, rangeStart: number, span: number): number {
 export function TodaysShape() {
   const plan = useDayPlan();
   const blocks = useScheduleBlocks();
+  const prefs = usePrefs();
 
   const [calendarPromptDismissed, setCalendarPromptDismissed] = useState(true);
   useEffect(() => {
@@ -159,12 +160,14 @@ export function TodaysShape() {
         <span>your weekly schedule</span>
       </div>
 
-      {!calendarPromptDismissed && (
+      {prefs && !prefs.googleConnectedAt && !calendarPromptDismissed && (
         <div className={styles.callout} role="note">
-          {/* Slice 6 (OAuth + calendarCache) isn't built — this prompt names
-              the missing capacity input honestly but has nothing to link to
-              yet. Deliberately inert until that lands. */}
-          <span className={styles.calloutText}>Connect Google Calendar to see events here too.</span>
+          <span className={styles.calloutText}>
+            <Link href="/settings" className={styles.calloutLink}>
+              Connect Google Calendar
+            </Link>{" "}
+            to see events here too.
+          </span>
           <button
             type="button"
             className={styles.calloutDismiss}
@@ -175,6 +178,35 @@ export function TodaysShape() {
           >
             Dismiss
           </button>
+        </div>
+      )}
+
+      {/* Cross-cutting state (docs/02-app-flow.md): "Calendar sync stale or
+          failed" gets its detailed state in S7 (Settings) and a quiet prompt
+          here. Not gated by calendarPromptDismissed/localStorage — that
+          dismissal is for the disconnected invite, not an active problem,
+          so this one always shows while the condition holds. */}
+      {prefs?.googleConnectedAt && (prefs.googleSyncStatus === "expired" || prefs.googleSyncStatus === "error") && (
+        <div className={styles.callout} role="note">
+          <span className={styles.calloutText}>
+            {prefs.googleSyncStatus === "expired" ? (
+              <>
+                Google Calendar connection expired —{" "}
+                <Link href="/settings" className={styles.calloutLink}>
+                  reconnect
+                </Link>
+                .
+              </>
+            ) : (
+              <>
+                Google Calendar didn&rsquo;t sync last time —{" "}
+                <Link href="/settings" className={styles.calloutLink}>
+                  check Settings
+                </Link>
+                .
+              </>
+            )}
+          </span>
         </div>
       )}
 

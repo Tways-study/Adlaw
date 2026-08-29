@@ -1,8 +1,15 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { usePrefs, useScheduleBlocks, useTasksByStatus } from "@/firebase/hooks";
-import { busyIntervals, freeWindows, resolveDayEnd, type BusyInterval, type Window } from "@/core/time";
+import { useCalendarCache, usePrefs, useScheduleBlocks, useTasksByStatus } from "@/firebase/hooks";
+import {
+  busyIntervals,
+  freeWindows,
+  resolveDayEnd,
+  type BusyInterval,
+  type CalendarEvent,
+  type Window,
+} from "@/core/time";
 import { layout, type CapacityResult } from "@/core/capacity";
 import type { Task } from "@/core/types";
 
@@ -10,12 +17,6 @@ import type { Task } from "@/core/types";
 // resolveDayEnd doc comment) — "Day edge is editable, defaulting to 21:00"
 // is a UI-layer decision, applied here, once, for every caller.
 const DEFAULT_DAY_END_MIN = 1260;
-
-// calendarCache/Slice 6 isn't built yet — every core/time call below takes
-// [] for events, exactly like the plan's "callers pass [] today" note on
-// core/time.ts's CalendarEvent type. Wiring the real cache later only
-// touches this one line.
-const NO_CALENDAR_EVENTS: never[] = [];
 
 function minutesSinceMidnight(date: Date): number {
   return date.getHours() * 60 + date.getMinutes();
@@ -67,10 +68,17 @@ export function useDayPlan(): DayPlan | undefined {
   const prefs = usePrefs();
   const nowTasks = useTasksByStatus("now");
   const nextTasks = useTasksByStatus("next");
+  const calendarCache = useCalendarCache();
   const nowMin = useNowMin();
 
   return useMemo(() => {
-    if (blocks === undefined || prefs === undefined || nowTasks === undefined || nextTasks === undefined) {
+    if (
+      blocks === undefined ||
+      prefs === undefined ||
+      nowTasks === undefined ||
+      nextTasks === undefined ||
+      calendarCache === undefined
+    ) {
       return undefined;
     }
 
@@ -80,8 +88,16 @@ export function useDayPlan(): DayPlan | undefined {
     const date = new Date();
     const cutoffMin = prefs.dayEndMin ?? DEFAULT_DAY_END_MIN;
     const dayEndMin = resolveDayEnd(blocks, date, nowMin, cutoffMin);
-    const windows = freeWindows(blocks, NO_CALENDAR_EVENTS, date, nowMin, dayEndMin);
-    const busy = busyIntervals(blocks, NO_CALENDAR_EVENTS, date);
+    // Firestore's calendarCache doc shape (gcalId, fetchedAt, …) trimmed
+    // down to core/time.ts's CalendarEvent — core/ never needs the id or
+    // sync timestamp, only the interval and label.
+    const events: CalendarEvent[] = calendarCache.map((e) => ({
+      startsAt: e.startsAt,
+      endsAt: e.endsAt,
+      title: e.title,
+    }));
+    const windows = freeWindows(blocks, events, date, nowMin, dayEndMin);
+    const busy = busyIntervals(blocks, events, date);
 
     // At most one "now" task ever exists (firebase/tasks.ts's one-"now"
     // invariant) — this still reads correctly if that were ever violated,
@@ -90,5 +106,5 @@ export function useDayPlan(): DayPlan | undefined {
     const result = layout(queue, windows, nowMin);
 
     return { ...result, busyIntervals: busy, dayEndMin, nowMin, queue, windows };
-  }, [blocks, prefs, nowTasks, nextTasks, nowMin]);
+  }, [blocks, prefs, nowTasks, nextTasks, calendarCache, nowMin]);
 }

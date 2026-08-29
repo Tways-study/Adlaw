@@ -13,7 +13,7 @@ import {
 } from "firebase/firestore";
 import { auth, db } from "./client";
 import { syncSessionCookie } from "./auth";
-import type { Course, Prefs, ScheduleBlock, Task, TaskStatus } from "@/core/types";
+import type { CalendarCacheEntry, Course, Prefs, ScheduleBlock, Task, TaskStatus } from "@/core/types";
 import type { AiLogEntry } from "@/ai/types";
 
 interface AuthContextValue {
@@ -192,6 +192,29 @@ export function useAiLog(): AiLogEntry[] | undefined {
       setResolved({
         uid,
         entries: snap.docs.map((d) => ({ _id: d.id, ...(d.data() as Omit<AiLogEntry, "_id">) })),
+      });
+    });
+  }, [uid]);
+  return resolved?.uid === uid ? resolved.entries : undefined;
+}
+
+// The calendarCache listener (Slice 6). Bare collection listener, no
+// orderBy — same "fetch modestly, no manual index" pattern as
+// useScheduleBlocks/useCourses. A 14-day sync window holds at most a few
+// dozen events; core/time.ts's busyIntervals already sorts by startMin
+// itself, so no consumer needs this pre-sorted.
+export function useCalendarCache(): CalendarCacheEntry[] | undefined {
+  const { user } = useAuth();
+  const uid = user?.uid ?? null;
+  const [resolved, setResolved] = useState<{ uid: string; entries: CalendarCacheEntry[] } | undefined>(
+    undefined,
+  );
+  useEffect(() => {
+    if (!uid) return;
+    return onSnapshot(collection(db, "users", uid, "calendarCache"), (snap) => {
+      setResolved({
+        uid,
+        entries: snap.docs.map((d) => ({ _id: d.id, ...(d.data() as Omit<CalendarCacheEntry, "_id">) })),
       });
     });
   }, [uid]);

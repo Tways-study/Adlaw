@@ -130,10 +130,33 @@ service cloud.firestore {
               || request.resource.data.activeTo is number);
       }
 
-      // Schema-only stub (Slice 6, not built) — ownership-only rule for
-      // forward compatibility. No field validation yet; add it in the slice
-      // that starts writing to it.
-      match /calendarCache/{eventId} { allow read, write: if isOwner(uid); }
+      // calendarCache (Slice 6). Written only by app/api/calendar/sync's
+      // wholesale replace, via the Firestore REST API authenticated with
+      // the caller's own ID token (see app/api/calendar/_firestoreRest.ts) —
+      // isOwner(uid) is evaluated exactly the same way as for a client SDK
+      // write, so this rule is the entire ownership model for that route
+      // too, same as every other table here.
+      match /calendarCache/{eventId} {
+        allow read, delete: if isOwner(uid);
+
+        allow create: if isOwner(uid)
+          && request.resource.data.keys().hasOnly(['gcalId','startsAt','endsAt','title','fetchedAt'])
+          && request.resource.data.keys().hasAll(['gcalId','startsAt','endsAt','title','fetchedAt'])
+          && request.resource.data.gcalId is string
+          && request.resource.data.startsAt is number
+          && request.resource.data.endsAt is number
+          && request.resource.data.title is string
+          && request.resource.data.fetchedAt is number;
+
+        allow update: if isOwner(uid)
+          && request.resource.data.keys().hasOnly(['gcalId','startsAt','endsAt','title','fetchedAt'])
+          && request.resource.data.keys().hasAll(['gcalId','startsAt','endsAt','title','fetchedAt'])
+          && request.resource.data.gcalId is string
+          && request.resource.data.startsAt is number
+          && request.resource.data.endsAt is number
+          && request.resource.data.title is string
+          && request.resource.data.fetchedAt is number;
+      }
 
       // aiLog (Slice 7). Written by the client, not a Route Handler — there
       // is no Admin SDK/service account in this project, so app/api/ai/*
@@ -163,9 +186,10 @@ service cloud.firestore {
         allow update: if false;
       }
 
-      // settings/prefs grows one field per slice (dayEndMin now; theme,
-      // aiProvider, googleRefreshTokenEncrypted, … in Slices 6–8). No
-      // hasOnly here on purpose — unlike scheduleBlocks, this doc's full
+      // settings/prefs grows one field per slice (dayEndMin from Slice 4;
+      // the four google* fields below from Slice 6; theme/aiProvider/
+      // aiModel remain unvalidated — Slice 8's fields, out of scope here).
+      // No hasOnly here on purpose — unlike scheduleBlocks, this doc's full
       // shape isn't introduced in one slice, so each slice validates only
       // the field it starts writing, per this file's existing convention.
       match /settings/{docId} {
@@ -174,7 +198,15 @@ service cloud.firestore {
           && (!('dayEndMin' in request.resource.data)
               || (request.resource.data.dayEndMin is number
                   && request.resource.data.dayEndMin >= 0
-                  && request.resource.data.dayEndMin <= 1440));
+                  && request.resource.data.dayEndMin <= 1440))
+          && (!('googleRefreshTokenEncrypted' in request.resource.data)
+              || request.resource.data.googleRefreshTokenEncrypted is string)
+          && (!('googleConnectedAt' in request.resource.data)
+              || request.resource.data.googleConnectedAt is number)
+          && (!('googleLastSyncedAt' in request.resource.data)
+              || request.resource.data.googleLastSyncedAt is number)
+          && (!('googleSyncStatus' in request.resource.data)
+              || request.resource.data.googleSyncStatus in ['ok','expired','error']);
       }
     }
   }
