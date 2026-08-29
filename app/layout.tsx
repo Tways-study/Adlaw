@@ -40,12 +40,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${inter.variable} ${sourceSerif.variable}`}
       suppressHydrationWarning
     >
-      <head>
+      <body>
         <Script id="theme-init" strategy="beforeInteractive">
           {THEME_BOOT_SCRIPT}
         </Script>
-      </head>
-      <body>
         <FirebaseProvider>{children}</FirebaseProvider>
       </body>
     </html>
