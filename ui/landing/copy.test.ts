@@ -8,9 +8,12 @@
 // configures no environment, so this needs no config change.
 
 import { describe, it, expect } from "vitest";
-// Relative, not "@/" — vitest.config.mts configures no path alias, and the
-// existing tests (core/heuristic.test.ts, core/order.test.ts) import this way.
+// Relative, not "@/" — the existing tests (core/heuristic.test.ts,
+// core/order.test.ts) import this way, and staying consistent here matters
+// more than the "@" alias vitest.config.mts added afterward for a different
+// caller.
 import { parseHeuristic } from "../../core/heuristic";
+import { computeBreakdown } from "../../core/breakdown";
 import { formatEstimate, formatDue } from "../board/format";
 import {
   FIXED_NOW,
@@ -35,6 +38,19 @@ describe("demo sentences still parse the way the page claims", () => {
       } else {
         expect(parsed.dueAt).toBeDefined();
         expect(formatDue(parsed.dueAt!, FIXED_NOW)).toBe(claim.due);
+      }
+
+      // HowItWorks.tsx renders this count from computeBreakdown itself, not
+      // a literal — this pins the fixture's claim.stepCount to what that
+      // real function produces, so an estimate edit here or a change to
+      // computeBreakdown's target step size can't silently make the "how
+      // it works" card claim a number the app wouldn't actually produce.
+      if (claim.shouldSplit) {
+        expect(claim.stepCount).toBeDefined();
+        const steps = computeBreakdown(parsed.title, parsed.estimateMin, parsed.dueAt, FIXED_NOW);
+        expect(steps.length).toBe(claim.stepCount);
+      } else {
+        expect(claim.stepCount).toBeUndefined();
       }
     });
   }

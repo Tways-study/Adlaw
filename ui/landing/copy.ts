@@ -30,6 +30,13 @@ export interface DemoSentence {
     readonly estimate: string;
     readonly due?: string;
     readonly shouldSplit: boolean;
+    /**
+     * The step count HowItWorks.tsx renders when `shouldSplit` is true —
+     * derived there from `core/breakdown.ts`'s `computeBreakdown`, the same
+     * function the board calls, not a literal. Required exactly when
+     * `shouldSplit` is true; copy.test.ts checks both.
+     */
+    readonly stepCount?: number;
   };
 }
 
@@ -57,6 +64,8 @@ export const DEMO_SENTENCES: readonly DemoSentence[] = [
       due: "due Friday",
       // Over three hours, so the app offers to break it into steps.
       shouldSplit: true,
+      // computeBreakdown targets ~60-minute steps: 240min / 60 = 4.
+      stepCount: 4,
     },
   },
 ];
