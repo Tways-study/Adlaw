@@ -2,6 +2,7 @@
 .gstack/
 node_modules/
 .env*
+!.env.example
 .next/
 
 # testing
