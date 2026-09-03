@@ -24,9 +24,15 @@ const AUTH_DOMAIN = process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN ?? "";
 // per-request nonces threaded through proxy.ts, which is a larger change than
 // this pass. Noted honestly rather than implied: script-src is not the
 // protection here, connect-src is.
+//
+// https://apis.google.com is also required here: signInWithPopup loads
+// apis.google.com/js/api.js on this origin to relay the popup's result back
+// to the main window. Without it the browser silently blocks the script —
+// no CSP error surfaces to the user, just a rejected promise that the
+// login/signup pages' catch-all renders as "Could not reach the server."
 const csp = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
+  `script-src 'self' 'unsafe-inline' https://apis.google.com${isDev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https://*.googleusercontent.com",
   "font-src 'self' data:",
