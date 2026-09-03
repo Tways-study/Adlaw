@@ -24,12 +24,17 @@
   flex-wrap: wrap;
 }
 
+/* --primary-ink, not --primary: text on a tint takes the ink variant.
+   --primary on --primary-soft measures 4.05:1 in light theme, under the
+   4.5:1 AA floor PRODUCT.md sets as non-negotiable; --primary-ink is 6.06:1.
+   This was the pairing DESIGN.md §Color → Rules flagged as still shipping
+   here. The equivalent chips in CaptureDemo and HowItWorks already use it. */
 .chip {
   font-size: 11px;
   padding: 3px 8px;
   border-radius: var(--r-s);
   background: var(--primary-soft);
-  color: var(--primary);
+  color: var(--primary-ink);
   font-weight: 600;
 }
 

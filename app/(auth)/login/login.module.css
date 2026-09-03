@@ -289,9 +289,15 @@
   transform: scale(0.975);
 }
 
+/* DESIGN.md: the focus ring is "2px solid var(--primary) at 2px offset,
+   everywhere, no exceptions." This previously set outline:none and an inset
+   1.5px ring in --primary-fill — on a --primary-fill button, i.e. a focus
+   indicator drawn in its own background colour. border-radius is restated so
+   the ring follows the button's 8px corner rather than globals.css's 5px. */
 .submit:focus-visible {
-  box-shadow: var(--lift-1), inset 0 0 0 1.5px var(--primary-fill);
-  outline: none;
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: var(--r-m);
 }
 
 .submit:disabled {
@@ -352,6 +358,28 @@
 
     @starting-style {
       transform: none;
+    }
+  }
+
+  /* The press keeps its feedback and loses only the movement. brightness
+     lands harder than the 1.08 hover so pointer-down stays distinguishable
+     from hover. */
+  .submit {
+    transition: filter 140ms var(--ease);
+  }
+
+  .submit:active {
+    transform: none;
+    filter: brightness(1.18);
+  }
+
+  /* The label still cross-fades — that is what this contract asks for — but
+     drops the blur, which is a visual-effect animation rather than a fade. */
+  .submitLabel {
+    transition: opacity 160ms ease;
+
+    @starting-style {
+      filter: none;
     }
   }
 }

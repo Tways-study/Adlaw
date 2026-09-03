@@ -365,3 +365,19 @@
 .undo:hover {
   background: var(--primary-soft);
 }
+
+@media (prefers-reduced-motion: reduce) {
+  /* DESIGN.md requires reduced-motion get "a genuine alternative, not a
+     disabled feature", so the press keeps its feedback and loses only the
+     movement. brightness lands harder than the 1.12 hover so pointer-down
+     stays distinguishable from hover. The sub-200ms colour transitions
+     elsewhere in this file are not motion and are left alone. */
+  .btn {
+    transition: filter 140ms var(--ease);
+  }
+
+  .btn:active {
+    transform: none;
+    filter: brightness(1.22);
+  }
+}

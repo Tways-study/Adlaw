@@ -333,4 +333,16 @@
     animation: none;
     transform: none;
   }
+
+  /* Same principle for the press: the CTA keeps its feedback and loses only
+     the movement. brightness lands harder than the 1.08 hover so pointer-down
+     stays distinguishable from hover. */
+  .cta {
+    transition: filter 140ms var(--ease);
+  }
+
+  .cta:active {
+    transform: none;
+    filter: brightness(1.18);
+  }
 }

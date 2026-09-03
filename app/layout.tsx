@@ -4,10 +4,16 @@ import { FirebaseProvider } from "./FirebaseProvider";
 import { THEME_STORAGE_KEY } from "@/ui/theme/theme";
 import "./globals.css";
 
+// No `weight` array on purpose: passing one makes next/font serve discrete
+// static instances (400/500/600/700 and nothing between). DESIGN.md's type
+// scale specifies **550** for the focus card title, and `font-weight: 550`
+// appears in seven files — with only static faces loaded, CSS font-matching
+// snaps every one of them up to 600, so the most important type in the
+// product rendered heavier than it was designed at. Omitting `weight` serves
+// variable Inter, whose continuous axis actually has 550 on it.
 const inter = Inter({
   variable: "--font-ui",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
 });
 
 const sourceSerif = Source_Serif_4({
