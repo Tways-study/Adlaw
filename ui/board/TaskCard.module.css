@@ -215,6 +215,7 @@
 
 .actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
   padding: 0 13px 12px;
 }
@@ -224,6 +225,12 @@
 }
 
 .btn {
+  /* flex: none + white-space: nowrap so a narrow container (the 250px
+     Everything rail's expanded shelf item) wraps this onto its own line as a
+     whole button, rather than shrinking the box and wrapping its label
+     word-by-word — "Break into steps" was rendering as three stacked lines. */
+  flex: none;
+  white-space: nowrap;
   padding: 7px 15px;
   border-radius: var(--r-s);
   font-size: 12.5px;
@@ -245,6 +252,9 @@
 }
 
 .ghostbtn {
+  /* Same reasoning as .btn above — wrap as a whole button, never mid-label. */
+  flex: none;
+  white-space: nowrap;
   background: transparent;
   color: var(--ink-3);
   padding: 7px 10px;
