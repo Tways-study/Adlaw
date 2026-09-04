@@ -59,22 +59,29 @@
   box-shadow: inset 0 1px 2px oklch(0 0 0 / 0.15);
 }
 
+/* width is fixed at 100% of the track; the actual fraction is a scaleX
+   transform instead (DESIGN.md: "Only transform and opacity. No animated
+   layout properties" — width is a layout property, scaleX is not). Default
+   transform-origin is center, which would grow the bar in both directions;
+   these need to grow from the edge they're anchored to. */
 .fill,
 .spill {
   position: absolute;
   top: 0;
   bottom: 0;
   border-radius: 9999px;
-  width: 0;
+  width: 100%;
 }
 
 .fill {
   left: 0;
+  transform-origin: left;
   background: var(--primary-fill);
 }
 
 .spill {
   left: 100%;
+  transform-origin: left;
   background: var(--alert);
 }
 
@@ -87,13 +94,6 @@
   border-radius: 2px;
   background: var(--ink);
   opacity: 0.5;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .fill,
-  .spill {
-    transition: none !important;
-  }
 }
 
 .right {

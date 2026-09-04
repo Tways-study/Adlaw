@@ -8,11 +8,40 @@
   border-radius: var(--r-m);
   box-shadow: var(--edge);
   margin-bottom: 8px;
-  transition: background 160ms var(--ease);
+  transition:
+    background 160ms var(--ease),
+    transform 110ms ease-out;
 }
 
 .card:hover {
   background: var(--card-hi);
+}
+
+/* DESIGN.md: "Button press | scale(0.975), 110ms, on pointer-down." The
+   whole card is the most-touched control in the app and previously had no
+   press feedback at all. The press target is .trigger (the actual button),
+   but the visible surface — background, shadow, radius — lives on .card;
+   :has() bridges .trigger's :active state to it. Without this, only the
+   button's transparent content box would shrink while the card's real
+   surface stayed still. */
+.card:has(.trigger:active) {
+  transform: scale(0.975);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: background 160ms var(--ease);
+  }
+
+  /* Same principle as the other reduced-motion guards in this codebase: the
+     press keeps its feedback and loses only the movement. A card can't get
+     visibly "brighter" than its hover state (only two surface tokens exist),
+     so this darkens instead — distinct from hover, and reversible the
+     instant the pointer lifts. */
+  .card:has(.trigger:active) {
+    transform: none;
+    filter: brightness(0.96);
+  }
 }
 
 /* ---------------- focus card (the "now" lane's one card) ---------------- */

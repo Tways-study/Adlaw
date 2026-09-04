@@ -220,6 +220,23 @@ Rules that are not negotiable:
 - `prefers-reduced-motion: reduce` replaces springs with instant settles and
   cross-fades. Content is never gated behind a reveal transition.
 
+**Implementation note (2026-09-04):** the card-settle and capacity-meter rows
+above are now real springs, built with Framer Motion rather than hand-rolled —
+a deliberate, one-time exception to `CLAUDE.md`'s "hand-written CSS… no
+component library" and to this doc's own `animation-timeline: view()` landing
+entrances being "no JS, no library, consistent with a repo that hand-rolls all
+motion." The exception is narrow on purpose: it covers only the two rows a
+plain CSS transition provably cannot satisfy — carrying release velocity into
+the animation, and staying interruptible mid-flight (grabbing a settling card
+must redirect it, not wait for it to finish). Every other row in this table —
+hover/color/chrome, button press — is still plain CSS, and the landing
+surface's entrances, sweep, and tagline rotator are untouched. `ui/drag/
+springs.ts` is the one place the two spring configs are defined; nothing
+imports Framer Motion outside `ui/drag/useDraggableCard.ts` and
+`ui/board/BoardHeader.tsx`. Writing this down so a later reader finds a
+decision, not drift — the same failure mode that produced the stale
+`--lift-2` and prototype-color confusions this doc already warns about.
+
 ## Landing surface (addendum, 2026-08-22)
 
 **Scope: `/` and `/login` only. Inside the board every rule above holds

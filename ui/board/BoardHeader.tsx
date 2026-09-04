@@ -2,11 +2,18 @@
 
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { signOut } from "@/firebase/auth";
 import { useDayPlan } from "./useDayPlan";
 import { prefersReducedMotion } from "@/ui/drag/reducedMotion";
+import { CAPACITY_METER_SPRING } from "@/ui/drag/springs";
 import { formatEstimate } from "./format";
 import styles from "./BoardHeader.module.css";
+
+// duration: 0 rather than skipping the transition prop entirely — an absent
+// transition still falls back to Framer Motion's own default spring, which
+// would reintroduce motion this is specifically trying to remove.
+const INSTANT = { duration: 0 };
 
 export function BoardHeader() {
   const router = useRouter();
@@ -16,7 +23,7 @@ export function BoardHeader() {
   // ui/ (TaskCard's due-date label, CaptureBar's live preview) — this is a
   // display decision, not state to track.
   const reduceMotion = prefersReducedMotion();
-  const widthTransition = reduceMotion ? "none" : "width 450ms var(--ease)";
+  const meterTransition = reduceMotion ? INSTANT : CAPACITY_METER_SPRING;
 
   // The structural guarantee (core/capacity.ts's CapacityResult doc):
   // overageMin > 0 exactly when cutIndex !== null. "Does the day fit" reads
@@ -50,8 +57,23 @@ export function BoardHeader() {
           </span>
         </div>
         <div className={styles.slot}>
-          <div className={styles.fill} style={{ width: `${fillPct * 100}%`, transition: widthTransition }} />
-          <div className={styles.spill} style={{ width: `${spillPct * 100}%`, transition: widthTransition }} />
+          {/* DESIGN.md: "Capacity meter | Critically damped, response 0.45."
+              scaleX, not width — width is a layout property, banned for
+              animation. initial pins the very first paint to the real value
+              with no animation; animate is what springs on every value
+              change after that (a capture, a move, a schedule edit). */}
+          <motion.div
+            className={styles.fill}
+            initial={{ scaleX: fillPct }}
+            animate={{ scaleX: fillPct }}
+            transition={meterTransition}
+          />
+          <motion.div
+            className={styles.spill}
+            initial={{ scaleX: spillPct }}
+            animate={{ scaleX: spillPct }}
+            transition={meterTransition}
+          />
           <div className={styles.notch} />
         </div>
       </div>
