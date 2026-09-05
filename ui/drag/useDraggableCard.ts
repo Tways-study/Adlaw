@@ -84,6 +84,52 @@ export function useDraggableCard(task: Task): DraggableCard {
   // effect is what actually claims the entry.
   const [isSettling, setIsSettling] = useState(() => hasPendingSettle(task._id));
 
+  // The consume-and-animate logic, reachable from two call sites (finishDrag's
+  // own-instance fallback for a no-op drop, and the mount/prop-change effect
+  // below for a real move) without either needing the other in a dependency
+  // array. Kept in a ref updated every render rather than written to
+  // directly during render — this codebase's lint rules (React Compiler-
+  // aligned) disallow mutating a ref in the render body itself.
+  const runSettleRef = useRef<() => void>(() => {});
+  useLayoutEffect(() => {
+    runSettleRef.current = () => {
+      const el = elRef.current;
+      if (!el) return;
+      const entry = consumeSettle(task._id);
+      if (!entry) return;
+
+      const rect = el.getBoundingClientRect();
+      const deltaX = entry.left - rect.left;
+      const deltaY = entry.top - rect.top;
+
+      // Framer Motion's array-keyframe form paints the first value
+      // synchronously, then animates to the second — this is the "start
+      // offset, then animate to zero" FLIP invert, without a manual rAF
+      // split. X and Y get independent spring instances (apple-design:
+      // "decompose 2D motion into independent X and Y springs" — a single
+      // spring on a 2D distance desyncs when the axes carried different
+      // velocities).
+      const controls = animate(
+        el,
+        { x: [deltaX, 0], y: [deltaY, 0] },
+        {
+          x: { ...CARD_SETTLE_SPRING, velocity: entry.velocityX },
+          y: { ...CARD_SETTLE_SPRING, velocity: entry.velocityY },
+        },
+      );
+      settleControlsRef.current = controls;
+      // .stop() (a new grab interrupting this settle) resolves this same
+      // promise early, so guard against a stale completion clearing
+      // isSettling after a newer settle has already replaced this one in
+      // the ref — otherwise the newer animation's elevation styling would
+      // drop mid-flight.
+      controls.then(() => {
+        if (settleControlsRef.current === controls) setIsSettling(false);
+      });
+    };
+  });
+  const runSettle = useCallback(() => runSettleRef.current(), []);
+
   const handlePointerDown = useCallback(
     (e: ReactPointerEvent) => {
       if (e.button !== 0) return;
@@ -164,7 +210,8 @@ export function useDraggableCard(task: Task): DraggableCard {
         { shelf: getLaneElement("shelf"), next: getLaneElement("next"), now: getLaneElement("now") },
         task._id,
       );
-      if (target && !sameDropTarget(target, s.origin) && user) {
+      const isRealMove = target !== null && !sameDropTarget(target, s.origin);
+      if (isRealMove && user) {
         void move(user.uid, task._id, target.status, target.beforeId, target.afterId);
       }
 
@@ -195,52 +242,42 @@ export function useDraggableCard(task: Task): DraggableCard {
         velocityY,
       });
       setIsSettling(true);
+
+      // isRealMove writes to Firestore, and the mount-effect below fires
+      // reliably once that write round-trips back through onSnapshot and
+      // task.status/laneOrder actually change — whether that lands on this
+      // same instance (a same-lane reorder) or a freshly mounted one (a
+      // cross-lane move).
+      //
+      // A no-op drop (missed every valid target, or released back over its
+      // own origin) never calls move(), so task.status/laneOrder never
+      // change and that effect has nothing to react to — this instance just
+      // keeps re-rendering with the same props. Confirmed live: without
+      // this branch, the card was left permanently stuck with the settle's
+      // elevated z-index/shadow, since nothing ever consumed the entry this
+      // block just registered. rAF, not a direct call: it lets React commit
+      // the isDragging:false render first, so runSettle's rect read lands on
+      // the real resting position rather than the still-fixed flight frame.
+      if (!isRealMove) {
+        requestAnimationFrame(() => runSettle());
+      }
     },
-    [getLaneElement, user, setDraggingId, task._id],
+    [getLaneElement, user, setDraggingId, task._id, runSettle],
   );
 
-  // Runs whenever this task's lane or position within its lane could have
-  // just changed — a same-lane reorder re-renders this same instance; a
-  // cross-lane move unmounts it and mounts a different instance whose first
-  // render hits this same effect. Either way, consumeSettle(task._id) is
-  // the hand-off finishDrag() above wrote.
+  // Runs on mount, and again whenever this task's lane or position within
+  // its lane changes — covers a same-lane reorder re-rendering this same
+  // instance, and a cross-lane move unmounting it and mounting a different
+  // instance whose first render hits this same effect. The no-op case
+  // finishDrag's rAF branch above handles is deliberately NOT this effect's
+  // job: task.status/laneOrder never change for a no-op, so this would
+  // never fire for it.
   //
   // useLayoutEffect, not useEffect: the invert has to be painted before the
   // browser shows a frame, or there'd be one visible frame at the real
   // (un-offset) position before snapping to the inverted start.
   useLayoutEffect(() => {
-    const el = elRef.current;
-    if (!el) return;
-    const entry = consumeSettle(task._id);
-    if (!entry) return;
-
-    const rect = el.getBoundingClientRect();
-    const deltaX = entry.left - rect.left;
-    const deltaY = entry.top - rect.top;
-
-    // Framer Motion's array-keyframe form paints the first value
-    // synchronously, then animates to the second — this is the "start
-    // offset, then animate to zero" FLIP invert, without a manual rAF split.
-    // X and Y get independent spring instances (apple-design: "decompose 2D
-    // motion into independent X and Y springs" — a single spring on a 2D
-    // distance desyncs when the two axes carried different velocities).
-    const controls = animate(
-      el,
-      { x: [deltaX, 0], y: [deltaY, 0] },
-      {
-        x: { ...CARD_SETTLE_SPRING, velocity: entry.velocityX },
-        y: { ...CARD_SETTLE_SPRING, velocity: entry.velocityY },
-      },
-    );
-    settleControlsRef.current = controls;
-    // .stop() (a new grab interrupting this settle) resolves this same
-    // promise early, so guard against a stale completion clearing
-    // isSettling after a newer settle has already replaced this one in the
-    // ref — otherwise the newer animation's elevation styling would drop
-    // mid-flight.
-    controls.then(() => {
-      if (settleControlsRef.current === controls) setIsSettling(false);
-    });
+    runSettleRef.current();
   }, [task._id, task.status, task.laneOrder]);
 
   const didDrag = useCallback(() => {

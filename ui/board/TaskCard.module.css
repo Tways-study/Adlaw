@@ -17,15 +17,19 @@
   background: var(--card-hi);
 }
 
-/* DESIGN.md: "Button press | scale(0.975), 110ms, on pointer-down." The
-   whole card is the most-touched control in the app and previously had no
-   press feedback at all. The press target is .trigger (the actual button),
-   but the visible surface — background, shadow, radius — lives on .card;
-   :has() bridges .trigger's :active state to it. Without this, only the
-   button's transparent content box would shrink while the card's real
-   surface stayed still. */
+/* DESIGN.md's "Button press | scale(0.975), 110ms, on pointer-down" was
+   tuned for a button-sized element (tens to ~150px wide). This card spans
+   most of its lane column — over 1000px on a wide monitor — so the same
+   2.5% shrink pulls each edge in by ~15px, which reads as a jump, not a
+   press (found live: felt "a little aggressive" on the real board). 0.995
+   keeps the felt displacement in the same few-pixel range a button gets at
+   0.975, scaled up for how much wider this element actually is. The whole
+   card previously had no press feedback at all — the press target is
+   .trigger (the actual button), but the visible surface — background,
+   shadow, radius — lives on .card; :has() bridges .trigger's :active state
+   to it, since the button's own content box is transparent. */
 .card:has(.trigger:active) {
-  transform: scale(0.975);
+  transform: scale(0.995);
 }
 
 @media (prefers-reduced-motion: reduce) {

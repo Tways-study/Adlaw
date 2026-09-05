@@ -1,3 +1,9 @@
+/* Base rule is the plain opaque fade this bar always had — the fallback for
+   a browser that understands neither backdrop-filter nor relative-color
+   oklch(from …), matching this file's own @supports convention elsewhere
+   (see ui/landing/landing.module.css's animation-timeline: view() guard):
+   land unsupporting browsers on the previously-correct behavior, not a
+   broken one. */
 .capture {
   position: fixed;
   left: 250px;
@@ -6,6 +12,31 @@
   padding: 12px 26px 16px;
   z-index: var(--z-chrome);
   background: linear-gradient(to top, var(--desk) 45%, transparent);
+}
+
+/* Apple's functional-toolbar pattern (apple-design skill, §12 Materials &
+   depth): "build nav/toolbars/sheets as translucent layers with content
+   scrolling underneath — not opaque bars that consume a fixed strip." This
+   bar already did the "content scrolls underneath" half via a solid
+   opacity-fade gradient; oklch(from …) adds real alpha to --desk so the
+   blur actually shows through, and mask-image feathers the blur itself
+   (not just the tint) toward the top edge — the "scroll edge effect, not a
+   hard divider" apple-design also names, now applied to translucency too,
+   not only opacity. .inner (the input pill) stays fully opaque on purpose:
+   apple-design's material-weight rule is explicit that a solid control
+   belongs on a translucent bar, and stacking two translucent layers is what
+   collapses legibility.
+   Not decorative glassmorphism (DESIGN.md's ban) — the ban targets frosting
+   applied for visual flair with no functional depth reason; this bar was
+   already doing Apple's floating-toolbar job, just with opacity alone. */
+@supports (backdrop-filter: blur(1px)) and (background: oklch(from white l c h)) {
+  .capture {
+    background: linear-gradient(to top, oklch(from var(--desk) l c h / 0.72) 45%, transparent);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    mask-image: linear-gradient(to top, black 45%, transparent);
+    -webkit-mask-image: linear-gradient(to top, black 45%, transparent);
+  }
 }
 
 /* Neutral, not --alert — offline isn't a capacity/day-edge signal
@@ -82,7 +113,14 @@
 }
 
 @media (prefers-reduced-transparency: reduce) {
+  /* apple-design §14: "make translucent surfaces frostier/solid: raise
+     background opacity, drop the blur." Full revert to the plain opaque
+     tint this bar used before — no partial-transparency middle ground. */
   .capture {
     background: var(--desk);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    mask-image: none;
+    -webkit-mask-image: none;
   }
 }
