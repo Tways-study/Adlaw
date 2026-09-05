@@ -8,7 +8,10 @@
   color: var(--on-fill);
   background: var(--primary-fill);
   padding: 9px 16px;
-  border-radius: var(--r-s);
+  /* DESIGN.md: "8px buttons" — this is the page's one --primary-fill CTA
+     (see the file comment above), the identical pattern to .cta/.submit,
+     which already use 8px. */
+  border-radius: var(--r-m);
   box-shadow: var(--lift-1);
   transition: filter 140ms var(--ease);
 }

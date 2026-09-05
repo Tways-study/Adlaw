@@ -79,7 +79,9 @@
 
 .pickBtn {
   padding: 7px 15px;
-  border-radius: var(--r-s);
+  /* DESIGN.md: "8px buttons" — filled, --lift-1, the same pattern as
+     .cta/.submit/.google. */
+  border-radius: var(--r-m);
   font-size: 12.5px;
   font-weight: 600;
   background: var(--primary-fill);

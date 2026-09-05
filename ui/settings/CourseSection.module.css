@@ -26,7 +26,8 @@
 .codeBtn {
   padding: 6px 8px;
   margin: -6px -8px;
-  border-radius: var(--r-s);
+  /* DESIGN.md: "8px buttons" — has a hover background, a real button box. */
+  border-radius: var(--r-m);
   font-size: 13.5px;
   color: var(--ink);
   text-align: left;
@@ -57,7 +58,7 @@
   font-size: 12px;
   color: var(--ink-3);
   padding: 5px 8px;
-  border-radius: var(--r-s);
+  border-radius: var(--r-m);
   flex: none;
 }
 
@@ -101,7 +102,7 @@
   color: var(--primary-ink);
   background: var(--primary-soft);
   padding: 7px 14px;
-  border-radius: var(--r-s);
+  border-radius: var(--r-m);
   flex: none;
 }
 

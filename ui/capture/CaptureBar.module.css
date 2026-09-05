@@ -63,7 +63,9 @@
 .chip {
   font-size: 11px;
   padding: 3px 8px;
-  border-radius: var(--r-s);
+  /* DESIGN.md's "Pill Tag: 9999px, used for status labels" convention — a
+     small, tinted status label is exactly what this is. */
+  border-radius: var(--r-pill);
   background: var(--primary-soft);
   color: var(--primary-ink);
   font-weight: 600;

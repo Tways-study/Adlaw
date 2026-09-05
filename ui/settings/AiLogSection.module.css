@@ -55,7 +55,9 @@
   color: var(--ink-3);
   background: var(--line-soft);
   padding: 2px 6px;
-  border-radius: var(--r-s);
+  /* DESIGN.md's "Pill Tag: 9999px, used for status labels" convention — an
+     uppercase tinted status badge, textbook case. */
+  border-radius: var(--r-pill);
   flex: none;
 }
 

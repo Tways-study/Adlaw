@@ -265,7 +265,9 @@
   flex: none;
   white-space: nowrap;
   padding: 7px 15px;
-  border-radius: var(--r-s);
+  /* DESIGN.md: "8px buttons" — this is a filled, --lift-1 button, the same
+     pattern as .cta/.submit/.google, which already got this right. */
+  border-radius: var(--r-m);
   font-size: 12.5px;
   font-weight: 600;
   background: var(--primary-fill);
@@ -292,7 +294,7 @@
   color: var(--ink-3);
   padding: 7px 10px;
   font-weight: 500;
-  border-radius: var(--r-s);
+  border-radius: var(--r-m);
 }
 
 .ghostbtn:hover {
@@ -401,7 +403,7 @@
   font-weight: 600;
   color: var(--primary);
   padding: 4px 8px;
-  border-radius: var(--r-s);
+  border-radius: var(--r-m);
   flex: none;
 }
 

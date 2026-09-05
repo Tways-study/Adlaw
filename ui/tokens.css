@@ -62,6 +62,10 @@
   --r-s: 4px;
   --r-m: 8px;
   --r-l: 12px;
+  /* Pills only, never a general-purpose "rounder" card radius (DESIGN.md
+     §Depth and material). Was already the value every pill used, as a raw
+     9999px literal — this just gives it a name. */
+  --r-pill: 9999px;
   --z-drag: 60;
   --z-chrome: 40;
   --ease: cubic-bezier(.22, 1, .36, 1);

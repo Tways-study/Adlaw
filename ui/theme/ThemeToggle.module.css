@@ -2,14 +2,16 @@
   display: flex;
   gap: 2px;
   padding: 2px;
-  border-radius: 8px;
+  border-radius: var(--r-m);
   background: var(--line-soft);
 }
 
 .themes button {
   padding: 4px 10px;
   font-size: 11.5px;
-  border-radius: 6px;
+  /* Was a raw 6px, matching neither --r-s nor --r-m — not a scale judgment,
+     an outright wrong value. DESIGN.md: "8px buttons." */
+  border-radius: var(--r-m);
   color: var(--ink-3);
   transition: color 140ms var(--ease);
 }

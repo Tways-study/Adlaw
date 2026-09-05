@@ -4,7 +4,8 @@
   font-weight: 500;
   color: var(--alert-ink);
   padding: 8px 14px;
-  border-radius: var(--r-s);
+  /* DESIGN.md: "8px buttons" — a real button, --edge border. */
+  border-radius: var(--r-m);
   box-shadow: var(--edge);
   transition: background 140ms var(--ease);
 }

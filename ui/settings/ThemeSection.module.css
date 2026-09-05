@@ -10,7 +10,9 @@
 .themes button {
   padding: 6px 14px;
   font-size: 12.5px;
-  border-radius: 6px;
+  /* Was a raw 6px, matching neither --r-s nor --r-m — not a scale judgment,
+     an outright wrong value. DESIGN.md: "8px buttons." */
+  border-radius: var(--r-m);
   color: var(--ink-3);
   transition: color 140ms var(--ease);
 }

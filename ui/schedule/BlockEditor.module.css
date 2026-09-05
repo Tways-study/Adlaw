@@ -55,7 +55,7 @@
   font-weight: 500;
   color: var(--alert-ink);
   padding: 7px 10px;
-  border-radius: var(--r-s);
+  border-radius: var(--r-m);
   margin-top: 2px;
   transition: background 140ms var(--ease);
 }

@@ -45,7 +45,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--r-s);
+  /* DESIGN.md: "8px buttons" — a standalone icon-button action. */
+  border-radius: var(--r-m);
   color: var(--ink-3);
   font-size: 14px;
   line-height: 1;
@@ -85,7 +86,9 @@
   flex-direction: column;
   gap: 1px;
   text-align: left;
-  border-radius: var(--r-s);
+  /* DESIGN.md: "8px buttons" — a clickable, selectable schedule block, not a
+     small chip. */
+  border-radius: var(--r-m);
   background: var(--busy);
   color: var(--ink-2);
   box-shadow: var(--edge);

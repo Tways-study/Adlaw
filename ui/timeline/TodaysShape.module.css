@@ -94,7 +94,10 @@
   font-weight: 600;
   color: var(--ink-3);
   padding: 3px 6px;
-  border-radius: var(--r-s);
+  /* DESIGN.md: "8px buttons" — a clickable dismiss action. This is the
+     smallest element touched in this pass (~18px tall); verify by eye that
+     8px doesn't read as pill-shaped here before treating this as settled. */
+  border-radius: var(--r-m);
 }
 
 .calloutDismiss:hover {

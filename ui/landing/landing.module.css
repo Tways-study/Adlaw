@@ -148,7 +148,11 @@
   color: var(--ink-2);
   text-decoration: none;
   padding: 6px 8px;
-  border-radius: var(--r-s);
+  /* DESIGN.md: "8px buttons" — no visible hover background today (color-only
+     transition), so this padding is a larger click target rather than a
+     drawn box, but tokenizing it correctly now costs nothing and matches if
+     a hover treatment is ever added. */
+  border-radius: var(--r-m);
   transition: color 140ms var(--ease);
 }
 

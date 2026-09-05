@@ -140,7 +140,9 @@
 .slot {
   position: relative;
   height: 8px;
-  border-radius: 99px;
+  /* Was a raw 99px — off by two orders of magnitude from the real board's
+     9999px, not just untokenized. */
+  border-radius: var(--r-pill);
   background: var(--line-soft);
   box-shadow: inset 0 1px 2px oklch(0 0 0 / 0.15);
 }
@@ -150,7 +152,7 @@
   position: absolute;
   top: 0;
   bottom: 0;
-  border-radius: 99px;
+  border-radius: var(--r-pill);
 }
 
 .fill {
@@ -310,7 +312,9 @@
   color: var(--alert-ink);
   background: var(--alert-soft);
   padding: 3px 7px;
-  border-radius: 5px;
+  /* Was a raw 5px, matching neither the real app's .cutlineLabel (--r-s,
+     which this demo reproduces) nor any other token. */
+  border-radius: var(--r-s);
   align-self: flex-start;
 }
 

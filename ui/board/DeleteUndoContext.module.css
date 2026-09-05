@@ -19,7 +19,7 @@
   font-weight: 600;
   color: var(--primary);
   padding: 6px 10px;
-  border-radius: var(--r-s);
+  border-radius: var(--r-m);
 }
 
 .undo:hover {
