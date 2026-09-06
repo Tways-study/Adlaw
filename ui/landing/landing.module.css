@@ -50,7 +50,7 @@
    footer. It carries no width rule at all — a plain block element's width is
    auto, which already fills `.landing` (itself unconstrained), so it spans
    the viewport without ever touching 100vw. Its only job is to be the thing
-   an accent wash paints onto; `.shell` still lives one level in to hold the
+   a panel paints onto; `.shell` still lives one level in to hold the
    actual content at the 1080px measure. Most `.bleed` elements get no
    `data-accent` and stay transparent, which is what "stays on --desk" means
    for the hero/top bar/footer/HowItWorks/timeline — .landing's own
@@ -59,20 +59,36 @@
   width: auto;
 }
 
+/* A panel is a colored mat the page sits on. In light it is a real
+   saturated surface at OKLCH L 0.80; in dark it is a tinted region of the
+   ground at --desk's own L. Neither is an inversion of the other — see
+   ui/tokens.css's --panel-* comments for why the two behave differently.
+
+   TEXT DIRECTLY ON A PANEL IS --ink ONLY. --ink-2 measures 4.43:1 on
+   marigold and 4.37:1 on coral, under PRODUCT.md's floor; --ink-3 fails on
+   all four. .lead and .caption both default to a lighter ink, so both are
+   promoted below when they sit on a panel. Anything else needing a
+   secondary tone belongs on a --card surface, not on the mat. */
 .bleed[data-accent="marigold"] {
-  background: var(--wash-marigold);
+  background: var(--panel-marigold);
 }
 
 .bleed[data-accent="coral"] {
-  background: var(--wash-coral);
+  background: var(--panel-coral);
 }
 
 .bleed[data-accent="mocha"] {
-  background: var(--wash-mocha);
+  background: var(--panel-mocha);
 }
 
 .bleed[data-accent="sky"] {
-  background: var(--wash-sky);
+  background: var(--panel-sky);
+}
+
+/* The panel text rule, enforced rather than documented. */
+.bleed[data-accent] .lead,
+.bleed[data-accent] .caption {
+  color: var(--ink);
 }
 
 /* An accented band is already separated from its neighbor by its own color
@@ -262,18 +278,18 @@
 /* Two-column bands that alternate side, not a 2x2 card grid. A grid is a banned
    pattern here and it would flatten a ranked list into four equal things.
 
-   Band → wash pairing (set in app/page.tsx's four <Failure accent=…> calls):
-   each wash is chosen for maximum hue distance from the functional color that
-   band's own miniature already renders, so the wash reads as a background
+   Band → panel pairing (set in app/page.tsx's four <Failure accent=…> calls):
+   each panel is chosen for maximum hue distance from the functional color that
+   band's own miniature already renders, so the panel reads as a background
    cast rather than competing with the thing it's sitting behind.
      1. CapacitySlot renders both --primary-fill (hue 254) and --alert
         (hue 31) -> marigold (hue 75), far from both.
-     2. FocusCard renders --primary -> coral (hue 31), opposite the blue.
+     2. FocusCard renders --primary -> coral (hue 34), opposite the blue.
      3. StepProgress renders --primary-fill AND --alert-ink (via `.hz.soon`)
         -- the most competing color of the four -- so it gets mocha, the
-        lowest-chroma wash, rather than trying to out-hue two colors at once.
+        lowest-chroma panel, rather than trying to out-hue two colors at once.
      4. BareCapture renders no functional color at all -> sky (hue 240), the
-        one wash closest to --primary, safe to use precisely because there's
+        one panel closest to --primary, safe to use precisely because there's
         nothing here for it to clash with. */
 .band {
   display: grid;
