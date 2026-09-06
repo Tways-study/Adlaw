@@ -1,6 +1,11 @@
 .demo {
   width: 100%;
   max-width: 560px;
+  /* The hero is a centered stack (ui/landing/landing.module.css's .hero);
+     without this, the max-width box keeps the left alignment that was
+     correct back when the hero was left-aligned, stranding the demo off
+     the center axis its full-width .heroMark wrapper is already on. */
+  margin-inline: auto;
   display: flex;
   flex-direction: column;
   gap: 10px;
