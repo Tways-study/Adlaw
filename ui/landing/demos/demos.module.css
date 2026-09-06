@@ -237,6 +237,16 @@
 
 /* ── Today's shape (the timeline) ────────────────────────── */
 
+/* Timeline.tsx sets `height` inline to (endHour - startHour) * hourPx — the
+   exact pixel span every child's `top: y(hour)` is computed against, so that
+   value has to land as this element's CONTENT height. The app-wide reset
+   (app/globals.css) puts every element in border-box sizing, which would
+   instead spend this element's own padding out of that inline height,
+   leaving the grid row too short for the drawing math and pushing the
+   bottom-most block and gutter label past the card's edge. box-sizing:
+   content-box here is what makes the inline height and the drawing math
+   agree again; the visible card grows by its own padding instead of
+   swallowing content. */
 .tl {
   position: relative;
   display: grid;
@@ -246,6 +256,7 @@
   border-radius: var(--r-l);
   box-shadow: var(--edge);
   padding: 22px 16px 16px;
+  box-sizing: content-box;
 }
 
 .gut {
@@ -408,4 +419,17 @@
   margin: 0;
   font-size: 11.5px;
   color: var(--ink);
+}
+
+/* The midnight island (landing.module.css's `.bleed[data-panel="midnight"]`)
+   is the one surface in this system whose polarity is inverted relative to
+   the light accent panels above: --ink, correct on every other panel this
+   line sits on, is nearly invisible on the island's dark ground. The
+   island's own panel-text rule can't reach this element to fix it — it
+   lives in a different CSS module than .d2/.lead, so it needs its own
+   override here rather than a shared selector. .tl's internals and
+   .edgeLabel aren't listed here on purpose: both already carry their own
+   opaque surface (--card, --alert-soft) and stay correct underneath. */
+[data-panel="midnight"] .notShipped {
+  color: var(--on-midnight);
 }
