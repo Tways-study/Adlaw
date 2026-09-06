@@ -11,14 +11,17 @@
      has no type tokens at all, and growing a global scale for one surface
      would break that convention for a barely perceptible gain.
 
-     Three rungs on the existing ladder, seeded at the 20px day title at a
-     constant 1.4 ratio: 20 → 28 → 40 → 56.
+     Four rungs on the existing ladder, seeded at the 20px day title at a
+     constant 1.4 ratio: 20 → 28 → 40 → 56 → 78. D1 took the 78 rung when
+     the hero centered — a four-word headline centered in a 1080px measure
+     wants to be big, and 56px left it floating.
 
      Every fixed term is in rem, never px. A pure-vw clamp violates WCAG 2.2
-     SC 1.4.4 (Resize Text) — the text stops responding to the reader's browser
-     font-size setting. The rem intercept is what preserves scaling, which is
-     why these numbers look arbitrary. Do not "simplify" them. */
-  --d1: clamp(2.125rem, 1.5rem + 2.67vw, 3.5rem); /* 34 → 56px */
+     SC 1.4.4 (Resize Text) — the text stops responding to the reader's
+     browser font-size setting. The rem intercept is what preserves scaling,
+     which is why these numbers look arbitrary. Do not "simplify" them.
+     Check: at 375px viewport D1 is 40px; it reaches 78px at ~1421px. */
+  --d1: clamp(2.5rem, 1.65rem + 3.63vw, 4.875rem); /* 40 → 78px */
   --d2: clamp(1.625rem, 1.23rem + 1.7vw, 2.5rem); /* 26 → 40px */
   --d3: clamp(1.375rem, 1.2rem + 0.73vw, 1.75rem); /* 22 → 28px */
 
@@ -240,6 +243,11 @@
 
 /* ── Hero ────────────────────────────────────────────────── */
 
+/* Centered stack: audience line → headline → lead → the one filled CTA →
+   the capture demo. Centering is what let the ambient day-mark move behind
+   the stack instead of being cropped by the right edge — DESIGN.md records
+   a cropped ring as reading "off-centre rather than as deliberate framing",
+   which is why it was pulled from /login. */
 .hero {
   position: relative;
   z-index: 0;
@@ -247,18 +255,26 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
-  align-items: start;
+  align-items: center;
+  text-align: center;
 }
 
-/* The day-mark, large and quiet, in the empty right side of the hero at
-   desktop widths. z-index: -1 (relative to .hero's own stacking context
-   above) keeps it behind the headline and demo rather than competing with
-   them — it's texture for the section, not a second thing to read. Placed
-   flush at top/right rather than bled off the edge, so it can't reintroduce
-   the horizontal-overflow bug a 100vw or negatively-offset element would. */
+/* The lead is measure-capped at 34em, so centering it needs the auto margin
+   as well as the flex alignment. */
+.hero .lead,
+.hero .audience {
+  margin-inline: auto;
+}
+
+/* Centered behind the stack rather than pinned top-right. z-index: -1
+   (against .hero's own stacking context) keeps it behind the headline and
+   demo — texture for the section, not a second thing to read. Positioned
+   with a transform rather than negative offsets so it can never reintroduce
+   the horizontal-overflow bug a 100vw or offset element would. */
 .heroMark {
-  top: 0;
-  right: 0;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
   z-index: -1;
 }
 

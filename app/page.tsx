@@ -58,7 +58,7 @@ export default function LandingPage() {
         <section className={styles.bleed}>
           <div className={styles.shell}>
             <div className={styles.hero}>
-              <DayMark ambient size={420} className={styles.heroMark} />
+              <DayMark ambient size={560} className={styles.heroMark} />
               <p className={styles.audience}>
                 Built for students juggling requirements, org work, and a class schedule that never
                 has room for anything else.
