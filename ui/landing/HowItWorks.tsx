@@ -31,58 +31,68 @@ const BEATS = DEMO_SENTENCES.map((s) => {
   };
 });
 
+// Renders its own outer/shell/inner triple (.bleed > .shell > .section), like
+// Failure.tsx, so app/page.tsx's call site stays a bare <HowItWorks />. No
+// `data-accent` here — this section stays on --desk, unwashed, between the
+// four accented failure bands and the (also unwashed) closing timeline
+// section. See landing.module.css's accent-pairing comment for why only the
+// four failures get a wash.
 export function HowItWorks() {
   return (
-    <section className={`${styles.section} ${styles.reveal}`}>
-      <div>
-        <h2 className={styles.d2}>One sentence in, structure out.</h2>
-        <p className={styles.lead} style={{ marginTop: 14 }}>
-          No project picker, no priority dropdown, no estimate field to fill in. Just type the
-          task the way you&rsquo;d normally describe it — the subject, how long it&rsquo;ll take,
-          and the deadline all come from that one sentence.
-        </p>
-      </div>
+    <section className={styles.bleed}>
+      <div className={styles.shell}>
+        <div className={`${styles.section} ${styles.reveal}`}>
+          <div>
+            <h2 className={styles.d2}>One sentence in, structure out.</h2>
+            <p className={styles.lead} style={{ marginTop: 14 }}>
+              No project picker, no priority dropdown, no estimate field to fill in. Just type the
+              task the way you&rsquo;d normally describe it — the subject, how long it&rsquo;ll
+              take, and the deadline all come from that one sentence.
+            </p>
+          </div>
 
-      <ol className={own.beats}>
-        {BEATS.map(({ raw, parsed, stepCount }) => (
-          <li key={raw} className={own.beat}>
-            <p className={own.said}>{raw}</p>
-            <div className={own.chips}>
-              {parsed.courseCode && <span className={own.chip}>{parsed.courseCode}</span>}
-              <span className={`${own.chip} num`}>{formatEstimate(parsed.estimateMin)}</span>
-              {parsed.dueAt && (
-                <span className={own.chip}>{formatDue(parsed.dueAt, FIXED_NOW)}</span>
-              )}
-            </div>
-            <article className={demos.card}>
-              {parsed.courseCode && <span className={demos.course}>{parsed.courseCode}</span>}
-              <h3 className={own.cardTitle}>{parsed.title}</h3>
-              <div className={demos.meta}>
-                <span className="num">{formatEstimate(parsed.estimateMin)}</span>
-                {parsed.dueAt && (
-                  <>
-                    <span className={demos.dot} />
-                    <span>{formatDue(parsed.dueAt, FIXED_NOW)}</span>
-                  </>
-                )}
-              </div>
-              {parsed.shouldSplit && (
-                <div className={demos.parent}>
-                  <div className={demos.parentLabel}>
-                    <span>Breaks into steps</span>
-                    <span className="num">{stepCount}</span>
-                  </div>
-                  <div className={demos.steps}>
-                    {Array.from({ length: stepCount }, (_, i) => (
-                      <span key={i} />
-                    ))}
-                  </div>
+          <ol className={own.beats}>
+            {BEATS.map(({ raw, parsed, stepCount }) => (
+              <li key={raw} className={own.beat}>
+                <p className={own.said}>{raw}</p>
+                <div className={own.chips}>
+                  {parsed.courseCode && <span className={own.chip}>{parsed.courseCode}</span>}
+                  <span className={`${own.chip} num`}>{formatEstimate(parsed.estimateMin)}</span>
+                  {parsed.dueAt && (
+                    <span className={own.chip}>{formatDue(parsed.dueAt, FIXED_NOW)}</span>
+                  )}
                 </div>
-              )}
-            </article>
-          </li>
-        ))}
-      </ol>
+                <article className={demos.card}>
+                  {parsed.courseCode && <span className={demos.course}>{parsed.courseCode}</span>}
+                  <h3 className={own.cardTitle}>{parsed.title}</h3>
+                  <div className={demos.meta}>
+                    <span className="num">{formatEstimate(parsed.estimateMin)}</span>
+                    {parsed.dueAt && (
+                      <>
+                        <span className={demos.dot} />
+                        <span>{formatDue(parsed.dueAt, FIXED_NOW)}</span>
+                      </>
+                    )}
+                  </div>
+                  {parsed.shouldSplit && (
+                    <div className={demos.parent}>
+                      <div className={demos.parentLabel}>
+                        <span>Breaks into steps</span>
+                        <span className="num">{stepCount}</span>
+                      </div>
+                      <div className={demos.steps}>
+                        {Array.from({ length: stepCount }, (_, i) => (
+                          <span key={i} />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </article>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </div>
     </section>
   );
 }

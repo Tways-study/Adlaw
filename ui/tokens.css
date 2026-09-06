@@ -50,6 +50,22 @@
   --accent-mocha: oklch(0.60 0.06 45);
   --accent-sky: oklch(0.78 0.09 240);
 
+  /* --wash-*: full-bleed section backgrounds behind the landing page's four
+     failure bands (see app/page.tsx + ui/landing/Failure.tsx's `accent`
+     prop). Each wash's L is pinned to --desk's exact L in this theme
+     (0.970 light / 0.145 dark, below) — only hue and chroma differ. Every
+     text color on this page is contrast-checked against --desk, so pinning
+     a wash's L to --desk's means every contrast ratio on an accented band
+     is numerically IDENTICAL to the unaccented page. That matters because
+     --ink-3 already sits exactly at the 4.5:1 AA floor, and DESIGN.md warns
+     that "lightening it for elegance is the single most common way this
+     system breaks" — a wash with its own, merely-close L would quietly eat
+     that margin. Pinning L instead of eyeballing one is what avoids it. */
+  --wash-marigold: oklch(0.970 0.019 75);
+  --wash-coral: oklch(0.970 0.018 31);
+  --wash-mocha: oklch(0.970 0.012 45);
+  --wash-sky: oklch(0.970 0.016 240);
+
   /* --sheen: neutral white alpha for the login page's ambient light sweep.
      Per-theme value, not a fixed white — see the dark blocks below. */
   --sheen: oklch(1 0 0 / .55);
@@ -96,6 +112,16 @@
   --primary-ink: oklch(0.75 0.16 254);
   --alert-ink: oklch(0.74 0.19 31);
 
+  /* --wash-*: same pinned-L approach as :root's light values, pinned to
+     dark's --desk L (0.145) instead of light's (0.970). Chroma is HIGHER
+     than the light values on purpose — the same chroma renders visibly
+     weaker against a dark ground, so reusing light's numbers here would
+     read as flat neutral instead of a visible hue cast. */
+  --wash-marigold: oklch(0.145 0.022 75);
+  --wash-coral: oklch(0.145 0.020 31);
+  --wash-mocha: oklch(0.145 0.014 45);
+  --wash-sky: oklch(0.145 0.019 240);
+
   /* --sheen: neutral white alpha for the login page's ambient light sweep.
      Dark's value is much lower than light's — the same 0.55 alpha here would
      blow out over --rail's low lightness. */
@@ -130,6 +156,14 @@
     /* See the explicit dark block above. */
     --primary-ink: oklch(0.75 0.16 254);
     --alert-ink: oklch(0.74 0.19 31);
+
+    /* --wash-*: see the explicit dark block above — same pinned-L-to-dark's
+       --desk (0.145) approach, chroma raised over light's on purpose because
+       a dark ground renders the same chroma weaker. */
+    --wash-marigold: oklch(0.145 0.022 75);
+    --wash-coral: oklch(0.145 0.020 31);
+    --wash-mocha: oklch(0.145 0.014 45);
+    --wash-sky: oklch(0.145 0.019 240);
 
     /* --sheen: neutral white alpha for the login page's ambient light sweep.
        Dark's value is much lower than light's — the same 0.55 alpha here

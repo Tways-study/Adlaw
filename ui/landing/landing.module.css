@@ -45,6 +45,47 @@
   padding-inline: 24px;
 }
 
+/* .bleed is the outer element every top-level section renders now: header,
+   hero, each failure band, HowItWorks, the closing timeline section, and the
+   footer. It carries no width rule at all — a plain block element's width is
+   auto, which already fills `.landing` (itself unconstrained), so it spans
+   the viewport without ever touching 100vw. Its only job is to be the thing
+   an accent wash paints onto; `.shell` still lives one level in to hold the
+   actual content at the 1080px measure. Most `.bleed` elements get no
+   `data-accent` and stay transparent, which is what "stays on --desk" means
+   for the hero/top bar/footer/HowItWorks/timeline — .landing's own
+   background shows straight through. */
+.bleed {
+  width: auto;
+}
+
+.bleed[data-accent="marigold"] {
+  background: var(--wash-marigold);
+}
+
+.bleed[data-accent="coral"] {
+  background: var(--wash-coral);
+}
+
+.bleed[data-accent="mocha"] {
+  background: var(--wash-mocha);
+}
+
+.bleed[data-accent="sky"] {
+  background: var(--wash-sky);
+}
+
+/* An accented band is already separated from its neighbor by its own color
+   edge; a second hairline drawn on top of that reads as a seam, not a
+   division. `.band`'s border-top lives two levels inside `.bleed` (bleed >
+   shell > band), so this has to be a descendant selector rather than a
+   compound one — `data-accent` sits on `.bleed`, never on `.band` itself.
+   Unaccented sections (HowItWorks, the closing section, `.close`) carry no
+   `data-accent` and so keep their hairline unchanged. */
+.bleed[data-accent] .band {
+  border-top: 0;
+}
+
 /* ── Type roles ──────────────────────────────────────────── */
 
 /* Tracking flattens rather than continuing to tighten. Inter's metrics
@@ -219,7 +260,21 @@
 /* ── The four failures ───────────────────────────────────── */
 
 /* Two-column bands that alternate side, not a 2x2 card grid. A grid is a banned
-   pattern here and it would flatten a ranked list into four equal things. */
+   pattern here and it would flatten a ranked list into four equal things.
+
+   Band → wash pairing (set in app/page.tsx's four <Failure accent=…> calls):
+   each wash is chosen for maximum hue distance from the functional color that
+   band's own miniature already renders, so the wash reads as a background
+   cast rather than competing with the thing it's sitting behind.
+     1. CapacitySlot renders both --primary-fill (hue 254) and --alert
+        (hue 31) -> marigold (hue 75), far from both.
+     2. FocusCard renders --primary -> coral (hue 31), opposite the blue.
+     3. StepProgress renders --primary-fill AND --alert-ink (via `.hz.soon`)
+        -- the most competing color of the four -- so it gets mocha, the
+        lowest-chroma wash, rather than trying to out-hue two colors at once.
+     4. BareCapture renders no functional color at all -> sky (hue 240), the
+        one wash closest to --primary, safe to use precisely because there's
+        nothing here for it to clash with. */
 .band {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -267,11 +322,6 @@
   display: flex;
   flex-direction: column;
   gap: 28px;
-}
-
-/* A full-bleed band gets its background on the section element itself. */
-.sectionRail {
-  background: var(--rail);
 }
 
 .close {
