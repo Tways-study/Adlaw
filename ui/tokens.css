@@ -50,21 +50,57 @@
   --accent-mocha: oklch(0.60 0.06 45);
   --accent-sky: oklch(0.78 0.09 240);
 
-  /* --wash-*: full-bleed section backgrounds behind the landing page's four
-     failure bands (see app/page.tsx + ui/landing/Failure.tsx's `accent`
-     prop). Each wash's L is pinned to --desk's exact L in this theme
-     (0.970 light / 0.145 dark, below) — only hue and chroma differ. Every
-     text color on this page is contrast-checked against --desk, so pinning
-     a wash's L to --desk's means every contrast ratio on an accented band
-     is numerically IDENTICAL to the unaccented page. That matters because
-     --ink-3 already sits exactly at the 4.5:1 AA floor, and DESIGN.md warns
-     that "lightening it for elegance is the single most common way this
-     system breaks" — a wash with its own, merely-close L would quietly eat
-     that margin. Pinning L instead of eyeballing one is what avoids it. */
-  --wash-marigold: oklch(0.970 0.019 75);
-  --wash-coral: oklch(0.970 0.018 31);
-  --wash-mocha: oklch(0.970 0.012 45);
-  --wash-sky: oklch(0.970 0.016 240);
+  /* --panel-*: full-bleed section mats on the public surfaces. Pinned to
+     OKLCH L 0.80 in light — not chosen by eye, but the lightness at which
+     --ink clears 7:1, leaving headroom over PRODUCT.md's 4.5:1 floor.
+     Chroma differs per hue because the sRGB gamut at L 0.80 does: marigold
+     holds 0.16 there, blue cannot.
+
+     Coral departs from the reference swatch on purpose. #f64932 sits at
+     L 0.65, where black text measures 3.45:1 and white 3.55:1 — both fail
+     body-size AA. The reference survives that by only putting display type
+     on coral; our bands carry body copy, so coral moves up to the panel L
+     and keeps its hue. It reads as a warm salmon.
+
+     TEXT ON A LIGHT PANEL IS --ink AND NOTHING ELSE. --ink-2 measures
+     4.43:1 on marigold and 4.37:1 on coral; --ink-3 fails on all four.
+     Anything needing a secondary tone sits on a --card surface instead.
+     ui/tokens.contrast.test.ts asserts all of this. */
+  --panel-marigold: oklch(0.8 0.16 75);
+  --panel-coral: oklch(0.8 0.1 34);
+  --panel-sky: oklch(0.8 0.09 240);
+  --panel-mocha: oklch(0.8 0.045 55);
+  --panel-midnight: oklch(0.22 0.055 265);
+  --on-midnight: oklch(0.98 0.004 68);
+
+  /* --pill-*: the same four hues at chip scale. These are IDENTICAL in every
+     theme block, and --on-pill is always the dark ink.
+
+     That asymmetry with --panel-* is the rule, not an oversight: large fills
+     track the theme because a saturated full-bleed band at night is
+     fatiguing and breaks "quiet at rest"; a chip of one word is punctuation
+     and must read as the same object in both themes. Against dark --desk a
+     pill carries a 10:1 halo, which is the bright-chip-on-dark-ground read. */
+  --pill-marigold: oklch(0.8 0.16 75);
+  --pill-coral: oklch(0.8 0.1 34);
+  --pill-sky: oklch(0.8 0.09 240);
+  --pill-mocha: oklch(0.8 0.045 55);
+  --on-pill: oklch(0.22 0.004 68);
+
+  /* --primary-on-ink: the accent color for an INVERTED surface — currently
+     just ui/board/DeleteUndoContext.module.css's toast, which sets
+     `background: var(--ink)`.
+
+     Both existing blues fail there, because both were tuned against
+     normal-polarity grounds: --primary measures 3.80:1 on the light toast
+     and 2.09:1 on the dark one, and --primary-ink is worse still at 2.53:1.
+     That is the Undo control for a destructive action, so it earns a token
+     rather than a workaround.
+
+     The derivation is the polarity flip and nothing cleverer: an inverted
+     surface takes the OTHER theme's blue. Light's toast is a near-black
+     ground, so it takes dark's --primary (7.58:1). */
+  --primary-on-ink: oklch(0.75 0.16 254);
 
   /* --sheen: neutral white alpha for the login page's ambient light sweep.
      Per-theme value, not a fixed white — see the dark blocks below. */
@@ -112,15 +148,44 @@
   --primary-ink: oklch(0.75 0.16 254);
   --alert-ink: oklch(0.74 0.19 31);
 
-  /* --wash-*: same pinned-L approach as :root's light values, pinned to
-     dark's --desk L (0.145) instead of light's (0.970). Chroma is HIGHER
-     than the light values on purpose — the same chroma renders visibly
-     weaker against a dark ground, so reusing light's numbers here would
-     read as flat neutral instead of a visible hue cast. */
-  --wash-marigold: oklch(0.145 0.022 75);
-  --wash-coral: oklch(0.145 0.020 31);
-  --wash-mocha: oklch(0.145 0.014 45);
-  --wash-sky: oklch(0.145 0.019 240);
+  /* --panel-*: pinned to dark's --desk L (0.145), carrying the hue in chroma
+     alone. A full-bleed L-0.80 marigold band on a dark page is punishing at
+     night and breaks "quiet at rest", so large fills dim with the theme.
+
+     Pinning L to --desk is load-bearing, not cosmetic: dark --card (0.205)
+     on --desk (0.145) measures 1.10:1, and that is the separation every card
+     in the product already relies on with --edge carrying the rest. A panel
+     at desk's L makes card-on-panel measure the same 1.10:1, so the
+     canvas/card hierarchy cannot invert on a panel.
+
+     Chroma is roughly double the light values — the same chroma renders
+     visibly weaker on a dark ground, and the earlier superseded tokens'
+     numbers were simply not visible.
+
+     Unlike light, dark panels DO carry the full ink ladder (--ink-2 at 9.7,
+     --ink-3 at 6.5). The panel text rule is still written for light, so one
+     rule serves both. */
+  --panel-marigold: oklch(0.145 0.042 75);
+  --panel-coral: oklch(0.145 0.045 34);
+  --panel-sky: oklch(0.145 0.04 240);
+  --panel-mocha: oklch(0.145 0.028 55);
+
+  /* Midnight cannot invert in dark — there is nothing to invert against. It
+     becomes a raised slab ABOVE --card instead, separated by --edge, so it
+     reads as a distinct object rather than a hole. */
+  --panel-midnight: oklch(0.25 0.05 265);
+  --on-midnight: oklch(0.98 0.004 68);
+
+  /* Identical to light on purpose — see the light block's --pill-* note. */
+  --pill-marigold: oklch(0.8 0.16 75);
+  --pill-coral: oklch(0.8 0.1 34);
+  --pill-sky: oklch(0.8 0.09 240);
+  --pill-mocha: oklch(0.8 0.045 55);
+  --on-pill: oklch(0.22 0.004 68);
+
+  /* The inverted toast is a near-WHITE ground in dark, so it takes light's
+     blue — the mirror of what the light block does. 6.27:1. */
+  --primary-on-ink: oklch(0.47 0.17 254);
 
   /* --sheen: neutral white alpha for the login page's ambient light sweep.
      Dark's value is much lower than light's — the same 0.55 alpha here would
@@ -157,13 +222,19 @@
     --primary-ink: oklch(0.75 0.16 254);
     --alert-ink: oklch(0.74 0.19 31);
 
-    /* --wash-*: see the explicit dark block above — same pinned-L-to-dark's
-       --desk (0.145) approach, chroma raised over light's on purpose because
-       a dark ground renders the same chroma weaker. */
-    --wash-marigold: oklch(0.145 0.022 75);
-    --wash-coral: oklch(0.145 0.020 31);
-    --wash-mocha: oklch(0.145 0.014 45);
-    --wash-sky: oklch(0.145 0.019 240);
+    /* See the explicit dark block above. */
+    --panel-marigold: oklch(0.145 0.042 75);
+    --panel-coral: oklch(0.145 0.045 34);
+    --panel-sky: oklch(0.145 0.04 240);
+    --panel-mocha: oklch(0.145 0.028 55);
+    --panel-midnight: oklch(0.25 0.05 265);
+    --on-midnight: oklch(0.98 0.004 68);
+    --pill-marigold: oklch(0.8 0.16 75);
+    --pill-coral: oklch(0.8 0.1 34);
+    --pill-sky: oklch(0.8 0.09 240);
+    --pill-mocha: oklch(0.8 0.045 55);
+    --on-pill: oklch(0.22 0.004 68);
+    --primary-on-ink: oklch(0.47 0.17 254);
 
     /* --sheen: neutral white alpha for the login page's ambient light sweep.
        Dark's value is much lower than light's — the same 0.55 alpha here
