@@ -777,6 +777,140 @@ Claude-Session: https://claude.ai/code/session_01E1cSvkT53pu3FEWU33EayA"
 
 ---
 
+### Task 3b: Every miniature sits on a card surface
+
+**Files:**
+- Modify: `ui/landing/demos/demos.module.css`
+
+**Interfaces:**
+- Consumes: `--card`, `--edge`, `--r-l` — all existing.
+- Produces: the invariant Task 4 depends on — the Timeline carries its own surface, which is what lets the midnight island leave the capacity colors untouched.
+
+**Why this task exists.** Task 3 promoted `.lead` and `.caption` to `--ink` on a panel, which covers the text `Failure.tsx` renders itself. It does **not** cover the `evidence` children — the miniatures under `ui/landing/demos/`. Those render functional color, and measured against the four panels every one of them fails the 4.5:1 floor:
+
+| text token | marigold | coral | mocha | sky |
+|---|---|---|---|---|
+| `--alert-ink` | 3.47 | 3.43 | 3.52 | 3.60 |
+| `--alert` | 2.39 | 2.36 | 2.42 | 2.48 |
+| `--primary-ink` | 3.58 | 3.54 | 3.63 | 3.71 |
+| `--primary` | 2.39 | 2.35 | 2.41 | 2.47 |
+| `--primary-fill` | 2.78 | 2.75 | 2.82 | 2.88 |
+| `--ink-3` | 3.08 | 3.04 | 3.11 | 3.19 |
+| `--ink-2` | 4.43 | 4.37 | 4.49 | **4.59** |
+| `--ink` | **9.06** | **8.94** | **9.17** | **9.39** |
+
+Only `--ink` passes on all four. `--ink-2` passes on sky alone, which is not a rule.
+
+This is visible today: band 1 renders "2h 15m over" in `--alert-ink` and its free/planned line in `--ink-3` directly on marigold; band 3 renders its horizon list the same way on mocha. Bands 2 and 4 mostly escape it because `FocusCard` and `BareCapture`'s input already carry `.card`.
+
+Fixing it also fixes a visual inconsistency: two bands currently show a white card and two do not, so the page reads as four different treatments rather than one system.
+
+**The invariant to satisfy:**
+
+> Inside `.bleed[data-accent]`, every text element either renders in `--ink` **or** sits on a `--card` surface. **No nested cards** — `DESIGN.md` bans them, so a wrapper card around a miniature that already has one is not the fix.
+
+**Current state, so you know what you are working with:**
+- `demos.module.css` `.card` (line ~22) already sets `background: var(--card)` — used by `FocusCard` and `StepProgress`'s `<article>`.
+- `.bareInner` (line ~329) already sets it — `BareCapture`'s input row.
+- `.capBlock` (line ~115) sets **no** background — this is band 1, the worst case.
+- `.horizon` (StepProgress's day list, a **sibling** of its `.card`, not a child) sets no background — band 3.
+- `.bare` (line ~323) wraps `.bareInner` plus a struck-through list of refused fields (`.refused` — not `.bareHint`, which is the "to capture" chip inside the input) that renders on the panel — band 4.
+- `.tl` (line ~223) sets no background — the Timeline, which **Task 4 depends on** having its own surface.
+
+- [ ] **Step 1: Give each uncovered miniature a card surface**
+
+Apply `background: var(--card)`, `border-radius: var(--r-l)`, `box-shadow: var(--edge)`, and comfortable padding to `.capBlock`, `.horizon`, and `.tl`. Use `--edge` and **never** a shadow — `DESIGN.md` reserves shadows for interactive chrome and the transient drag state; a resting card is `--edge` only.
+
+For `.bare`, the struck-through `.refused` list is the problem and they are *meant* to read as dimmed. Do not lighten them further and do not wrap `.bareInner` in a second card. Pick one:
+- move the hint row inside the existing `.bareInner` card, or
+- give `.bare` the surface and reduce `.bareInner` to a hairline input outline (`box-shadow: var(--edge)` with no fill).
+
+Either satisfies the invariant. Say in your report which you chose and why.
+
+Add a comment above the first of these rules explaining the invariant and naming the measured reason:
+
+```css
+/* Every miniature carries its own --card surface, because these sit on
+   saturated accent panels and each renders functional color. Measured
+   against the four panels, --alert-ink reaches only 3.43-3.60:1,
+   --primary-ink 3.54-3.71:1 and --ink-3 3.04-3.19:1 — all under the 4.5:1
+   floor. Only --ink clears it (8.94-9.39:1), so anything that is not --ink
+   has to sit on white.
+
+   --edge, never a shadow: DESIGN.md reserves shadows for interactive chrome
+   and the drag state. A resting card is a hairline. */
+```
+
+- [ ] **Step 2: Verify the invariant in the browser, computed rather than eyeballed**
+
+```bash
+B="$HOME/.claude/skills/gstack/browse/dist/browse"
+$B viewport 1440x2600
+$B goto http://localhost:3001/
+$B js "document.documentElement.setAttribute('data-theme','light'); 'ok'"
+```
+
+Then walk every text node inside an accented band and report any that is neither `--ink` nor on a card. Run this and paste its real output into your report:
+
+```bash
+$B js "
+const bad=[];
+document.querySelectorAll('[data-accent] *').forEach(el=>{
+  const t=[...el.childNodes].some(n=>n.nodeType===3&&n.textContent.trim());
+  if(!t) return;
+  let p=el, onCard=false;
+  while(p && !p.hasAttribute('data-accent')){
+    const bg=getComputedStyle(p).backgroundColor;
+    if(bg && bg!=='rgba(0, 0, 0, 0)' && bg!=='transparent'){onCard=true;break;}
+    p=p.parentElement;
+  }
+  if(!onCard) bad.push(el.className+' :: '+getComputedStyle(el).color);
+});
+bad.length? bad.join('\n') : 'INVARIANT HOLDS';
+"
+```
+
+Expected: `INVARIANT HOLDS`, or a list where **every** reported color resolves to `--ink`. `--ink` is `oklch(0.22 0.004 68)`, which computes to `rgb(28, 26, 25)`. Any reported color that is blue, red, or a mid grey is a failure — fix it and re-run.
+
+- [ ] **Step 3: Screenshot both themes and read them**
+
+```bash
+S=/private/tmp/claude-501/-Users-virnajanem-navarro-Downloads-adlaw/4829ff6e-66fc-42cd-a29a-0ef75b86b639/scratchpad/shots
+$B js "document.documentElement.setAttribute('data-theme','light'); 'ok'"
+$B screenshot $S/t3b-light.png
+$B js "document.documentElement.setAttribute('data-theme','dark'); 'ok'"
+$B screenshot $S/t3b-dark.png
+```
+
+**Read both PNGs.** All four bands should now show a white card holding their miniature, and the four bands should read as one repeated treatment rather than four different ones. In dark, the cards must still be clearly brighter than the band.
+
+- [ ] **Step 4: Confirm nothing regressed**
+
+Run: `npx tsc --noEmit && npm run lint && npm test`
+Expected: clean, 165/165.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add ui/landing/demos/demos.module.css
+git commit -m "fix: every landing miniature sits on its own card surface
+
+The miniatures render functional color, and on a saturated panel every one
+of those tokens fails AA: --alert-ink reaches 3.43-3.60:1, --primary-ink
+3.54-3.71:1, --ink-3 3.04-3.19:1, against a 4.5:1 floor. Only --ink clears
+it. Band 1 was rendering \"2h 15m over\" in red directly on marigold and
+band 3 its horizon list on mocha.
+
+Task 3 promoted the text Failure.tsx renders itself, but not the evidence
+children — this closes that half. It also makes the four bands one repeated
+treatment instead of two with cards and two without.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01E1cSvkT53pu3FEWU33EayA"
+```
+
+---
+
 ### Task 4: The midnight island
 
 **Files:**
@@ -850,7 +984,27 @@ $B goto http://localhost:3001/
 $B js "getComputedStyle(document.querySelector('[data-panel=midnight]')).backgroundColor"
 ```
 
-Expected: a dark navy. Then screenshot in both themes and **Read** them. The timeline must still render on its own light card, with its blue planned blocks and red day-edge unchanged. If the timeline has gone transparent and inherited midnight, its own surface rule is missing — fix `ui/timeline/TodaysShape.module.css` to set `background: var(--card)` explicitly rather than relaxing the island.
+Expected: a dark navy. Then screenshot in both themes and **Read** them. The timeline must still render on its own light card, with its blue planned blocks and red day-edge unchanged.
+
+The landing page's timeline is `ui/landing/demos/Timeline.tsx`, styled by `.tl` in `ui/landing/demos/demos.module.css` — **not** `ui/timeline/TodaysShape.module.css`, which is the board's component and is not on this page. Task 3b gives `.tl` its card surface, so by the time you run this it should already hold. If it does not, fix `.tl` rather than relaxing the island: the whole reason the island needs no colour re-tuning is that `--primary`, `--alert` and `--busy` never touch the midnight ground.
+
+Verify it computed, not just visually:
+
+```bash
+$B js "getComputedStyle(document.querySelector('[data-panel=midnight] [class*=tl]')).backgroundColor"
+```
+
+Expected: an opaque light value in light theme (roughly `rgb(255, 255, 255)`), never `rgba(0, 0, 0, 0)`.
+
+- [ ] **Step 3b: Clean up three stale post-rename comments**
+
+The accent bands were called "washes" before this work renamed them to panels. Three prose comments still say the old word and now describe something that does not exist:
+
+- `app/page.tsx` ~line 86 — "gets a full-bleed accent wash … band-to-wash pairing comment"
+- `ui/landing/Failure.tsx` ~line 15 — "paints the full-bleed wash"
+- `ui/landing/HowItWorks.tsx` ~lines 36-39 — "unwashed", "four failures get a wash"
+
+Replace "wash" with "panel" in each, keeping the surrounding reasoning intact. Do not reword anything else in those comments — they are load-bearing and correct apart from the stale noun.
 
 - [ ] **Step 4: Verify contrast on the island**
 
