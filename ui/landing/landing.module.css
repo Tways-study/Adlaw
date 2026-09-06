@@ -396,6 +396,38 @@
   }
 }
 
+/* The closing section inverts to a deep navy mat with white text — the
+   reference system's "dark island on a light page", used exactly once.
+
+   In dark theme it cannot invert; there is nothing to invert against. It
+   becomes a raised slab above --card instead, separated by --edge, so it
+   still reads as a distinct object rather than a hole in the page. */
+.bleed[data-panel="midnight"] {
+  background: var(--panel-midnight);
+  color: var(--on-midnight);
+}
+
+.bleed[data-panel="midnight"] .d2,
+.bleed[data-panel="midnight"] .lead {
+  color: var(--on-midnight);
+}
+
+/* The section's own hairline would be invisible against midnight and reads
+   as a seam where the color already divides — same reasoning as a panel. */
+.bleed[data-panel="midnight"] .section {
+  border-top: 0;
+}
+
+:root[data-theme="dark"] .bleed[data-panel="midnight"] {
+  box-shadow: var(--edge);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .bleed[data-panel="midnight"] {
+    box-shadow: var(--edge);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   /* A genuine alternative, not a removal: the content resolves instantly to its
      end state. Nothing disappears and nothing is dimmer. */

@@ -84,8 +84,8 @@ export default function LandingPage() {
         </section>
 
         {/* The four failures, in the order they are ranked in PRODUCT.md. Each
-            gets a full-bleed accent wash — see landing.module.css's
-            band-to-wash pairing comment for why each band gets the wash it
+            gets a full-bleed accent panel — see landing.module.css's
+            band-to-panel pairing comment for why each band gets the panel it
             gets. */}
         <Failure
           heading="You plan ten things. Today only has room for four."
@@ -131,7 +131,10 @@ export default function LandingPage() {
 
         <HowItWorks />
 
-        <section className={styles.bleed}>
+        {/* The one midnight island on the document. The Timeline inside keeps
+            its own --card surface, which is what lets --primary, --alert and
+            --busy stay untouched — the capacity colors never sit on midnight. */}
+        <section className={styles.bleed} data-panel="midnight">
           <div className={styles.shell}>
             <div className={`${styles.section} ${styles.reveal}`}>
               <h2 className={styles.d2}>

@@ -12,7 +12,7 @@ import styles from "./landing.module.css";
  * Renders its own outer/shell/inner triple (.bleed > .shell > .band) so call
  * sites in app/page.tsx stay a plain list of four elements. `accent`, when
  * given, goes on the outer `.bleed` as `data-accent` — that's the element
- * that paints the full-bleed wash, one per band, chosen for maximum hue
+ * that paints the full-bleed panel, one per band, chosen for maximum hue
  * distance from whatever functional color that band's own evidence already
  * renders (see landing.module.css's accent-pairing comment for the reasoning
  * per band).

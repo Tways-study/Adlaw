@@ -33,10 +33,10 @@ const BEATS = DEMO_SENTENCES.map((s) => {
 
 // Renders its own outer/shell/inner triple (.bleed > .shell > .section), like
 // Failure.tsx, so app/page.tsx's call site stays a bare <HowItWorks />. No
-// `data-accent` here — this section stays on --desk, unwashed, between the
-// four accented failure bands and the (also unwashed) closing timeline
+// `data-accent` here — this section stays on --desk, unpaneled, between the
+// four accented failure bands and the (also unpaneled) closing timeline
 // section. See landing.module.css's accent-pairing comment for why only the
-// four failures get a wash.
+// four failures get a panel.
 export function HowItWorks() {
   return (
     <section className={styles.bleed}>
