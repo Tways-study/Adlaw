@@ -112,10 +112,23 @@
 
 /* ── Capacity slot ───────────────────────────────────────── */
 
+/* Every miniature carries its own --card surface, because these sit on
+   saturated accent panels and each renders functional color. Measured
+   against the four panels, --alert-ink reaches only 3.43-3.60:1,
+   --primary-ink 3.54-3.71:1 and --ink-3 3.04-3.19:1 — all under the 4.5:1
+   floor. Only --ink clears it (8.94-9.39:1), so anything that is not --ink
+   has to sit on white.
+
+   --edge, never a shadow: DESIGN.md reserves shadows for interactive chrome
+   and the drag state. A resting card is a hairline. */
 .capBlock {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  background: var(--card);
+  border-radius: var(--r-l);
+  box-shadow: var(--edge);
+  padding: 14px 16px;
 }
 
 .capTop {
@@ -181,6 +194,10 @@
 .horizon {
   display: flex;
   flex-direction: column;
+  background: var(--card);
+  border-radius: var(--r-l);
+  box-shadow: var(--edge);
+  padding: 14px 16px;
 }
 
 .hz {
@@ -225,6 +242,10 @@
   display: grid;
   grid-template-columns: 38px 1fr 1fr;
   gap: 0 8px;
+  background: var(--card);
+  border-radius: var(--r-l);
+  box-shadow: var(--edge);
+  padding: 22px 16px 16px;
 }
 
 .gut {
@@ -320,17 +341,26 @@
 
 /* ── Bare capture (the fourth failure's evidence) ────────── */
 
+/* .bare, not .bareInner, carries the surface: .bareInner already has its own
+   hairline (an input outline, not a card), and DESIGN.md bans nesting one
+   card inside another. The struck-through .refused list below is a sibling
+   of .bareInner, not a child of it, so it was rendering directly on the
+   panel — putting the surface on .bare covers both without double-carding
+   the input itself. */
 .bare {
   display: flex;
   flex-direction: column;
   gap: 14px;
+  background: var(--card);
+  border-radius: var(--r-l);
+  box-shadow: var(--edge);
+  padding: 14px 16px;
 }
 
 .bareInner {
   display: flex;
   align-items: center;
   gap: 10px;
-  background: var(--card);
   border-radius: 11px;
   padding: 10px 14px;
   box-shadow: var(--edge);
@@ -368,9 +398,14 @@
 /* ── Honesty marker ──────────────────────────────────────── */
 
 /* Slices 4-7 are unbuilt. Any miniature above that depicts one carries this
-   line. No badge, no pill, no "coming soon" — just the sentence. */
+   line. No badge, no pill, no "coming soon" — just the sentence.
+
+   It renders as a sibling of the card above it, not a child, so it sits
+   directly on the accent panel rather than inheriting the card's surface —
+   the same 4.5:1 problem as the rest of this file. --ink is the only fix
+   available without adding a surface under one bare line of text. */
 .notShipped {
   margin: 0;
   font-size: 11.5px;
-  color: var(--ink-3);
+  color: var(--ink);
 }
