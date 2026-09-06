@@ -78,8 +78,13 @@ import { describe, expect, it } from "vitest";
  *
  * Pure by construction: it reads a CSS file as text and does arithmetic. No
  * DOM, no environment — which is what lets it run in the fast `npm test`
- * suite alongside core/'s tests (vitest.config.mts includes **/*.test.ts and
- * configures no environment).
+ * suite alongside core/'s tests (vitest.config.mts includes every .test.ts
+ * file and configures no environment).
+ *
+ * Note for whoever edits this header: do not write the config's glob out
+ * literally here. It ends in the two characters that close a block comment,
+ * which silently truncates this JSDoc and makes the file collect zero tests
+ * rather than fail one.
  *
  * The OKLCH→sRGB conversion below is the standard Björn Ottosson matrix pair.
  * It is duplicated here rather than imported because core/ is forbidden from
@@ -401,8 +406,13 @@ In `ui/tokens.css`, in **`:root[data-theme="dark"]`**, replace the `--wash-*` de
      canvas/card hierarchy cannot invert on a panel.
 
      Chroma is roughly double the light values — the same chroma renders
-     visibly weaker on a dark ground, and the earlier --wash-* numbers were
+     visibly weaker on a dark ground, and the superseded tokens' numbers were
      simply not visible.
+
+     (Do not name those superseded tokens literally in this comment.
+     ui/tokens.contrast.test.ts asserts the whole file no longer contains
+     that prefix, so writing it here — even inside a comment — fails the
+     suite.)
 
      Unlike light, dark panels DO carry the full ink ladder (--ink-2 at 9.7,
      --ink-3 at 6.5). The panel text rule is still written for light, so one
@@ -477,21 +487,21 @@ Claude-Session: https://claude.ai/code/session_01E1cSvkT53pu3FEWU33EayA"
 - Consumes: `.bleed` and `.shell` from `ui/landing/landing.module.css` (both already exist); `Failure`'s existing `accent?: "marigold" | "coral" | "mocha" | "sky"` prop.
 - Produces: a DOM where every top-level section is its own `.bleed > .shell > …`. Task 3 paints `.bleed[data-accent]`; Task 4 adds `.bleed[data-panel="midnight"]`; Task 5 restyles `.hero` inside it.
 
-The working tree already has `Failure.tsx` and `HowItWorks.tsx` rendering their own `.bleed > .shell` triple, but `app/page.tsx` still wraps the entire document in one outer `.shell`. That double-nests the shell (1080px inside 1080px, both with 24px padding, so accented bands are inset instead of full-bleed) and no `accent` is ever passed. This task finishes that refactor. It is a prerequisite for every visual task after it.
+**This task was found already implemented in the working tree** and was committed as part of the pre-execution checkpoint (`349bd96`). `app/page.tsx` already gives header, hero, closing section and footer their own `.bleed > .shell`, and already passes `accent="marigold" | "coral" | "mocha" | "sky"` in that order.
 
-- [ ] **Step 1: Confirm the current breakage in the browser**
+So this task is now **verification only**. Do not rewrite `app/page.tsx`. Confirm the four checks below; if any fails, fix only the thing that failed, using the reference JSX in Step 2 as the target shape.
+
+- [ ] **Step 1: Confirm the structure is right**
 
 ```bash
-B="$HOME/.claude/skills/gstack/browse/dist/browse"
-$B goto http://localhost:3001/
-$B js "getComputedStyle(document.querySelectorAll('[class*=shell]')[1]).paddingInline"
+grep -n "bleed\|accent=" app/page.tsx
 ```
 
-Expected: `24px` on a shell that is itself already inside a padded shell — the double-nesting. Record the value; Step 5 re-checks it.
+Expected: `.bleed` on the header, hero section, closing section and footer, each wrapping a `.shell`; `accent="marigold"`, `accent="coral"`, `accent="mocha"`, `accent="sky"` on the four `<Failure>` calls **in that order**; and **no** outer `.shell` wrapping the whole document.
 
-- [ ] **Step 2: Restructure `app/page.tsx`**
+If the order differs, fix it — the order is fixed by the hue-distance reasoning in `landing.module.css`'s band comment, not by preference.
 
-Replace the returned JSX. The outer `.shell` is gone; header, hero, and footer each get their own `.bleed > .shell`. `Failure` and `HowItWorks` already render their own, so they sit as bare siblings.
+- [ ] **Step 2: Reference JSX (target shape — only apply what is missing)**
 
 ```tsx
   return (
@@ -624,7 +634,7 @@ Replace the returned JSX. The outer `.shell` is gone; header, hero, and footer e
   );
 ```
 
-Note `size={560}` on `DayMark` — Task 5 centers it; the size change belongs with this rewrite so the file is touched once.
+The hero's `DayMark` is currently `size={420}`. **Leave it** — Task 5 owns both the size bump to 560 and the centering, so the mark's placement changes in one commit rather than two.
 
 - [ ] **Step 3: Verify `Failure.tsx` needs no change**
 
@@ -650,20 +660,17 @@ Expected: `marigold,coral,mocha,sky` and `true` (no horizontal overflow — the 
 
 The bands are still uncolored at this point; Task 3 paints them. That is expected.
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 6: Commit only if something needed fixing**
+
+If Steps 1–5 all passed with no edit, there is nothing to commit — report `DONE` with "verification only, no changes required" and say which checks you ran with their actual output.
+
+If you did fix something:
 
 ```bash
 git add app/page.tsx
-git commit -m "fix: wire the .bleed full-bleed wrapper that was left unconnected
+git commit -m "fix: <the specific thing that was wrong>
 
-Failure and HowItWorks already rendered their own .bleed > .shell triple,
-but page.tsx still wrapped the whole document in one outer .shell — so the
-shells double-nested and no accent prop was ever passed, which is why the
-washes rendered on nothing.
-
-Each top-level section now owns its .bleed > .shell, and the four failures
-get their panel hue. Hues are assigned by maximum hue distance from the
-functional color each band's own miniature renders, not by the tagline.
+<why it mattered>
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
 Claude-Session: https://claude.ai/code/session_01E1cSvkT53pu3FEWU33EayA"
