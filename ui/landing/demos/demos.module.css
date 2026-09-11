@@ -17,6 +17,14 @@
 
    Also note --lift-2 is gone from the system: a resting card is
    --edge only.
+
+   As of the 2026-09-11 marketing/auth achromatic addendum
+   (ui/landing/marketing-tokens.css), --primary/--primary-fill/
+   --primary-soft/--primary-ink resolve to neutral grays on this
+   page, not blue — every rule below that reads one of those names
+   updates automatically. --alert stays untouched: it's still the
+   one functional color these miniatures use to show overcommitment
+   (.over, .spill, .blkSpill, .endline, .edgeLabel).
    ============================================================ */
 
 .card {
@@ -315,17 +323,24 @@
   color: var(--ink-2);
 }
 
+/* The inset ring used to be a raw oklch literal at the blue hue — invisible
+   to [data-surface="marketing"]'s token overrides since a literal can't
+   follow a custom property. Deriving it from --primary-fill via relative
+   color syntax keeps the ring token-driven, so it goes achromatic with
+   everything else on these surfaces instead of staying blue underneath a
+   now-neutral fill. --alert below is untouched by that override on
+   purpose — spill is still this page's one functional color. */
 .plan {
   background: var(--primary-soft);
   color: var(--primary-ink);
-  box-shadow: inset 0 0 0 1px oklch(0.5 0.1 254 / 0.22);
+  box-shadow: inset 0 0 0 1px oklch(from var(--primary-fill) l c h / 0.22);
   font-weight: 550;
 }
 
 .plan.blkSpill {
   background: var(--alert-soft);
   color: var(--alert-ink);
-  box-shadow: inset 0 0 0 1px oklch(0.6 0.14 31 / 0.28);
+  box-shadow: inset 0 0 0 1px oklch(from var(--alert) l c h / 0.28);
 }
 
 /* The edge of the day. The gutter already reads the hour, so the line itself

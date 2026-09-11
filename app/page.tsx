@@ -12,6 +12,7 @@ import { FocusCard } from "@/ui/landing/demos/FocusCard";
 import { StepProgress } from "@/ui/landing/demos/StepProgress";
 import { Timeline } from "@/ui/landing/demos/Timeline";
 import { BareCapture } from "@/ui/landing/demos/BareCapture";
+import "@/ui/landing/marketing-tokens.css";
 import styles from "@/ui/landing/landing.module.css";
 
 export const metadata: Metadata = {
@@ -35,7 +36,7 @@ export const metadata: Metadata = {
 // ui/landing/demos/ are static reproductions instead.
 export default function LandingPage() {
   return (
-    <div className={styles.landing}>
+    <div className={styles.landing} data-surface="marketing">
       <SmoothScroll />
       <header className={styles.bleed}>
         <div className={styles.shell}>

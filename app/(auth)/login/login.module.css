@@ -112,12 +112,16 @@
   pointer-events: none;
 }
 
+/* Same serif display treatment as the landing page's .d2 (see
+   ui/landing/landing.module.css) — Fraunces, weight 500, positive tracking,
+   ≥21px per the "Lazy" reference's own floor. --d2 here is 26-40px. */
 .echoLine {
   margin: 0;
+  font-family: var(--font-display-serif), Georgia, serif;
   font-size: var(--d2);
-  font-weight: 600;
-  letter-spacing: -0.023em;
-  line-height: 1.1;
+  font-weight: 500;
+  letter-spacing: 0.032em;
+  line-height: 1.15;
   color: var(--ink-2);
   text-wrap: balance;
 }

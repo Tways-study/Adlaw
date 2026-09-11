@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Source_Serif_4 } from "next/font/google";
+import { Inter, Source_Serif_4, Fraunces } from "next/font/google";
 import { FirebaseProvider } from "./FirebaseProvider";
 import { THEME_STORAGE_KEY } from "@/ui/theme/theme";
 import "./globals.css";
@@ -23,6 +23,19 @@ const sourceSerif = Source_Serif_4({
   display: "swap",
 });
 
+// The marketing/auth surfaces' display serif — Fraunces is the free fallback
+// the "Lazy" reference design (styles.refero.design) names for its licensed
+// Migra. Scoped entirely to ui/landing/landing.module.css's D1-D3 headline
+// roles and the login/signup echo line (both under [data-surface="marketing"]
+// via ui/landing/marketing-tokens.css); Source Serif 4 above keeps its
+// existing, separate, single reserved use on the board's focus card.
+const displaySerif = Fraunces({
+  variable: "--font-display-serif",
+  subsets: ["latin"],
+  weight: ["500"],
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   // `template` lets each route name itself ("Today · Adlaw") while the
   // landing page overrides `default` outright.
@@ -42,7 +55,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     // differs from the server-rendered markup.
     <html
       lang="en"
-      className={`${inter.variable} ${sourceSerif.variable}`}
+      className={`${inter.variable} ${sourceSerif.variable} ${displaySerif.variable}`}
       suppressHydrationWarning
     >
       <body>

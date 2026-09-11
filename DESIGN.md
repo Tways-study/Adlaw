@@ -239,34 +239,45 @@ decision, not drift — the same failure mode that produced the stale
 
 ## Landing surface (addendum, 2026-08-22)
 
-**Scope: `/` and `/login` only. Inside the board every rule above holds
-unchanged.** These two surfaces have an audience the rest of this document was
-never written for — a first-time reader on an unknown device, including a phone.
-Where a rule's stated justification doesn't reach that reader, it is relaxed
-here and nowhere else.
+**Scope: `/`, `/login`, and `/signup` only. Inside the board every rule above
+holds unchanged.** These three surfaces have an audience the rest of this
+document was never written for — a first-time reader on an unknown device,
+including a phone. Where a rule's stated justification doesn't reach that
+reader, it is relaxed here and nowhere else.
 
 ### Display type
 
 Not a second scale — three more rungs on the existing ladder, seeded at the 20px
-day title at a constant 1.4 ratio: 20 → 28 → 40 → 56.
+day title at a constant 1.4 ratio: 20 → 28 → 40 → 78 (D1 moved to the 78px rung
+once the hero centered — see the hero layout note below).
 
-| Role | Size | Weight | Tracking | Line height |
-|---|---|---|---|---|
-| Display 1 — hero | 56px | 600 | −0.024em | 1.02 |
-| Display 2 — section | 40px | 600 | −0.023em | 1.10 |
-| Display 3 — band heading | 28px | 600 | −0.021em | 1.22 |
-| Lead prose | 17px | 400 | −0.011em | 1.55 |
+**2026-09-11: D1–D3 and the login/signup echo line switched from Inter to a
+second serif family, Fraunces**, per the "Lazy" reference design
+(`styles.refero.design/style/2b939c70-c08e-4bb6-8fac-ade99b0d1cf0`) this
+addendum now also follows for color (see "Marketing achromatic palette"
+below). This is a **second, distinct** serif from Source Serif 4 — it does not
+touch that font's own single reserved use on the board's focus card, and it
+never appears below 21px, matching Lazy's own rule that the serif "loses its
+editorial character" at smaller sizes.
 
-**Tracking flattens; it does not keep tightening.** The instinct is to
-extrapolate the app curve (−0.006em at 13.5px → −0.02em at 20px) out to −0.04em
-at 56px. That is wrong for Inter, whose dynamic-metrics curve asymptotes near
-−0.022em — 20px/−0.02em is already essentially there. Display sizes converge to
-−0.021…−0.024em and never go past it. This is the single most likely thing to
-get wrong later, and it looks like a squashed logotype.
+| Role | Size | Family | Weight | Tracking | Line height |
+|---|---|---|---|---|---|
+| Display 1 — hero | 40 → 78px | Fraunces | 500 | +0.04em | 1.05 |
+| Display 2 — section | 26 → 40px | Fraunces | 500 | +0.032em | 1.15 |
+| Display 3 — band heading | 22 → 28px | Fraunces | 500 | +0.026em | 1.25 |
+| Lead prose | 17px | Inter | 400 | −0.011em | 1.55 |
 
-Weight is **600, never 700**: 700 at 56px is shouty and contradicts "quiet at
-rest". No new body size — landing prose reuses the existing 17px rung at weight
-400.
+**Tracking is positive here, and grows with size — the opposite of the app-wide
+curve.** That inversion is deliberate: Inter's own type on this same page still
+tightens as it grows (the lead prose, the nav, the buttons), so a serif role
+that tracks the other direction is what makes the addendum read as a distinct
+register rather than a bigger version of the app's usual type, exactly the way
+Lazy's own spec describes it ("positive tracking is anti-convention for serif,
+making labels feel architectural and headlines feel set rather than typed").
+
+Weight is **500, never 600 or 700** for these three roles — Migra/Fraunces at
+this addendum's sizes reads heavier at 600 than the reference intends. Lead
+prose is unaffected: still Inter 400, unchanged by this addendum.
 
 ### `clamp()` — a documented exception
 
@@ -281,7 +292,7 @@ rule is not overturned; its premise simply doesn't extend here.
 else.** Not the lead, not body, not any app text, not spacing.
 
 ```
-D1  clamp(2.125rem, 1.5rem  + 2.67vw, 3.5rem)     34 → 56px
+D1  clamp(2.5rem,   1.65rem + 3.63vw, 4.875rem)   40 → 78px
 D2  clamp(1.625rem, 1.23rem + 1.70vw, 2.5rem)     26 → 40px
 D3  clamp(1.375rem, 1.20rem + 0.73vw, 1.75rem)    22 → 28px
 ```
@@ -370,6 +381,43 @@ below 720px, prose measure **34em**. All multiples of the 4px base.
 **Never `width: 100vw`** — it includes the scrollbar width and produces
 horizontal overflow. Full-bleed bands set a background on the section element
 itself and let the shell hold the content.
+
+### Marketing achromatic palette (2026-09-11)
+
+Also following the "Lazy" reference design named above: `/`, `/login`, and
+`/signup` drop this app's two saturated colors (Notion blue, alert red) down
+to near-achromatic on everything decorative, layered on top of the existing
+global tokens rather than replacing them — see
+`ui/landing/marketing-tokens.css`, which overrides `--desk`, `--rail`,
+`--card`, `--card-hi`, `--ink`, `--ink-2`, `--ink-3`, `--line`, `--line-soft`,
+`--primary`, `--primary-fill`, `--primary-soft`, `--primary-ink`, `--on-fill`,
+the four `--panel-*` names, `--panel-midnight`, and the four `--pill-*` names
+for the subtree under `[data-surface="marketing"]` — applied on each of the
+three pages' own root element, not on `<html>`. The board never carries that
+attribute and is completely unaffected; nothing in §Color above changes for
+it. Both themes stay first-class: the file derives a light companion ramp,
+since Lazy itself only defines a dark register, each ink-on-surface pairing
+verified against the WCAG 2.2 AA 4.5:1 body-text floor.
+
+**`--alert` is deliberately untouched, in every theme, everywhere, including
+under this scope.** It's still the one functional color this product uses to
+show overcommitment, and these pages still need it: the ported
+`CapacitySlot`/`Timeline` demos' spill states, and login/signup's
+`aria-invalid` field rings. Only *decorative* color goes achromatic — the
+four failure-band panels converge to one neutral mat (their `data-accent`
+prop stays for semantics/testability, it just no longer produces four
+different hues), and the rotating tagline's four pills become one neutral
+outlined tag (border only, no fill — Lazy's own "Inline Tag" component)
+instead of four colored fills.
+
+**The one filled CTA stays filled, not ghost.** Lazy's own rule bans solid-fill
+buttons outright; this addendum keeps exactly one (the existing "at most one
+`--primary-fill` CTA" rule below, applied to the hero's "Sign in" and login/
+signup's submit button) because removing the one clear primary action on an
+auth form is a real usability cost, not just a style choice. Under the new
+palette `--primary-fill` is the strongest ink itself (near-black in light,
+near-white in dark) rather than blue, so the one filled button still reads as
+the page's one mark of emphasis without introducing hue.
 
 ### The ban list still applies in full
 

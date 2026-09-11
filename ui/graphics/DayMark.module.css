@@ -16,8 +16,13 @@
   stroke-linecap: round;
 }
 
+/* Not --alert: the notch marks where the fixed 0.58 fraction ends, not an
+   overage — see this component's header comment. It's a boundary marker,
+   not a functional "this is over capacity" signal, so it doesn't get this
+   app's one reserved alert color; --ink-2 keeps it a hairline-weight accent
+   distinguishable by its shape (a short radial tick) rather than by hue. */
 .notch {
-  stroke: var(--alert);
+  stroke: var(--ink-2);
   stroke-width: 1.6;
   stroke-linecap: round;
 }
@@ -41,7 +46,7 @@
 }
 
 .ambient .notch {
-  stroke: var(--alert);
+  stroke: var(--ink-2);
   stroke-width: 1;
   opacity: 0.45;
 }

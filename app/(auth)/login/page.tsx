@@ -9,6 +9,7 @@ import { signInWithEmail, signInWithGoogle, syncSessionCookie } from "@/firebase
 import { ThemeToggle } from "@/ui/theme/ThemeToggle";
 import { DayMark } from "@/ui/graphics/DayMark";
 import { TaglineWord } from "@/ui/type/TaglineWord";
+import "@/ui/landing/marketing-tokens.css";
 import styles from "./login.module.css";
 
 const ERROR_ID = "login-error";
@@ -80,7 +81,7 @@ export default function LoginPage() {
   }
 
   return (
-    <main className={styles.screen}>
+    <main className={styles.screen} data-surface="marketing">
       <div className={styles.rail} aria-hidden="true" />
       <div className={styles.field} aria-hidden="true" />
       <div className={styles.sweep} aria-hidden="true" />

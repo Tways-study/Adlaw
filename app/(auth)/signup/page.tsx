@@ -7,6 +7,7 @@ import { signInWithGoogle, signUpWithEmail } from "@/firebase/auth";
 import { ThemeToggle } from "@/ui/theme/ThemeToggle";
 import { DayMark } from "@/ui/graphics/DayMark";
 import { TaglineWord } from "@/ui/type/TaglineWord";
+import "@/ui/landing/marketing-tokens.css";
 import styles from "./signup.module.css";
 
 const ERROR_ID = "signup-error";
@@ -60,7 +61,7 @@ export default function SignupPage() {
   }
 
   return (
-    <main className={styles.screen}>
+    <main className={styles.screen} data-surface="marketing">
       <div className={styles.rail} aria-hidden="true" />
       <div className={styles.field} aria-hidden="true" />
       <div className={styles.sweep} aria-hidden="true" />

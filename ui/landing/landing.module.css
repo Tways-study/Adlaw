@@ -62,16 +62,21 @@
   width: auto;
 }
 
-/* A panel is a colored mat the page sits on. In light it is a real
-   saturated surface at OKLCH L 0.80; in dark it is a tinted region of the
-   ground at --desk's own L. Neither is an inversion of the other — see
-   ui/tokens.css's --panel-* comments for why the two behave differently.
+/* A panel is a neutral mat the page sits on, one level off --desk (the same
+   step --rail already is) — see ui/landing/marketing-tokens.css, which
+   overrides all four --panel-* names to the identical achromatic value
+   under [data-surface="marketing"]. All four hues used to differ (see git
+   history pre-2026-09-11 for the original hue-distance pairing); that's
+   gone under the achromatic decision — differentiation between the four
+   failure bands now comes entirely from the serif section label and each
+   band's own demo, not panel color. Kept as four separate custom
+   properties (rather than collapsing to one) only so this file and
+   Failure.tsx's `accent` prop don't need to change shape.
 
-   TEXT DIRECTLY ON A PANEL IS --ink ONLY. --ink-2 measures 4.43:1 on
-   marigold and 4.37:1 on coral, under PRODUCT.md's floor; --ink-3 fails on
-   all four. .lead and .caption both default to a lighter ink, so both are
-   promoted below when they sit on a panel. Anything else needing a
-   secondary tone belongs on a --card surface, not on the mat. */
+   TEXT DIRECTLY ON A PANEL IS STILL --ink ONLY, even though the new neutral
+   panel clears AA for --ink-2 too — .lead and .caption are promoted below
+   for consistency with the rest of this system's panel-text rule, and
+   because the midnight-in-light-theme island (below) still needs it. */
 .bleed[data-accent="marigold"] {
   background: var(--panel-marigold);
 }
@@ -107,36 +112,40 @@
 
 /* ── Type roles ──────────────────────────────────────────── */
 
-/* Tracking flattens rather than continuing to tighten. Inter's metrics
-   asymptote near -0.022em, and the 20px day title is already essentially
-   there — extrapolating the app curve out to -0.04em at 56px produces a
-   squashed logotype. Weight is 600, never 700: 700 at this size is shouty
-   and contradicts "quiet at rest". */
+/* The marketing/auth display serif (Fraunces — see app/layout.tsx), per the
+   "Lazy" reference's own rule: positive tracking, never below 21px (d3's
+   floor of 22px clears that), weight 500 rather than this app's usual 600.
+   Positive tracking is the opposite direction from the app-wide "tighten as
+   size grows" curve on purpose — that inversion is what makes this addendum
+   read as a distinct register rather than a slightly-bigger version of the
+   app's own type. Centered by .hero/.close, not by these rules themselves. */
+.d1,
+.d2,
+.d3 {
+  font-family: var(--font-display-serif), Georgia, serif;
+  font-weight: 500;
+  text-wrap: balance;
+}
+
 .d1 {
   margin: 0;
   font-size: var(--d1);
-  font-weight: 600;
-  letter-spacing: -0.024em;
-  line-height: 1.02;
-  text-wrap: balance;
+  letter-spacing: 0.04em;
+  line-height: 1.05;
 }
 
 .d2 {
   margin: 0;
   font-size: var(--d2);
-  font-weight: 600;
-  letter-spacing: -0.023em;
-  line-height: 1.1;
-  text-wrap: balance;
+  letter-spacing: 0.032em;
+  line-height: 1.15;
 }
 
 .d3 {
   margin: 0;
   font-size: var(--d3);
-  font-weight: 600;
-  letter-spacing: -0.021em;
-  line-height: 1.22;
-  text-wrap: balance;
+  letter-spacing: 0.026em;
+  line-height: 1.25;
 }
 
 .lead {
@@ -294,19 +303,13 @@
 /* Two-column bands that alternate side, not a 2x2 card grid. A grid is a banned
    pattern here and it would flatten a ranked list into four equal things.
 
-   Band → panel pairing (set in app/page.tsx's four <Failure accent=…> calls):
-   each panel is chosen for maximum hue distance from the functional color that
-   band's own miniature already renders, so the panel reads as a background
-   cast rather than competing with the thing it's sitting behind.
-     1. CapacitySlot renders both --primary-fill (hue 254) and --alert
-        (hue 31) -> marigold (hue 75), far from both.
-     2. FocusCard renders --primary -> coral (hue 34), opposite the blue.
-     3. StepProgress renders --primary-fill AND --alert-ink (via `.hz.soon`)
-        -- the most competing color of the four -- so it gets mocha, the
-        lowest-chroma panel, rather than trying to out-hue two colors at once.
-     4. BareCapture renders no functional color at all -> sky (hue 240), the
-        one panel closest to --primary, safe to use precisely because there's
-        nothing here for it to clash with. */
+   app/page.tsx still passes a distinct `accent` prop per <Failure> (marigold/
+   coral/mocha/sky) for the alt text of "which failure is this," but under
+   [data-surface="marketing"] all four now resolve to the same neutral panel
+   (ui/landing/marketing-tokens.css) — achromatic, so there's no hue left to
+   pick apart. CapacitySlot and Timeline still render --alert for their spill
+   states regardless of which panel they sit on; that's the one color this
+   page still carries meaning with. */
 .band {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -368,9 +371,11 @@
 
 .closeLine {
   margin: 0;
+  font-family: var(--font-display-serif), Georgia, serif;
   font-size: var(--d3);
-  font-weight: 600;
-  letter-spacing: -0.021em;
+  font-weight: 500;
+  letter-spacing: 0.026em;
+  line-height: 1.25;
   color: var(--ink);
   text-wrap: balance;
 }
