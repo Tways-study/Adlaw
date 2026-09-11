@@ -7,7 +7,6 @@ import { CalendarSection } from "@/ui/settings/CalendarSection";
 import { CourseSection } from "@/ui/settings/CourseSection";
 import { ExportSection } from "@/ui/settings/ExportSection";
 import { SignOutSection } from "@/ui/settings/SignOutSection";
-import { ThemeSection } from "@/ui/settings/ThemeSection";
 import styles from "./page.module.css";
 
 // Mirrors app/schedule/page.tsx's exact shape (plan's "/settings is a route,
@@ -28,7 +27,6 @@ export default function SettingsPage() {
       </header>
 
       <div className={styles.body}>
-        <ThemeSection />
         <AiProviderSection />
         <CalendarSection />
         <AiLogSection />

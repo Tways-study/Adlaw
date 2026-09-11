@@ -17,94 +17,10 @@
 }
 
 /* Not --alert: the notch marks where the fixed 0.58 fraction ends, not an
-   overage — see this component's header comment. It's a boundary marker,
-   not a functional "this is over capacity" signal, so it doesn't get this
-   app's one reserved alert color; --ink-2 keeps it a hairline-weight accent
-   distinguishable by its shape (a short radial tick) rather than by hue. */
+   overage. It's a boundary marker, so it stays on the neutral ladder and is
+   told apart by its shape (a short radial tick), not by hue. */
 .notch {
   stroke: var(--ink-2);
   stroke-width: 1.6;
   stroke-linecap: round;
-}
-
-/* The large background variant: hairline only, near-silent until you look
-   for it. Deliberately no fill, no glow, no drop shadow — the same material
-   language as --edge and the timeline's ruled grid, not a decorative prop.
-   Stroke widths here are real pixels (vector-effect on the shapes keeps them
-   from inflating with the mark's 420px render size) — thinner than the
-   small glyph on purpose, since a ring standing behind body copy has to
-   read as texture, not as a second thing to look at. */
-.ambient .track {
-  stroke: var(--line-soft);
-  stroke-width: 1;
-}
-
-.ambient .arc {
-  stroke: var(--primary);
-  stroke-width: 1;
-  opacity: 0.4;
-}
-
-.ambient .notch {
-  stroke: var(--ink-2);
-  stroke-width: 1;
-  opacity: 0.45;
-}
-
-.ambient {
-  position: absolute;
-  pointer-events: none;
-  animation: dayMarkEnter 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-/* The hero's one orchestrated moment (impeccable's brand-register guidance:
-   one well-rehearsed entrance beats scattered micro-interactions) — the mark
-   resolves into place once, then rests. Scale/opacity only, so it composites
-   without layout cost. */
-@keyframes dayMarkEnter {
-  from {
-    opacity: 0;
-    transform: scale(0.92);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-/* After the entrance, the whole dial turns as one rigid body — slow enough
-   to be nearly still moment-to-moment, matching "quiet at rest" (PRODUCT.md),
-   but visibly different if you look back at it. The fill fraction between
-   track/arc/notch never changes, only orientation — this can't be misread as
-   a live stat the way an arc filling from 0 could (see this file's header
-   comment on why the fraction is fixed). The small wordmark-scale .mark
-   glyph is excluded on purpose; a logo mark shouldn't spin every render. */
-.ambient .dial {
-  transform-box: fill-box;
-  transform-origin: 50% 50%;
-  animation: dayMarkSpin 140s linear infinite;
-}
-
-@keyframes dayMarkSpin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* A diffuse hairline ring is exactly what a high-contrast user can't rely
-   on seeing — drop it rather than let it half-render. */
-@media (prefers-contrast: more) {
-  .ambient {
-    display: none;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .ambient {
-    animation: none;
-    opacity: 1;
-  }
-  .ambient .dial {
-    animation: none;
-  }
 }

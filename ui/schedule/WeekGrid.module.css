@@ -35,7 +35,7 @@
 
 .dayHead span {
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 590;
   color: var(--ink-2);
 }
 
@@ -45,7 +45,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  /* DESIGN.md: "8px buttons" — a standalone icon-button action. */
+  /* DESIGN.md: "6px buttons" — a standalone icon-button action. */
   border-radius: var(--r-m);
   color: var(--ink-3);
   font-size: 14px;
@@ -86,7 +86,7 @@
   flex-direction: column;
   gap: 1px;
   text-align: left;
-  /* DESIGN.md: "8px buttons" — a clickable, selectable schedule block, not a
+  /* DESIGN.md: "6px buttons" — a clickable, selectable schedule block, not a
      small chip. */
   border-radius: var(--r-m);
   background: var(--busy);
@@ -113,8 +113,8 @@
 }
 
 .blockLabel {
-  font-size: 10.5px;
-  font-weight: 600;
+  font-size: 11px;
+  font-weight: 590;
   line-height: 1.25;
   white-space: nowrap;
   overflow: hidden;
@@ -122,7 +122,7 @@
 }
 
 .blockTime {
-  font-size: 9.5px;
+  font-size: 10px;
   opacity: 0.85;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;

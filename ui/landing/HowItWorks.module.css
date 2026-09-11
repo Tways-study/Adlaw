@@ -1,27 +1,41 @@
 .beats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 28px;
+  display: flex;
+  flex-direction: column;
   margin: 0;
   padding: 0;
   list-style: none;
-  counter-reset: none;
 }
 
+/* Sentence and fields on the left, the resulting card on the right. */
 .beat {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px 64px;
+  align-items: center;
+  padding-block: 24px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.beat:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.beatIn {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   min-width: 0;
 }
 
 /* The sentence as typed — quoted rather than styled as input chrome, so it
-   reads as speech and the card below reads as the result. */
+   reads as speech and the card beside it reads as the result. */
 .said {
   margin: 0;
-  font-size: 13.5px;
-  line-height: 1.45;
-  color: var(--ink-3);
+  font-size: 16px;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+  color: var(--ink-2);
 }
 
 .said::before {
@@ -38,21 +52,28 @@
   gap: 6px;
 }
 
-/* DESIGN.md's "Pill Tag: 9999px, used for status labels" convention — a
-   small, tinted status label is exactly what this is. */
+/* Linear's Badge: inline metadata, not an action. */
 .chip {
-  font-size: 11px;
-  padding: 3px 8px;
-  border-radius: var(--r-pill);
+  font-size: 12px;
+  line-height: 20px;
+  padding: 0 6px;
+  border-radius: var(--r-s);
   background: var(--primary-soft);
-  color: var(--primary-ink);
-  font-weight: 600;
+  color: var(--ink-3);
+  font-weight: 400;
 }
 
 .cardTitle {
   margin: 0;
-  font-size: 13.5px;
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: 510;
   line-height: 1.35;
-  letter-spacing: -0.006em;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+@media (max-width: 860px) {
+  .beat {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }

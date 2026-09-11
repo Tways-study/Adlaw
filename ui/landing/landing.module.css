@@ -1,32 +1,26 @@
 /* ============================================================
-   LANDING SURFACE — the shell, the display type, and the one
-   permitted entrance animation.
-
-   Scope: this file styles `/` only. Every rule inside the board
-   is unaffected. See DESIGN.md § "Landing surface (addendum)".
+   LANDING — the Linear reference's marketing layout: a
+   left-aligned oversized headline, one lime action, product UI as the
+   only imagery, a 96px section rhythm, hairline separators, and one
+   gradient (the hero floor). Scope: `/` only. See DESIGN.md
+   § "Landing surface".
    ============================================================ */
 
 .landing {
-  /* Display type, scoped here rather than added to ui/tokens.css: the system
-     has no type tokens at all, and growing a global scale for one surface
-     would break that convention for a barely perceptible gain.
-
-     Four rungs on the existing ladder, seeded at the 20px day title at a
-     constant 1.4 ratio: 20 → 28 → 40 → 56 → 78. D1 took the 78 rung when
-     the hero centered — a four-word headline centered in a 1080px measure
-     wants to be big, and 56px left it floating.
+  /* Display type, scoped here rather than added to ui/tokens.css — the
+     system has no global type tokens.
 
      Every fixed term is in rem, never px. A pure-vw clamp violates WCAG 2.2
-     SC 1.4.4 (Resize Text) — the text stops responding to the reader's
+     SC 1.4.4 (Resize Text): the text stops responding to the reader's
      browser font-size setting. The rem intercept is what preserves scaling,
      which is why these numbers look arbitrary. Do not "simplify" them.
-     Check: at 375px viewport D1 is 40px; it reaches 78px at ~1421px. */
-  --d1: clamp(2.5rem, 1.65rem + 3.63vw, 4.875rem); /* 40 → 78px */
-  --d2: clamp(1.625rem, 1.23rem + 1.7vw, 2.5rem); /* 26 → 40px */
-  --d3: clamp(1.375rem, 1.2rem + 0.73vw, 1.75rem); /* 22 → 28px */
+     Each reaches its max at ~1380px. */
+  --d1: clamp(2.5rem, 1.75rem + 3.2vw, 4.5rem); /* 40 → 72px */
+  --d2: clamp(2rem, 1.62rem + 1.6vw, 3rem); /* 32 → 48px */
+  --d3: clamp(1.5rem, 1.31rem + 0.8vw, 2rem); /* 24 → 32px */
 
   --rhythm: 96px;
-  --measure: 34em;
+  --measure: 36em;
 
   background: var(--desk);
   color: var(--ink);
@@ -39,211 +33,153 @@
 }
 
 /* Never `width: 100vw` anywhere on this page — it includes the scrollbar and
-   produces horizontal overflow. Full-bleed bands set a background on the
-   section itself and let this shell hold the content in. */
+   produces horizontal overflow. */
 .shell {
   width: 100%;
-  max-width: 1080px;
+  max-width: 1200px;
   margin-inline: auto;
   padding-inline: 24px;
 }
 
-/* .bleed is the outer element every top-level section renders now: header,
-   hero, each failure band, HowItWorks, the closing timeline section, and the
-   footer. It carries no width rule at all — a plain block element's width is
-   auto, which already fills `.landing` (itself unconstrained), so it spans
-   the viewport without ever touching 100vw. Its only job is to be the thing
-   a panel paints onto; `.shell` still lives one level in to hold the
-   actual content at the 1080px measure. Most `.bleed` elements get no
-   `data-accent` and stay transparent, which is what "stays on --desk" means
-   for the hero/top bar/footer/HowItWorks/timeline — .landing's own
-   background shows straight through. */
-.bleed {
-  width: auto;
-}
-
-/* A panel is a neutral mat the page sits on, one level off --desk (the same
-   step --rail already is) — see ui/landing/marketing-tokens.css, which
-   overrides all four --panel-* names to the identical achromatic value
-   under [data-surface="marketing"]. All four hues used to differ (see git
-   history pre-2026-09-11 for the original hue-distance pairing); that's
-   gone under the achromatic decision — differentiation between the four
-   failure bands now comes entirely from the serif section label and each
-   band's own demo, not panel color. Kept as four separate custom
-   properties (rather than collapsing to one) only so this file and
-   Failure.tsx's `accent` prop don't need to change shape.
-
-   TEXT DIRECTLY ON A PANEL IS STILL --ink ONLY, even though the new neutral
-   panel clears AA for --ink-2 too — .lead and .caption are promoted below
-   for consistency with the rest of this system's panel-text rule, and
-   because the midnight-in-light-theme island (below) still needs it. */
-.bleed[data-accent="marigold"] {
-  background: var(--panel-marigold);
-}
-
-.bleed[data-accent="coral"] {
-  background: var(--panel-coral);
-}
-
-.bleed[data-accent="mocha"] {
-  background: var(--panel-mocha);
-}
-
-.bleed[data-accent="sky"] {
-  background: var(--panel-sky);
-}
-
-/* The panel text rule, enforced rather than documented. */
-.bleed[data-accent] .lead,
-.bleed[data-accent] .caption {
-  color: var(--ink);
-}
-
-/* An accented band is already separated from its neighbor by its own color
-   edge; a second hairline drawn on top of that reads as a seam, not a
-   division. `.band`'s border-top lives two levels inside `.bleed` (bleed >
-   shell > band), so this has to be a descendant selector rather than a
-   compound one — `data-accent` sits on `.bleed`, never on `.band` itself.
-   Unaccented sections (HowItWorks, the closing section, `.close`) carry no
-   `data-accent` and so keep their hairline unchanged. */
-.bleed[data-accent] .band {
-  border-top: 0;
-}
-
 /* ── Type roles ──────────────────────────────────────────── */
 
-/* The marketing/auth display serif (Fraunces — see app/layout.tsx), per the
-   "Lazy" reference's own rule: positive tracking, never below 21px (d3's
-   floor of 22px clears that), weight 500 rather than this app's usual 600.
-   Positive tracking is the opposite direction from the app-wide "tighten as
-   size grows" curve on purpose — that inversion is what makes this addendum
-   read as a distinct register rather than a slightly-bigger version of the
-   app's own type. Centered by .hero/.close, not by these rules themselves. */
+/* Linear's display ladder: 510 at 48px and up, 400 at 32px, and -0.022em
+   tracking at every display size — tight tracking is non-negotiable in the
+   reference. Nothing heavier than 590 anywhere. */
 .d1,
 .d2,
 .d3 {
-  font-family: var(--font-display-serif), Georgia, serif;
-  font-weight: 500;
+  margin: 0;
+  color: var(--ink);
+  letter-spacing: -0.022em;
   text-wrap: balance;
 }
 
 .d1 {
-  margin: 0;
   font-size: var(--d1);
-  letter-spacing: 0.04em;
-  line-height: 1.05;
+  font-weight: 510;
+  line-height: 1;
 }
 
 .d2 {
-  margin: 0;
   font-size: var(--d2);
-  letter-spacing: 0.032em;
-  line-height: 1.15;
+  font-weight: 510;
+  line-height: 1;
 }
 
 .d3 {
-  margin: 0;
   font-size: var(--d3);
-  letter-spacing: 0.026em;
-  line-height: 1.25;
+  font-weight: 400;
+  line-height: 1.13;
 }
 
 .lead {
   margin: 0;
   max-width: var(--measure);
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 400;
-  letter-spacing: -0.011em;
-  line-height: 1.55;
+  letter-spacing: -0.01em;
+  line-height: 1.5;
   color: var(--ink-2);
   text-wrap: pretty;
 }
 
-.caption {
-  margin: 0;
-  font-size: 11.5px;
-  line-height: 1.45;
-  color: var(--ink-3);
-}
-
 /* One deliberate hero-only line stating who this is for — sentence case, not
-   tracked uppercase, so it reads as a sentence rather than the tiny-kicker
-   pattern DESIGN.md's ban list calls out. Not reused per-section. */
+   a tracked-uppercase eyebrow, and not reused per section. */
 .audience {
-  margin: 0 0 4px;
-  font-size: 14px;
-  font-weight: 500;
-  letter-spacing: -0.006em;
-  color: var(--ink-2);
+  margin: 0;
+  max-width: var(--measure);
+  font-size: 13px;
+  letter-spacing: -0.01em;
+  color: var(--ink-3);
 }
 
 /* ── Top bar ─────────────────────────────────────────────── */
 
 /* Deliberately not sticky: a bar that follows the reader down a quiet page is
-   chrome this register doesn't want, and it would cost a z-index conversation
-   with --z-chrome. */
+   chrome this register doesn't want. */
 .topBar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding-block: 20px;
+  padding-block: 16px;
 }
 
 .wordmark {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  font-size: 17px;
-  font-weight: 600;
-  letter-spacing: -0.018em;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 510;
+  letter-spacing: -0.01em;
   color: var(--ink);
-  text-decoration: none;
 }
 
 .topRight {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 8px;
 }
 
-/* ── Links and the one filled CTA ────────────────────────── */
-
-/* Exactly one --primary-fill call-to-action exists on this entire document:
-   the hero's. Every other sign-in is this text link. */
-.textLink {
+/* Linear's Nav Text Button: no border, no fill, underline on hover. */
+.navLink {
+  padding: 8px 12px;
+  border-radius: var(--r-m);
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 400;
   color: var(--ink-2);
   text-decoration: none;
-  padding: 6px 8px;
-  /* DESIGN.md: "8px buttons" — no visible hover background today (color-only
-     transition), so this padding is a larger click target rather than a
-     drawn box, but tokenizing it correctly now costs nothing and matches if
-     a hover treatment is ever added. */
-  border-radius: var(--r-m);
+  text-underline-offset: 3px;
   transition: color 140ms var(--ease);
 }
 
-.textLink:hover {
+.navLink:hover {
   color: var(--ink);
+  text-decoration: underline;
 }
+
+/* Linear's Sign-up Button: a white pill, the second highest-contrast element
+   after the lime action — neutral, so it never competes with it for "the
+   one chromatic thing". */
+.signupPill {
+  padding: 8px 16px;
+  border-radius: var(--r-pill);
+  font-size: 13px;
+  font-weight: 510;
+  background: var(--ink);
+  color: var(--desk);
+  text-decoration: none;
+  transition: filter 140ms var(--ease), transform 110ms ease-out;
+}
+
+.signupPill:hover {
+  filter: brightness(0.9);
+}
+
+.signupPill:active {
+  transform: scale(0.975);
+}
+
+/* ── The one lime action ─────────────────────────────────── */
 
 .cta {
   display: inline-block;
-  padding: 10px 18px;
+  flex: none;
+  padding: 10px 16px;
   border-radius: var(--r-m);
-  font-size: 13.5px;
-  font-weight: 600;
-  background: var(--primary-fill);
-  color: var(--on-fill);
-  box-shadow: var(--lift-1);
+  font-size: 14px;
+  font-weight: 510;
+  letter-spacing: -0.011em;
+  background: var(--action);
+  color: var(--on-action);
+  box-shadow: var(--lift-action);
   text-decoration: none;
   transition: filter 140ms var(--ease), transform 110ms ease-out;
 }
 
 .cta:hover {
-  filter: brightness(1.08);
+  filter: brightness(1.06);
 }
 
 .cta:active {
@@ -252,68 +188,85 @@
 
 /* ── Hero ────────────────────────────────────────────────── */
 
-/* Centered stack: audience line → headline → lead → the one filled CTA →
-   the capture demo. Centering is what let the ambient day-mark move behind
-   the stack instead of being cropped by the right edge — DESIGN.md records
-   a cropped ring as reading "off-centre rather than as deliberate framing",
-   which is why it was pulled from /login. */
+/* Left-aligned, as the reference does: headline, then a row with the lead on
+   the left and the one action on the right. */
 .hero {
-  position: relative;
-  z-index: 0;
-  padding-block: clamp(48px, 8vw, 104px) var(--rhythm);
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   gap: 24px;
-  align-items: center;
-  text-align: center;
+  padding-block: clamp(56px, 9vw, 128px) 56px;
 }
 
-/* The lead is measure-capped at 34em, so centering it needs the auto margin
-   as well as the flex alignment. */
-.hero .lead,
-.hero .audience {
-  margin-inline: auto;
-}
-
-/* Centered behind the stack rather than pinned top-right. z-index: -1
-   (against .hero's own stacking context) keeps it behind the headline and
-   demo — texture for the section, not a second thing to read. Positioned
-   with a transform rather than negative offsets so it can never reintroduce
-   the horizontal-overflow bug a 100vw or offset element would. */
-.heroMark {
-  top: 50%;
-  left: 50%;
-  translate: -50% -50%;
-  z-index: -1;
-}
-
-@media (max-width: 860px) {
-  .heroMark {
-    display: none;
-  }
-}
-
-.heroDemo {
+.heroFoot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px 48px;
   width: 100%;
-  margin-top: 16px;
+}
+
+.heroFoot .lead {
+  color: var(--ink-3);
+}
+
+/* The Hero Gradient Floor — the only gradient in the product. Void at 10%
+   to Mist at 100%, per the reference, laid under the product frame and
+   feathered at the sides so its bright end lives behind the frame rather
+   than meeting the next section as a hard edge. Non-interactive,
+   aria-hidden by construction (a pseudo-element), and still — it's the
+   hero's one ambient layer (DESIGN.md § Motion allowance (a)). */
+.floor {
+  position: relative;
+  isolation: isolate;
+  padding-bottom: var(--rhythm);
+}
+
+.floor::before {
+  content: "";
+  position: absolute;
+  inset: 12% 0 var(--rhythm);
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(to bottom, rgb(8 9 10) 10%, rgb(208 214 224) 100%);
+  opacity: 0.16;
+  /* Two feathers intersected: the sides fade into the canvas, and so does
+     the bottom, so the wash never meets the next section as a hard edge. */
+  mask-image:
+    linear-gradient(to right, transparent, black 20%, black 80%, transparent),
+    linear-gradient(to bottom, black 55%, transparent);
+  mask-composite: intersect;
+}
+
+/* Linear's product-screenshot frame: Carbon, 12px, a Graphite hairline, 24px
+   of padding, no outer shadow and no glow. It's a picture of the product,
+   not a UI card — the cards inside belong to the screenshot. */
+.frame {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+  background: var(--card);
+  border-radius: var(--r-l);
+  box-shadow: var(--edge);
+}
+
+@media (max-width: 600px) {
+  .frame {
+    padding: 12px;
+  }
 }
 
 /* ── The four failures ───────────────────────────────────── */
 
-/* Two-column bands that alternate side, not a 2x2 card grid. A grid is a banned
-   pattern here and it would flatten a ranked list into four equal things.
-
-   app/page.tsx still passes a distinct `accent` prop per <Failure> (marigold/
-   coral/mocha/sky) for the alt text of "which failure is this," but under
-   [data-surface="marketing"] all four now resolve to the same neutral panel
-   (ui/landing/marketing-tokens.css) — achromatic, so there's no hue left to
-   pick apart. CapacitySlot and Timeline still render --alert for their spill
-   states regardless of which panel they sit on; that's the one color this
-   page still carries meaning with. */
+/* Text left, evidence right, the same way round every time — the reference's
+   2-column composition. Not a card grid, which would flatten a ranked list
+   into four equal things. */
 .band {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 48px;
+  gap: 64px;
   align-items: center;
   padding-block: var(--rhythm);
   border-top: 1px solid var(--line-soft);
@@ -322,7 +275,7 @@
 .bandText {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
 }
 
 .bandEvidence {
@@ -332,50 +285,45 @@
   min-width: 0;
 }
 
-/* Flip the column order on alternating bands. Order, not direction, so the
-   reading order in the DOM stays statement-then-evidence for a screen reader. */
-.bandFlip .bandText {
-  order: 2;
-}
-
 @media (max-width: 860px) {
   .band {
     grid-template-columns: minmax(0, 1fr);
     gap: 32px;
-  }
-
-  .bandFlip .bandText {
-    order: 0;
   }
 }
 
 /* ── Generic section ─────────────────────────────────────── */
 
 .section {
-  padding-block: var(--rhythm);
-  border-top: 1px solid var(--line-soft);
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  gap: 40px;
+  padding-block: var(--rhythm);
+  border-top: 1px solid var(--line-soft);
+}
+
+.sectionHead {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .close {
-  padding-block: var(--rhythm);
-  border-top: 1px solid var(--line-soft);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 20px;
+  padding-block: 64px;
+  border-top: 1px solid var(--line-soft);
 }
 
 .closeLine {
   margin: 0;
-  font-family: var(--font-display-serif), Georgia, serif;
-  font-size: var(--d3);
-  font-weight: 500;
-  letter-spacing: 0.026em;
-  line-height: 1.25;
+  font-size: 24px;
+  font-weight: 400;
+  letter-spacing: -0.012em;
+  line-height: 1.33;
   color: var(--ink);
   text-wrap: balance;
 }
@@ -383,18 +331,11 @@
 /* ── The one permitted entrance ──────────────────────────── */
 
 /* The resting state below IS the final, visible state, and the keyframes move
-   `transform` ONLY — never opacity.
-
-   That restriction is the whole point. An opacity-gated reveal leaves every
-   below-the-fold section at opacity 0 until it is scrolled into view, which
-   means a full-page screenshot, a print, a headless renderer, or a browser
-   that pauses animations on a background tab all capture a blank page. This
-   was built that way first and it shipped exactly that bug. DESIGN.md's
-   "content is never gated behind a reveal transition" is the rule it broke.
-
-   With transform alone, the worst case anywhere is content sitting 8px low.
-   The @supports guard then means a browser without scroll-driven animations
-   renders it plainly and completely. */
+   `transform` ONLY — never opacity. An opacity-gated reveal leaves every
+   below-the-fold section blank in a full-page screenshot, a print, a headless
+   renderer, or a background tab; that shipped once. With transform alone the
+   worst case anywhere is content sitting 8px low, and the @supports guard
+   means an unsupporting browser renders it plainly and completely. */
 .reveal {
   transform: none;
 }
@@ -417,55 +358,32 @@
   }
 }
 
-/* The closing section inverts to a deep navy mat with white text — the
-   reference system's "dark island on a light page", used exactly once.
-
-   In dark theme it cannot invert; there is nothing to invert against. It
-   becomes a raised slab above --card instead, separated by --edge, so it
-   still reads as a distinct object rather than a hole in the page. */
-.bleed[data-panel="midnight"] {
-  background: var(--panel-midnight);
-  color: var(--on-midnight);
-}
-
-.bleed[data-panel="midnight"] .d2,
-.bleed[data-panel="midnight"] .lead {
-  color: var(--on-midnight);
-}
-
-/* The section's own hairline would be invisible against midnight and reads
-   as a seam where the color already divides — same reasoning as a panel. */
-.bleed[data-panel="midnight"] .section {
-  border-top: 0;
-}
-
-:root[data-theme="dark"] .bleed[data-panel="midnight"] {
-  box-shadow: var(--edge);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .bleed[data-panel="midnight"] {
-    box-shadow: var(--edge);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  /* A genuine alternative, not a removal: the content resolves instantly to its
-     end state. Nothing disappears and nothing is dimmer. */
+  /* A genuine alternative, not a removal: content resolves instantly to its
+     end state, and presses keep their feedback but lose the movement. */
   .reveal {
     animation: none;
     transform: none;
   }
 
-  /* Same principle for the press: the CTA keeps its feedback and loses only
-     the movement. brightness lands harder than the 1.08 hover so pointer-down
-     stays distinguishable from hover. */
-  .cta {
+  .cta,
+  .signupPill {
     transition: filter 140ms var(--ease);
   }
 
-  .cta:active {
+  .cta:active,
+  .signupPill:active {
     transform: none;
-    filter: brightness(1.18);
+  }
+
+  .cta:active {
+    filter: brightness(1.14);
+  }
+}
+
+/* A diffuse wash is exactly what a high-contrast reader can't rely on. */
+@media (prefers-contrast: more) {
+  .floor::before {
+    display: none;
   }
 }

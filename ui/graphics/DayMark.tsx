@@ -3,12 +3,15 @@ import styles from "./DayMark.module.css";
 // The day, as a mark: a hairline ring (a full circle standing for the day),
 // one solid arc for what's already committed, one short radial notch where
 // that commitment ends. The same shape as the capacity slot's .notch
-// (ui/landing/demos/demos.module.css) and the timeline's dashed --alert
-// endline — just wrapped into a circle instead of a bar. Not a clock: no
-// numerals, no hands, nothing claiming to tell time.
+// (ui/landing/demos/demos.module.css), wrapped into a circle instead of a
+// bar. Not a clock: no numerals, no hands, nothing claiming to tell time.
 //
 // The fill fraction is fixed and deliberately not wired to any live number —
 // a mark, not a stat — so it can never be misread as a percentage.
+//
+// Wordmark-scale only. The large ambient variant behind the landing hero is
+// gone: the Linear reference allows almost no decorative ornament, and the
+// hero's one ambient allowance now belongs to its gradient floor.
 
 const VIEWBOX = 100;
 const CENTER = VIEWBOX / 2;
@@ -33,18 +36,8 @@ const NOTCH_INNER = polar(END_DEG, RADIUS - 7);
 const NOTCH_OUTER = polar(END_DEG, RADIUS + 7);
 const ARC_D = arcPath(START_DEG, END_DEG, RADIUS);
 
-export function DayMark({
-  size = 22,
-  ambient = false,
-  className,
-}: {
-  size?: number;
-  ambient?: boolean;
-  className?: string;
-}) {
-  const cls = [styles.mark, ambient ? styles.ambient : null, className]
-    .filter(Boolean)
-    .join(" ");
+export function DayMark({ size = 22, className }: { size?: number; className?: string }) {
+  const cls = className ? `${styles.mark} ${className}` : styles.mark;
 
   return (
     <svg
@@ -55,34 +48,24 @@ export function DayMark({
       className={cls}
     >
       {/* vector-effect="non-scaling-stroke": stroke-width is otherwise in
-          viewBox units, so it scales with the rendered size — at size=22 a
-          3-unit stroke becomes an invisible 0.66px, and at size=420 the same
-          number becomes a bold 4px. This keeps stroke thickness a real,
-          fixed pixel value regardless of which scale a given usage renders
-          at, so the mark and ambient variants can each set their own
-          physical thickness in DayMark.module.css. */}
-      {/* Grouped so the ambient variant's slow rotation (DayMark.module.css)
-          can transform the whole dial as one rigid body, independently of
-          the outer <svg>'s own entrance fade/scale — two transforms on one
-          element would fight each other. */}
-      <g className={styles.dial}>
-        <circle
-          cx={CENTER}
-          cy={CENTER}
-          r={RADIUS}
-          vectorEffect="non-scaling-stroke"
-          className={styles.track}
-        />
-        <path d={ARC_D} vectorEffect="non-scaling-stroke" className={styles.arc} />
-        <line
-          x1={NOTCH_INNER.x}
-          y1={NOTCH_INNER.y}
-          x2={NOTCH_OUTER.x}
-          y2={NOTCH_OUTER.y}
-          vectorEffect="non-scaling-stroke"
-          className={styles.notch}
-        />
-      </g>
+          viewBox units, so it would scale with the rendered size. This keeps
+          stroke thickness a real, fixed pixel value at every size. */}
+      <circle
+        cx={CENTER}
+        cy={CENTER}
+        r={RADIUS}
+        vectorEffect="non-scaling-stroke"
+        className={styles.track}
+      />
+      <path d={ARC_D} vectorEffect="non-scaling-stroke" className={styles.arc} />
+      <line
+        x1={NOTCH_INNER.x}
+        y1={NOTCH_INNER.y}
+        x2={NOTCH_OUTER.x}
+        y2={NOTCH_OUTER.y}
+        vectorEffect="non-scaling-stroke"
+        className={styles.notch}
+      />
     </svg>
   );
 }

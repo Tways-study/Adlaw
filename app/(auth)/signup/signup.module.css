@@ -1,244 +1,131 @@
-/* Same two-plane-and-seam shell as ../login/login.module.css — see that
-   file's header comment for the rationale. Duplicated rather than shared:
-   these are two independent screens that happen to look alike today, not
-   one component with a variant prop, and DESIGN.md's landing-surface
-   addendum is the shared source of truth both read the --d2 clamp from. */
+/* Same shell as ../login/login.module.css — see that file's header. Duplicated
+   rather than shared: two independent screens that happen to look alike
+   today, not one component with a variant prop. */
+
 .screen {
   min-height: 100dvh;
-  position: relative;
-  overflow: hidden;
+  display: grid;
+  place-items: center;
+  padding: 48px 16px;
   background: var(--desk);
-  --d2: clamp(1.625rem, 1.23rem + 1.7vw, 2.5rem);
-}
-
-.rail {
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: 46%;
-  background: var(--rail);
-}
-
-.field {
-  position: absolute;
-  inset: 0 0 0 46%;
-  background: var(--desk);
-  box-shadow: var(--groove);
 }
 
 .content {
-  position: relative;
-  z-index: 1;
-  width: 46%;
-  min-height: 100dvh;
+  width: min(360px, 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 20px;
+  gap: 24px;
   opacity: 1;
   transform: translateY(0);
   transition: opacity 380ms var(--ease), transform 380ms var(--ease);
 
   /* The page's one orchestrated moment — signup is a rare/first-time visit
-     by definition, which is exactly where Emil Kowalski's framework allows
-     a deliberate entrance rather than none. Not staggered per field: a
-     fixed 3-field form cascading in reads as SaaS-onboarding cliché, not
-     "calm, physical, honest" (PRODUCT.md). @starting-style fires on this
-     page's very first paint, same as any dynamically-inserted element. */
+     by definition, which is exactly where a deliberate entrance earns its
+     place. Not staggered per field: a fixed 3-field form cascading in reads
+     as SaaS-onboarding cliché, not "calm, physical, honest" (PRODUCT.md). */
   @starting-style {
     opacity: 0;
     transform: translateY(10px);
   }
 }
 
-.sweep {
-  position: absolute;
-  inset: -20% -40%;
-  pointer-events: none;
-  background: radial-gradient(50% 60% at 50% 50%, var(--sheen), transparent 70%);
-  will-change: transform, opacity;
-  animation: sweep 40s linear infinite alternate;
-}
-
-@keyframes sweep {
-  0% {
-    transform: translate3d(-14%, -6%, 0);
-    opacity: 0.35;
-  }
-  50% {
-    opacity: 0.8;
-  }
-  100% {
-    transform: translate3d(14%, 6%, 0);
-    opacity: 0.35;
-  }
-}
-
-/* Centred in the field plane — 73% is the midpoint of the 46%→100% span —
-   mirroring the card's centring in the rail plane, so the screen reads as
-   two planes with one centred element each rather than one centred thing
-   and one bottom-anchored thing.
-
-   The text inside stays left-aligned on purpose. .echoLine's rotating word
-   sits in a container sized to its widest reading, so centre-aligned text
-   would drift left by half the unused width whenever a shorter reading
-   showed. Centring the block and keeping the text ragged-right avoids that:
-   the block's width is constant regardless of which reading is up, so
-   nothing shifts as it cycles.
-
-   z-index: 1 keeps it above .sweep so its contrast can't fluctuate as the
-   ambient animation runs (DESIGN.md §Motion allowance (a)). */
-.echo {
-  position: absolute;
-  z-index: 1;
-  top: 50%;
-  left: 73%;
-  transform: translate(-50%, -50%);
-  max-width: 32ch;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  pointer-events: none;
-}
-
-/* Same serif display treatment as the landing page's .d2 (see
-   ui/landing/landing.module.css) — Fraunces, weight 500, positive tracking,
-   ≥21px per the "Lazy" reference's own floor. --d2 here is 26-40px. */
-.echoLine {
-  margin: 0;
-  font-family: var(--font-display-serif), Georgia, serif;
-  font-size: var(--d2);
-  font-weight: 500;
-  letter-spacing: 0.032em;
-  line-height: 1.15;
-  color: var(--ink-2);
-  text-wrap: balance;
-}
-
-.echoSub {
-  margin: 0;
-  font-size: 17px;
-  font-weight: 400;
-  letter-spacing: -0.011em;
-  line-height: 1.55;
-  color: var(--ink-3);
-}
-
 .wordmark {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  font-size: 28px;
-  font-weight: 600;
-  letter-spacing: -0.021em;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 510;
+  letter-spacing: -0.01em;
   color: var(--ink);
   text-decoration: none;
-  transition: color 140ms var(--ease);
-}
-
-.wordmark:hover {
-  color: var(--ink-2);
-}
-
-.toggle {
-  position: absolute;
-  right: 24px;
-  bottom: 24px;
-  z-index: 2;
 }
 
 .card {
-  width: 320px;
-  background: var(--card);
-  border-radius: var(--r-l);
-  box-shadow: var(--edge);
-  padding: 28px 24px 24px;
+  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 14px;
+  padding: 24px;
+  background: var(--card);
+  border-radius: var(--r-l);
+  box-shadow: var(--edge);
 }
 
 .title {
-  margin: 0 0 6px;
-  font-size: 17px;
-  font-weight: 550;
-  letter-spacing: -0.018em;
-  color: var(--ink);
+  margin: 0 0 4px;
+  font-size: 24px;
+  font-weight: 400;
+  letter-spacing: -0.012em;
+  line-height: 1.33;
   text-align: center;
+  color: var(--ink);
 }
 
 .fieldRow {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 6px;
 }
 
 .label {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--ink-3);
+  font-size: 13px;
+  color: var(--ink-2);
 }
 
 .hint {
   margin: -2px 0 0;
-  font-size: 11.5px;
+  font-size: 12px;
   color: var(--ink-3);
 }
 
+/* Linear's Text Input. Per-field aria-invalid (page.tsx tracks which one) —
+   the combined selector outranks the single-condition ones regardless of
+   source order, so an invalid field keeps its coral border while focused. */
 .input {
   border: 0;
   border-radius: var(--r-m);
-  box-shadow: var(--edge);
-  background: var(--desk);
-  padding: 9px 11px;
-  font-size: 13.5px;
-  color: var(--ink);
+  background: rgb(255 255 255 / 0.02);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.08);
+  padding: 12px 14px;
+  font-size: 14px;
+  color: var(--ink-2);
   transition: box-shadow 150ms var(--ease);
 }
 
 .input:focus-visible {
-  box-shadow: inset 0 0 0 1.5px var(--primary-fill);
   outline: none;
+  box-shadow: inset 0 0 0 1px var(--ink-2);
 }
 
-/* The per-field aria-invalid tracking in page.tsx previously had no visual
-   pairing — only screen readers benefited. The combined selector's higher
-   specificity wins over the two single-condition rules regardless of source
-   order, so an invalid field keeps its alert ring even while focused. */
-.input[aria-invalid="true"] {
-  box-shadow: inset 0 0 0 1.5px var(--alert);
-}
-
+.input[aria-invalid="true"],
 .input[aria-invalid="true"]:focus-visible {
-  box-shadow: inset 0 0 0 1.5px var(--alert);
+  box-shadow: inset 0 0 0 1px var(--alert);
 }
 
+/* Linear's Ghost/Outline button — secondary, never the lime action. */
 .google {
-  padding: 9px 15px;
+  padding: 10px 12px;
   border-radius: var(--r-m);
   font-size: 13px;
-  font-weight: 550;
-  color: var(--ink);
-  background: var(--desk);
-  box-shadow: var(--edge);
-  transition: box-shadow 140ms var(--ease);
+  color: var(--ink-2);
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--line-soft);
+  transition:
+    background 140ms var(--ease),
+    box-shadow 140ms var(--ease);
 }
 
 .google:hover {
-  box-shadow: var(--edge), inset 0 0 0 1px var(--line);
-}
-
-.google:focus-visible {
-  box-shadow: var(--edge), inset 0 0 0 1.5px var(--primary-fill);
-  outline: none;
+  background: var(--primary-soft);
+  box-shadow: inset 0 0 0 1px var(--line);
 }
 
 .divider {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 11.5px;
+  font-size: 12px;
   color: var(--ink-3);
 }
 
@@ -247,12 +134,12 @@
   content: "";
   flex: 1;
   height: 1px;
-  background: var(--line);
+  background: var(--line-soft);
 }
 
 .error {
   margin: 0;
-  font-size: 12.5px;
+  font-size: 13px;
   color: var(--alert-ink);
   text-align: center;
   opacity: 1;
@@ -261,41 +148,37 @@
 
   /* Enter-only: this element fully unmounts on the next submit attempt
      (setError(null) fires before the button's own loading-label swap), so
-     there's no jarring exit to mask — attention has already moved to the
-     button by then. Unmounting (rather than hiding) also guarantees screen
-     readers re-announce the alert even on two identical consecutive
-     errors, which an always-mounted element with toggled content would not. */
+     there's no jarring exit to mask. Unmounting (rather than hiding) also
+     guarantees screen readers re-announce the alert even on two identical
+     consecutive errors. */
   @starting-style {
     opacity: 0;
     transform: translateY(-4px);
   }
 }
 
+/* The page's one lime action. */
 .submit {
   margin-top: 4px;
-  padding: 9px 15px;
+  padding: 10px 16px;
   border-radius: var(--r-m);
-  font-size: 13px;
-  font-weight: 600;
-  background: var(--primary-fill);
-  color: var(--on-fill);
-  box-shadow: var(--lift-1);
+  font-size: 14px;
+  font-weight: 510;
+  letter-spacing: -0.011em;
+  background: var(--action);
+  color: var(--on-action);
+  box-shadow: var(--lift-action);
   transition: filter 140ms var(--ease), transform 110ms var(--ease);
 }
 
 .submit:hover {
-  filter: brightness(1.08);
+  filter: brightness(1.06);
 }
 
 .submit:active {
   transform: scale(0.975);
 }
 
-/* DESIGN.md: the focus ring is "2px solid var(--primary) at 2px offset,
-   everywhere, no exceptions." This previously set outline:none and an inset
-   1.5px ring in --primary-fill — on a --primary-fill button, i.e. a focus
-   indicator drawn in its own background colour. border-radius is restated so
-   the ring follows the button's 8px corner rather than globals.css's 5px. */
 .submit:focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
@@ -314,9 +197,8 @@
   transition: opacity 160ms var(--ease), filter 160ms var(--ease);
 
   /* Keyed by state in page.tsx, so this genuinely remounts on every submit/
-     idle swap — @starting-style then fires each time, turning what would
-     otherwise be an instant text-node replacement into a blur+fade
-     crossfade ("blur masks imperfect transitions"). */
+     idle swap — @starting-style then fires each time, turning an instant
+     text-node replacement into a blur+fade crossfade. */
   @starting-style {
     opacity: 0;
     filter: blur(2px);
@@ -326,31 +208,23 @@
 .switch {
   margin: 0;
   text-align: center;
-  font-size: 12.5px;
+  font-size: 13px;
   color: var(--ink-3);
 }
 
 .switchLink {
   color: var(--ink-2);
-  font-weight: 550;
   text-decoration: none;
+  text-underline-offset: 3px;
   transition: color 140ms var(--ease);
 }
 
 .switchLink:hover {
-  color: var(--primary-fill);
+  color: var(--ink);
+  text-decoration: underline;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sweep {
-    animation: none;
-    transform: translate3d(0, 0, 0);
-    opacity: 0.6;
-  }
-
-  /* Movement/position drops; opacity (and the box-shadow/blur transitions
-     elsewhere in this file) stays — those aid comprehension rather than
-     move things around. */
   .content {
     transition: opacity 200ms ease;
 
@@ -367,20 +241,15 @@
     }
   }
 
-  /* The press keeps its feedback and loses only the movement. brightness
-     lands harder than the 1.08 hover so pointer-down stays distinguishable
-     from hover. */
   .submit {
     transition: filter 140ms var(--ease);
   }
 
   .submit:active {
     transform: none;
-    filter: brightness(1.18);
+    filter: brightness(1.14);
   }
 
-  /* The label still cross-fades — that is what this contract asks for — but
-     drops the blur, which is a visual-effect animation rather than a fade. */
   .submitLabel {
     transition: opacity 160ms ease;
 
@@ -390,44 +259,10 @@
   }
 }
 
-@media (prefers-reduced-transparency: reduce) {
-  .sweep {
-    display: none;
-  }
-}
-
 @media (prefers-contrast: more) {
-  .sweep {
-    display: none;
-  }
-  .field {
-    box-shadow: none;
-  }
-  .rail {
-    border-right: 1px solid var(--line);
-  }
-  .card {
+  .card,
+  .input,
+  .google {
     box-shadow: inset 0 0 0 1px var(--ink-3);
-  }
-  .input {
-    box-shadow: inset 0 0 0 1px var(--ink-3);
-  }
-}
-
-@media (max-width: 720px) {
-  .rail {
-    width: 100%;
-  }
-  .field {
-    display: none;
-  }
-  .echo {
-    display: none;
-  }
-  .content {
-    width: 100%;
-  }
-  .card {
-    width: min(320px, calc(100% - 32px));
   }
 }

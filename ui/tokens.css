@@ -1,249 +1,74 @@
 /* ============================================================
-   TOKENS — DESIGN.md, verbatim. See DESIGN.md's 2026-08-18 pivot
-   note: warm-toned neutrals, one blue commitment, one dedicated
-   alert red. Resting cards/panels use --edge (hairline) only —
-   there is no --lift-2 in this system; shadows are reserved for
-   interactive chrome (--lift-1) and the transient drag state
-   (--lift-3).
+   TOKENS — the Linear reference system, dark-only. See DESIGN.md
+   (styles.refero.design/style/90ce5883-bb24-4466-93f7-801cd617b0d1).
+
+   One action color (acid lime, the single primary action per view),
+   one alert color (coral, overcommit and errors), and a neutral ladder
+   for everything else. Resting surfaces separate by hairline (--edge),
+   not by shadow. ui/tokens.contrast.test.ts asserts every literal below
+   and the contrast ratios DESIGN.md depends on.
    ============================================================ */
 :root {
-  /* color-scheme: the board never scrolls the document, so this is invisible
-     there — it only matters on pages that do (landing, login), where its
-     absence in dark mode produces a white scrollbar track and light-styled
-     native form controls. */
-  color-scheme: light;
-  --desk: oklch(0.970 0.003 68);
-  --rail: oklch(0.950 0.004 68);
-  --card: oklch(1 0 0);
-  --card-hi: oklch(0.995 0.001 68);
-  --ink: oklch(0.22 0.004 68);
-  --ink-2: oklch(0.42 0.005 68);
-  --ink-3: oklch(0.505 0.005 68);
-  --line: oklch(0.875 0.005 68);
-  --line-soft: oklch(0.925 0.004 68);
-  --primary: oklch(0.568 0.182 254);
-  --primary-fill: oklch(0.53 0.18 254);
-  --primary-soft: oklch(0.958 0.020 243);
-  --alert: oklch(0.59 0.22 31);
-  --alert-soft: oklch(0.95 0.035 31);
+  color-scheme: dark;
 
-  /* Text-on-tint inks. --primary and --alert are tuned to read as brand and as
-     alarm; measured against their own soft tints at body size in light theme
-     they miss the AA floor that PRODUCT.md sets as non-negotiable:
-       --primary on --primary-soft  4.05:1
-       --alert   on --alert-soft    3.88:1
-       --alert   on --desk          4.21:1
-     These are the same pairings ui/capture/CaptureBar.module.css already ships,
-     so the board inherits the failure too and should adopt these.
+  /* Surfaces: Void → Carbon → Obsidian. --rail matches --desk; the board
+     separates the two with a hairline, not a tone step. */
+  --desk: #08090a;
+  --rail: #08090a;
+  --card: #0f1011;
+  --card-hi: #161718;
 
-     Use --*-ink for TEXT on a tint or on the canvas; keep --primary / --alert
-     for fills, bars, and rules, where the AA text floor does not apply. The
-     split has to be per-theme: light needs a darker ink, dark needs a lighter
-     one, so a single value cannot serve both. */
-  --primary-ink: oklch(0.47 0.17 254); /* 6.06:1 on --primary-soft */
-  --alert-ink: oklch(0.50 0.20 31); /* 5.63:1 on --alert-soft, 6.11:1 on --desk */
-  --on-fill: oklch(1 0 0);
-  --busy: oklch(0.885 0.004 68);
+  /* Ink: Paper → Mist → Fog. --ink-3 is Fog, not Linear's Ash (#62666d):
+     Ash is labelled "muted body text" but measures 3.45:1 on --desk, under
+     PRODUCT.md's non-negotiable 4.5:1. Ash is for non-text only. */
+  --ink: #ffffff;
+  --ink-2: #d0d6e0;
+  --ink-3: #8a8f98;
 
-  --accent-marigold: oklch(0.80 0.16 75);
-  --accent-coral: oklch(0.651 0.213 31);
-  --accent-mocha: oklch(0.60 0.06 45);
-  --accent-sky: oklch(0.78 0.09 240);
+  /* Hairlines: Smoke (higher contrast) and Graphite (default). */
+  --line: #383b3f;
+  --line-soft: #23252a;
+  --busy: #23252a;
 
-  /* --panel-*: full-bleed section mats on the public surfaces. Pinned to
-     OKLCH L 0.80 in light — not chosen by eye, but the lightness at which
-     --ink clears 7:1, leaving headroom over PRODUCT.md's 4.5:1 floor.
-     Chroma differs per hue because the sRGB gamut at L 0.80 does: marigold
-     holds 0.16 there, blue cannot.
+  /* The former blue commitment, now neutral. Lime is reserved for actions
+     (below), so everything --primary used to signal — focus ring, capacity
+     fill, step progress, selection, tinted chips — sits on the Mist/Bone
+     ladder. --primary-soft is Linear's pill/badge ground. */
+  --primary: #d0d6e0;
+  --primary-fill: #e5e5e6;
+  --primary-soft: rgb(255 255 255 / 0.05);
+  --primary-ink: #d0d6e0;
+  --on-fill: #08090a;
 
-     Coral departs from the reference swatch on purpose. #f64932 sits at
-     L 0.65, where black text measures 3.45:1 and white 3.55:1 — both fail
-     body-size AA. The reference survives that by only putting display type
-     on coral; our bands carry body copy, so coral moves up to the panel L
-     and keeps its hue. It reads as a warm salmon.
+  /* Acid lime: exactly one per view, never decoration, never a secondary
+     button. --lift-action is Linear's CTA shadow stack — the only real
+     shadow on a chrome element in the reference. */
+  --action: #e4f222;
+  --on-action: #08090a;
+  --lift-action:
+    0 5px 2px rgb(0 0 0 / 0.01),
+    0 3px 2px rgb(0 0 0 / 0.04),
+    0 1px 1px rgb(0 0 0 / 0.07),
+    0 0 1px rgb(0 0 0 / 0.08);
 
-     TEXT ON A LIGHT PANEL IS --ink AND NOTHING ELSE. --ink-2 measures
-     4.43:1 on marigold and 4.37:1 on coral; --ink-3 fails on all four.
-     Anything needing a secondary tone sits on a --card surface instead.
-     ui/tokens.contrast.test.ts asserts all of this. */
-  --panel-marigold: oklch(0.8 0.16 75);
-  --panel-coral: oklch(0.8 0.1 34);
-  --panel-sky: oklch(0.8 0.09 240);
-  --panel-mocha: oklch(0.8 0.045 55);
-  --panel-midnight: oklch(0.22 0.055 265);
-  --on-midnight: oklch(0.98 0.004 68);
+  /* Coral: the one functional color. Overcommit (cutline, spill, the
+     day's edge) and form errors, nothing else. Never as text on
+     --line-soft/--busy (4.41:1). */
+  --alert: #eb5757;
+  --alert-soft: rgb(235 87 87 / 0.12);
+  --alert-ink: #eb5757;
 
-  /* --pill-*: the same four hues at chip scale. These are IDENTICAL in every
-     theme block, and --on-pill is always the dark ink.
+  --edge: inset 0 0 0 1px #23252a;
+  --lift-1: 0 2px 4px rgb(0 0 0 / 0.4);
+  --lift-3: 0 4px 32px rgb(8 9 10 / 0.6), inset 0 0 0 1px #383b3f;
 
-     That asymmetry with --panel-* is the rule, not an oversight: large fills
-     track the theme because a saturated full-bleed band at night is
-     fatiguing and breaks "quiet at rest"; a chip of one word is punctuation
-     and must read as the same object in both themes. Against dark --desk a
-     pill carries a 10:1 halo, which is the bright-chip-on-dark-ground read. */
-  --pill-marigold: oklch(0.8 0.16 75);
-  --pill-coral: oklch(0.8 0.1 34);
-  --pill-sky: oklch(0.8 0.09 240);
-  --pill-mocha: oklch(0.8 0.045 55);
-  --on-pill: oklch(0.22 0.004 68);
-
-  /* --primary-on-ink: the accent color for an INVERTED surface — currently
-     just ui/board/DeleteUndoContext.module.css's toast, which sets
-     `background: var(--ink)`.
-
-     Both existing blues fail there, because both were tuned against
-     normal-polarity grounds: --primary measures 3.80:1 on the light toast
-     and 2.09:1 on the dark one, and --primary-ink is worse still at 2.53:1.
-     That is the Undo control for a destructive action, so it earns a token
-     rather than a workaround.
-
-     The derivation is the polarity flip and nothing cleverer: an inverted
-     surface takes the OTHER theme's blue. Light's toast is a near-black
-     ground, so it takes dark's --primary (7.58:1). */
-  --primary-on-ink: oklch(0.75 0.16 254);
-
-  /* --sheen: neutral white alpha for the login page's ambient light sweep.
-     Per-theme value, not a fixed white — see the dark blocks below. */
-  --sheen: oklch(1 0 0 / .55);
-
-  --lift-1: 0 1px 2px oklch(0 0 0 / .07);
-  --lift-3: 0 2px 6px oklch(0 0 0 / .10), 0 28px 54px -14px oklch(0 0 0 / .32);
-  --edge: inset 0 0 0 1px oklch(0 0 0 / .08);
-  --groove: inset 9px 0 14px -14px oklch(0 0 0 / .24);
-
+  /* Badges / buttons + inputs / cards / pills. */
   --r-s: 4px;
-  --r-m: 8px;
+  --r-m: 6px;
   --r-l: 12px;
-  /* Pills only, never a general-purpose "rounder" card radius (DESIGN.md
-     §Depth and material). Was already the value every pill used, as a raw
-     9999px literal — this just gives it a name. */
   --r-pill: 9999px;
+
   --z-drag: 60;
   --z-chrome: 40;
   --ease: cubic-bezier(.22, 1, .36, 1);
-}
-
-:root[data-theme="dark"] {
-  color-scheme: dark;
-  --desk: oklch(0.145 0.004 68);
-  --rail: oklch(0.115 0.004 68);
-  --card: oklch(0.205 0.005 68);
-  --card-hi: oklch(0.235 0.005 68);
-  --ink: oklch(0.97 0.004 68);
-  --ink-2: oklch(0.775 0.005 68);
-  --ink-3: oklch(0.665 0.005 68);
-  --line: oklch(0.30 0.006 68);
-  --line-soft: oklch(0.245 0.005 68);
-  --primary: oklch(0.75 0.16 254);
-  --primary-fill: oklch(0.50 0.17 254);
-  --primary-soft: oklch(0.275 0.05 254);
-  --alert: oklch(0.74 0.19 31);
-  --alert-soft: oklch(0.29 0.06 31);
-  --on-fill: oklch(1 0 0);
-  --busy: oklch(0.26 0.005 68);
-
-  /* Dark's --primary / --alert already clear AA against their own tints
-     (6.49:1 and 5.37:1 measured), so the inks track them here rather than
-     diverging. The split exists for light's sake. */
-  --primary-ink: oklch(0.75 0.16 254);
-  --alert-ink: oklch(0.74 0.19 31);
-
-  /* --panel-*: pinned to dark's --desk L (0.145), carrying the hue in chroma
-     alone. A full-bleed L-0.80 marigold band on a dark page is punishing at
-     night and breaks "quiet at rest", so large fills dim with the theme.
-
-     Pinning L to --desk is load-bearing, not cosmetic: dark --card (0.205)
-     on --desk (0.145) measures 1.10:1, and that is the separation every card
-     in the product already relies on with --edge carrying the rest. A panel
-     at desk's L makes card-on-panel measure the same 1.10:1, so the
-     canvas/card hierarchy cannot invert on a panel.
-
-     Chroma is roughly double the light values — the same chroma renders
-     visibly weaker on a dark ground, and the earlier superseded tokens'
-     numbers were simply not visible.
-
-     Unlike light, dark panels DO carry the full ink ladder (--ink-2 at 9.7,
-     --ink-3 at 6.5). The panel text rule is still written for light, so one
-     rule serves both. */
-  --panel-marigold: oklch(0.145 0.042 75);
-  --panel-coral: oklch(0.145 0.045 34);
-  --panel-sky: oklch(0.145 0.04 240);
-  --panel-mocha: oklch(0.145 0.028 55);
-
-  /* Midnight cannot invert in dark — there is nothing to invert against. It
-     becomes a raised slab ABOVE --card instead, separated by --edge, so it
-     reads as a distinct object rather than a hole. */
-  --panel-midnight: oklch(0.25 0.05 265);
-  --on-midnight: oklch(0.98 0.004 68);
-
-  /* Identical to light on purpose — see the light block's --pill-* note. */
-  --pill-marigold: oklch(0.8 0.16 75);
-  --pill-coral: oklch(0.8 0.1 34);
-  --pill-sky: oklch(0.8 0.09 240);
-  --pill-mocha: oklch(0.8 0.045 55);
-  --on-pill: oklch(0.22 0.004 68);
-
-  /* The inverted toast is a near-WHITE ground in dark, so it takes light's
-     blue — the mirror of what the light block does. 6.27:1. */
-  --primary-on-ink: oklch(0.47 0.17 254);
-
-  /* --sheen: neutral white alpha for the login page's ambient light sweep.
-     Dark's value is much lower than light's — the same 0.55 alpha here would
-     blow out over --rail's low lightness. */
-  --sheen: oklch(1 0 0 / .05);
-
-  --lift-1: 0 1px 0 oklch(1 0 0 / .05) inset, 0 1px 2px oklch(0 0 0 / .5);
-  --lift-3: 0 1px 0 oklch(1 0 0 / .09) inset, 0 4px 8px oklch(0 0 0 / .5), 0 32px 62px -16px oklch(0 0 0 / .75);
-  --edge: inset 0 0 0 1px oklch(1 0 0 / .07);
-  --groove: inset 9px 0 14px -14px oklch(0 0 0 / .6);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    color-scheme: dark;
-    --desk: oklch(0.145 0.004 68);
-    --rail: oklch(0.115 0.004 68);
-    --card: oklch(0.205 0.005 68);
-    --card-hi: oklch(0.235 0.005 68);
-    --ink: oklch(0.97 0.004 68);
-    --ink-2: oklch(0.775 0.005 68);
-    --ink-3: oklch(0.665 0.005 68);
-    --line: oklch(0.30 0.006 68);
-    --line-soft: oklch(0.245 0.005 68);
-    --primary: oklch(0.75 0.16 254);
-    --primary-fill: oklch(0.50 0.17 254);
-    --primary-soft: oklch(0.275 0.05 254);
-    --alert: oklch(0.74 0.19 31);
-    --alert-soft: oklch(0.29 0.06 31);
-    --on-fill: oklch(1 0 0);
-    --busy: oklch(0.26 0.005 68);
-
-    /* See the explicit dark block above. */
-    --primary-ink: oklch(0.75 0.16 254);
-    --alert-ink: oklch(0.74 0.19 31);
-
-    /* See the explicit dark block above. */
-    --panel-marigold: oklch(0.145 0.042 75);
-    --panel-coral: oklch(0.145 0.045 34);
-    --panel-sky: oklch(0.145 0.04 240);
-    --panel-mocha: oklch(0.145 0.028 55);
-    --panel-midnight: oklch(0.25 0.05 265);
-    --on-midnight: oklch(0.98 0.004 68);
-    --pill-marigold: oklch(0.8 0.16 75);
-    --pill-coral: oklch(0.8 0.1 34);
-    --pill-sky: oklch(0.8 0.09 240);
-    --pill-mocha: oklch(0.8 0.045 55);
-    --on-pill: oklch(0.22 0.004 68);
-    --primary-on-ink: oklch(0.47 0.17 254);
-
-    /* --sheen: neutral white alpha for the login page's ambient light sweep.
-       Dark's value is much lower than light's — the same 0.55 alpha here
-       would blow out over --rail's low lightness. */
-    --sheen: oklch(1 0 0 / .05);
-
-    --lift-1: 0 1px 0 oklch(1 0 0 / .05) inset, 0 1px 2px oklch(0 0 0 / .5);
-    --lift-3: 0 1px 0 oklch(1 0 0 / .09) inset, 0 4px 8px oklch(0 0 0 / .5), 0 32px 62px -16px oklch(0 0 0 / .75);
-    --edge: inset 0 0 0 1px oklch(1 0 0 / .07);
-    --groove: inset 9px 0 14px -14px oklch(0 0 0 / .6);
-  }
 }

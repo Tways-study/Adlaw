@@ -41,13 +41,14 @@
 
 .laneHead h3 {
   margin: 0;
-  font-size: 12.5px;
-  font-weight: 600;
-  letter-spacing: -0.005em;
+  font-size: 13px;
+  font-weight: 510;
+  letter-spacing: -0.01em;
+  color: var(--ink-2);
 }
 
 .laneHeadMeta {
-  font-size: 11.5px;
+  font-size: 12px;
   color: var(--ink-3);
 }
 
@@ -62,7 +63,8 @@
 .emptyState {
   margin: 0;
   padding: 8px 2px;
-  font-size: 12.5px;
+  font-size: 13px;
+  letter-spacing: -0.01em;
   color: var(--ink-3);
   line-height: 1.5;
 }
@@ -77,21 +79,27 @@
   gap: 8px;
 }
 
+/* The board's one lime action (DESIGN.md: exactly one --action per view).
+   Only rendered while "Start here" is empty, so it never competes with
+   another primary action on screen. */
 .pickBtn {
-  padding: 7px 15px;
-  /* DESIGN.md: "8px buttons" — filled, --lift-1, the same pattern as
-     .cta/.submit/.google. */
+  padding: 10px 16px;
   border-radius: var(--r-m);
-  font-size: 12.5px;
-  font-weight: 600;
-  background: var(--primary-fill);
-  color: var(--on-fill);
-  box-shadow: var(--lift-1);
-  transition: filter 140ms var(--ease);
+  font-size: 14px;
+  font-weight: 510;
+  letter-spacing: -0.011em;
+  background: var(--action);
+  color: var(--on-action);
+  box-shadow: var(--lift-action);
+  transition: filter 140ms var(--ease), transform 110ms ease-out;
 }
 
 .pickBtn:hover {
-  filter: brightness(1.12);
+  filter: brightness(1.06);
+}
+
+.pickBtn:active {
+  transform: scale(0.975);
 }
 
 .pickBtn:disabled {
@@ -115,44 +123,35 @@
 }
 
 .cutlineLabel {
-  font-size: 10.5px;
-  font-weight: 600;
-  /* Text on a tint (--alert-soft) — --alert itself misses the AA floor
-     against its own soft tint in light theme (DESIGN.md: 3.88:1). */
+  font-size: 12px;
+  font-weight: 510;
   color: var(--alert-ink);
   background: var(--alert-soft);
-  padding: 3px 7px;
+  padding: 2px 6px;
   border-radius: var(--r-s);
   flex: none;
   font-variant-numeric: tabular-nums;
 }
 
-/* Cards past the cutline — dimmed, never hidden. Opacity is tuned
-   per-theme by design (CLAUDE.md): dark grounds destroy legibility much
-   faster than light ones at the same opacity, so the two values differ. */
+/* Cards past the cutline — dimmed, never hidden. 0.6 is the dark-ground
+   floor (dark grounds lose legibility faster than light at the same
+   opacity); now that the app is dark-only it is the only value. */
 .past {
-  opacity: 0.45;
+  opacity: 0.6;
   transition: opacity 160ms var(--ease);
 }
 
 .past:hover {
-  opacity: 0.72;
-}
-
-:root[data-theme="dark"] .past {
-  opacity: 0.6;
-}
-
-:root[data-theme="dark"] .past:hover {
   opacity: 0.85;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .past {
-    opacity: 0.6;
+@media (prefers-reduced-motion: reduce) {
+  .pickBtn {
+    transition: filter 140ms var(--ease);
   }
 
-  :root:not([data-theme="light"]) .past:hover {
-    opacity: 0.85;
+  .pickBtn:active {
+    transform: none;
+    filter: brightness(1.14);
   }
 }

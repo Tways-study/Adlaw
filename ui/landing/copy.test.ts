@@ -20,8 +20,38 @@ import {
   DEMO_SENTENCES,
   CAPACITY_OVER,
   CAPACITY_FITS,
+  FOCUS,
+  BOARD_PREVIEW,
+  previewCutIndex,
   type CapacityFixture,
 } from "./copy";
+
+// The hero's board preview sits directly above the capacity slot band, so
+// the two must tell the same story about the same day.
+describe("the board preview agrees with the capacity slot", () => {
+  const { focus, queue } = BOARD_PREVIEW;
+
+  it("focus plus queue sum to the planned minutes", () => {
+    const total = focus.estimateMin + queue.reduce((sum, t) => sum + t.estimateMin, 0);
+    expect(total).toBe(CAPACITY_OVER.plannedMin);
+  });
+
+  it("the focus card shows the same estimate as the focus demo", () => {
+    expect(formatEstimate(focus.estimateMin)).toBe(FOCUS.estimate);
+  });
+
+  it("the cutline falls before the first task past the free minutes", () => {
+    const cut = previewCutIndex(CAPACITY_OVER.freeMin);
+    expect(cut).toBeGreaterThan(0);
+    const before = focus.estimateMin + queue.slice(0, cut).reduce((s, t) => s + t.estimateMin, 0);
+    expect(before).toBeLessThanOrEqual(CAPACITY_OVER.freeMin);
+    expect(before + queue[cut].estimateMin).toBeGreaterThan(CAPACITY_OVER.freeMin);
+  });
+
+  it("everything fits when the free minutes cover the plan", () => {
+    expect(previewCutIndex(CAPACITY_OVER.plannedMin)).toBe(-1);
+  });
+});
 
 describe("demo sentences still parse the way the page claims", () => {
   for (const { raw, claim } of DEMO_SENTENCES) {

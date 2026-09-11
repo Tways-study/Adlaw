@@ -1,18 +1,16 @@
-/* The page's one --primary-fill CTA (DESIGN.md: "Only one --primary-fill
-   call-to-action per screen") — everything else in ui/settings/ is either a
-   segmented control, a radio choice, or a lower-emphasis inline action. */
+/* The page's one lime action (DESIGN.md: exactly one --action per view) —
+   everything else in ui/settings/ is a radio choice, a ghost button, or an
+   inline text action. */
 .exportBtn {
   align-self: flex-start;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--on-fill);
-  background: var(--primary-fill);
-  padding: 9px 16px;
-  /* DESIGN.md: "8px buttons" — this is the page's one --primary-fill CTA
-     (see the file comment above), the identical pattern to .cta/.submit,
-     which already use 8px. */
+  font-size: 14px;
+  font-weight: 510;
+  letter-spacing: -0.011em;
+  color: var(--on-action);
+  background: var(--action);
+  padding: 10px 16px;
   border-radius: var(--r-m);
-  box-shadow: var(--lift-1);
+  box-shadow: var(--lift-action);
   transition: filter 140ms var(--ease);
 }
 

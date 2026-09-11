@@ -116,9 +116,58 @@ export const FOCUS = {
   stepLabel: "step 2 of 4",
   stepsDone: 2,
   stepsTotal: 4,
-  // The one Source Serif 4 usage in the entire product.
+  // The AI's one-line reason on the focus card.
   reason: "Due first, and it is the only thing that fits before work starts.",
 } as const;
+
+// ── The hero's board preview ────────────────────────────────────────────────
+// A still of the real board in its over-capacity state. Minutes are the source
+// of truth — BoardPreview.tsx formats them with formatEstimate. The focus task
+// plus the queue sum to CAPACITY_OVER.plannedMin, and the cutline falls before
+// the first task whose running total passes CAPACITY_OVER.freeMin; copy.test.ts
+// asserts both, so the preview can't disagree with the capacity slot above it.
+
+export interface PreviewTask {
+  readonly courseCode?: string;
+  readonly title: string;
+  readonly estimateMin: number;
+  readonly due?: string;
+}
+
+export const BOARD_PREVIEW: {
+  readonly rail: readonly PreviewTask[];
+  readonly focus: PreviewTask;
+  readonly queue: readonly PreviewTask[];
+  readonly cutLabel: string;
+} = {
+  rail: [
+    { courseCode: "HIST 210", title: "Reading response", estimateMin: 45 },
+    { courseCode: "CS 240", title: "Lab 3 write-up", estimateMin: 60 },
+    { courseCode: "ENGL 205", title: "Write essay", estimateMin: 240 },
+  ],
+  focus: { courseCode: FOCUS.courseCode, title: FOCUS.title, estimateMin: 90, due: FOCUS.due },
+  queue: [
+    { courseCode: "PHIL 101", title: "Essay draft", estimateMin: 90, due: "due Friday" },
+    { courseCode: "CS 240", title: "Problem set 4", estimateMin: 120, due: "due Tuesday" },
+    { courseCode: "BIO 121", title: "Study for exam", estimateMin: 120, due: "due Wednesday" },
+    { courseCode: "HIST 210", title: "Read chapter 4", estimateMin: 125 },
+  ],
+  cutLabel: "9:00 PM — today runs out here",
+};
+
+/**
+ * Index into BOARD_PREVIEW.queue of the first task past the cutline — the same
+ * rule the board uses: the first task whose running total, focus included,
+ * exceeds the free minutes. -1 if everything fits.
+ */
+export function previewCutIndex(freeMin: number): number {
+  let total = BOARD_PREVIEW.focus.estimateMin;
+  for (let i = 0; i < BOARD_PREVIEW.queue.length; i++) {
+    total += BOARD_PREVIEW.queue[i].estimateMin;
+    if (total > freeMin) return i;
+  }
+  return -1;
+}
 
 // ── The 14-day horizon ──────────────────────────────────────────────────────
 

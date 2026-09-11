@@ -39,17 +39,13 @@
    and the transform/opacity-only rule holds. The grid cell still sizes to
    the widest reading plus its inline padding.
 
-   Outlined, not filled — border only, no background — matching the "Lazy"
-   reference's Inline Tag component: on the achromatic marketing surfaces
-   there's no hue left to differentiate the four readings with (all four
-   used to wear a different band-accent pill; see landing.module.css's band
-   comment for why that pairing is gone), so all four now share one neutral
-   treatment and the reading itself is the only thing that changes. */
+   Linear's Pill: a white-5% ground, Mist text, no border, no hue. All four
+   readings share it, so the reading itself is the only thing that changes. */
 .word::after {
+  background: var(--primary-soft);
   color: var(--ink-2);
-  border: 1px solid var(--line);
   border-radius: var(--r-pill);
-  padding: 0.1em 0.3em;
+  padding: 0.04em 0.3em;
 }
 
 .word:nth-child(1) {

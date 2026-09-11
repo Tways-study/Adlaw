@@ -100,8 +100,7 @@ export function TodaysShape() {
   const [calendarPromptDismissed, setCalendarPromptDismissed] = useState(true);
   useEffect(() => {
     // One-shot sync from localStorage (an external system, read once on
-    // mount) — not a cascading-render risk, same pattern as
-    // ui/theme/ThemeToggle.tsx's stored-theme read.
+    // mount) — not a cascading-render risk.
     const dismissed = readCalendarPromptDismissed();
     // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!dismissed) setCalendarPromptDismissed(false);
