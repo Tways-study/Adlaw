@@ -1124,6 +1124,12 @@ Replace the `.heroMark` rule in `ui/landing/landing.module.css`:
 }
 ```
 
+- [ ] **Step 3b: Bump the ambient mark's size in `app/page.tsx`**
+
+The hero currently renders `<DayMark ambient size={420} className={styles.heroMark} />`. Change `size={420}` to `size={560}`.
+
+It was 420 because the mark was pinned to the hero's top-right and anything larger got cropped by the viewport edge. Centred behind the stack there is no edge to crop against, and 420 now reads as small and off-balance behind a 78px headline. The size and the centring are one visual change, which is why they belong in one commit.
+
 - [ ] **Step 4: Check `DayMark.module.css` does not fight the new positioning**
 
 Run: `cat ui/graphics/DayMark.module.css`
