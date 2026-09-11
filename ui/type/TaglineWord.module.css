@@ -15,6 +15,9 @@
 .rotator {
   display: inline-grid;
   vertical-align: baseline;
+  /* The pill paints outside a 1.02 line box. Nothing in the hero clips today,
+     but state the requirement here rather than relying on that staying true. */
+  overflow: visible;
 }
 
 .word {
@@ -25,6 +28,24 @@
   transform: translateY(6px);
   animation: taglineWord 18s var(--ease) infinite;
   animation-delay: calc(var(--i) * 4.5s);
+}
+
+/* Each reading wears its own tag, on its own ::after box — four boxes, not
+   one that resizes. A background on .word or .rotator would be sized to
+   the widest reading ("closes out.") and would hang off "fits."
+
+   The ::after is an inline box, so its block padding paints outside the line
+   box without contributing to layout: the tag is drawn, nothing reflows,
+   and the transform/opacity-only rule holds. The grid cell still sizes to
+   the widest reading plus its inline padding.
+
+   Linear's Pill: a white-5% ground, Mist text, no border, no hue. All four
+   readings share it, so the reading itself is the only thing that changes. */
+.word::after {
+  background: var(--primary-soft);
+  color: var(--ink-2);
+  border-radius: var(--r-pill);
+  padding: 0.04em 0.3em;
 }
 
 .word:nth-child(1) {

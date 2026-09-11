@@ -6,9 +6,7 @@ import { useRouter } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/firebase/client";
 import { signInWithEmail, signInWithGoogle, syncSessionCookie } from "@/firebase/auth";
-import { ThemeToggle } from "@/ui/theme/ThemeToggle";
 import { DayMark } from "@/ui/graphics/DayMark";
-import { TaglineWord } from "@/ui/type/TaglineWord";
 import styles from "./login.module.css";
 
 const ERROR_ID = "login-error";
@@ -81,18 +79,9 @@ export default function LoginPage() {
 
   return (
     <main className={styles.screen}>
-      <div className={styles.rail} aria-hidden="true" />
-      <div className={styles.field} aria-hidden="true" />
-      <div className={styles.sweep} aria-hidden="true" />
-      <p className={styles.echo}>
-        <span className={styles.echoLine}>
-          A day that <TaglineWord />
-        </span>
-        <span className={styles.echoSub}>One sentence in, a finite day out.</span>
-      </p>
       <div className={styles.content}>
         <Link href="/" className={styles.wordmark}>
-          <DayMark size={26} />
+          <DayMark size={20} />
           Adlaw
         </Link>
         <form className={styles.card} onSubmit={handleSubmit}>
@@ -145,9 +134,6 @@ export default function LoginPage() {
             </Link>
           </p>
         </form>
-      </div>
-      <div className={styles.toggle}>
-        <ThemeToggle />
       </div>
     </main>
   );

@@ -1,6 +1,6 @@
 .empty {
   margin: 0;
-  font-size: 12.5px;
+  font-size: 13px;
   color: var(--ink-3);
 }
 
@@ -26,9 +26,9 @@
 .codeBtn {
   padding: 6px 8px;
   margin: -6px -8px;
-  /* DESIGN.md: "8px buttons" — has a hover background, a real button box. */
+  /* DESIGN.md: "6px buttons" — has a hover background, a real button box. */
   border-radius: var(--r-m);
-  font-size: 13.5px;
+  font-size: 14px;
   color: var(--ink);
   text-align: left;
 }
@@ -48,7 +48,7 @@
   box-shadow: var(--edge);
   border-radius: var(--r-s);
   padding: 5px 8px;
-  font-size: 13.5px;
+  font-size: 14px;
   color: var(--ink);
   flex: 1;
   max-width: 220px;
@@ -79,7 +79,7 @@
   box-shadow: var(--edge);
   border-radius: var(--r-s);
   padding: 7px 9px;
-  font-size: 13.5px;
+  font-size: 14px;
   color: var(--ink);
 }
 
@@ -97,8 +97,8 @@
    emphasis inline action, matching ui/schedule/WeekGrid.module.css's
    ghost-style "+ Add" button. */
 .addBtn {
-  font-size: 12.5px;
-  font-weight: 500;
+  font-size: 13px;
+  font-weight: 510;
   color: var(--primary-ink);
   background: var(--primary-soft);
   padding: 7px 14px;

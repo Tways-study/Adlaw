@@ -44,36 +44,30 @@ Plain, specific, unsentimental. The interface says `2h 10m over` and
 
 ## Colour intent
 
-**Near-monochrome, one commitment.** Warm-toned neutrals carry the interface
-(2026-08-18: adapted from Notion's system — see `DESIGN.md`), with one
-saturated brand colour and one dedicated alert:
+**A neutral ladder, one action colour, one alert.** Near-black surfaces carry
+the interface (2026-09-11: strictly following the Linear reference, dark-only —
+see `DESIGN.md`):
 
-- **Blue** — committed, planned, complete, selected.
-- **Red** — past the edge of the day. Nothing else, ever.
+- **Acid lime** — the single primary action per view. Never decoration.
+- **Coral** — past the edge of the day, and form errors. Nothing else, ever.
 
-A wider reserved accent cast exists in the token set for possible future
-decorative use, but is never wired into UI chrome or a functional signal —
-the interface itself still reads as a two-colour system in practice. There is
-still **no per-course colour system**. Courses are text labels. A rainbow of
-course tags is the obvious move and it is wrong here: it fails colour-blind
-users, it competes with the only two signals that carry meaning, and it turns
-a calm board into a chart.
-
-Light and dark are independently tuned, not inverted. Dimming that reads correctly
-on white destroys legibility on a dark ground, which is why `.past` opacity differs
-per theme by design.
+Everything else — focus, selection, capacity fill, planned time — is neutral.
+There is still **no per-course colour system**. Courses are text labels. A
+rainbow of course tags is the obvious move and it is wrong here: it fails
+colour-blind users, it competes with the only two signals that carry meaning,
+and it turns a calm board into a chart.
 
 ## Typography intent
 
-Two families: **Inter** for UI, and **Source Serif 4** reserved for exactly
-one moment — the AI's one-line reason on the focus card, the interface's one
-piece of written, human-register voice. It is a system accent, not a parallel
-hierarchy; it never appears in a button, a label, or a data value.
+One family, **Inter**, at Linear's 400 / 510 / 590 weights — no serif anywhere,
+including the AI's one-line reason on the focus card. A mono face appears only
+where the reference puts one: course codes and keyboard hints, the "issue ID"
+slot.
 
 Hierarchy comes from weight, size, and leading as a set. Tracking is size-specific:
-tighten as size grows, near zero at body. Every duration, count, and clock time is
-tabular so columns don't shimmer as they update — this app shows changing numbers
-constantly, and jitter reads as carelessness.
+tight at display sizes, near zero at small labels. Every duration, count, and
+clock time is tabular so columns don't shimmer as they update — this app shows
+changing numbers constantly, and jitter reads as carelessness.
 
 ## Motion intent
 
@@ -100,8 +94,9 @@ Cards are not one rectangle repeated. Shape encodes role:
 
 Not a compliance pass afterward — these shape the visual system:
 
-- Body text ≥ 4.5:1 in **both** themes, asserted in tests. The muted-grey-for-elegance
-  reflex is the single most common way this system breaks.
+- Body text ≥ 4.5:1 on every surface, asserted in tests. The muted-grey-for-elegance
+  reflex is the single most common way this system breaks — it's why muted text
+  is Linear's Fog, not its Ash.
 - Course identity never carried by hue. This is why courses are text labels.
 - Every drag has a keyboard equivalent; the primary loop is fully operable without
   a pointer.
@@ -114,7 +109,7 @@ Skeuomorphic props (paper texture, tape, coffee stains, pins, rotation jitter) �
 colored side-stripe borders on cards · shadows on resting content cards · gradient
 text · decorative glassmorphism · hero-metric tiles · uppercase tracked eyebrows
 above every section · per-course colour tags · gamification surfaces of any kind ·
-nested cards · display/serif fonts outside the focus card's reason line.
+nested cards · serif fonts anywhere · weights above 590 · a light theme.
 
 An earlier draft of this interface was rejected for the first three. `DESIGN.md`
 carries the full ban list and the reasoning.

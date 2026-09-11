@@ -4,9 +4,11 @@
   height: 100dvh;
 }
 
+/* Rail and day share the Void canvas; a Graphite hairline is the seam.
+   Linear separates surfaces with borders, not shadows. */
 .day {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  box-shadow: var(--groove);
+  border-left: 1px solid var(--line-soft);
 }

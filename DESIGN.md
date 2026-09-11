@@ -3,198 +3,165 @@
 The visual system. Strategy lives in `PRODUCT.md`; this file is how it looks
 and moves.
 
-**2026-08-18 pivot:** the palette below is deliberately adapted from Notion's
-live design system (profiled at
-`styles.refero.design/style/2bf4c61f-de10-4614-ba1b-20c0453bd2a9`), replacing
-the prior chroma-0 / exactly-two-color system. This is a considered decision,
-not drift — see `PRODUCT.md`'s Anti-references for the boundary that still
-holds (the palette is borrowed; the "generic container" information
-architecture Notion actually ships is still the thing this product exists to
-avoid). Light-theme values are adapted from the source with mechanical
-sRGB→OKLCH conversion; dark-theme values are an original derivation — the
-source only specifies a light palette — built by applying this system's own
-previously-verified light→dark deltas (per-token ΔL/ΔC, hue held constant) to
-the new hue family, then spot-checked for the same AA floor the old palette
-held.
+**2026-09-11: the Linear reference.** The system strictly follows Linear's
+design language, profiled at
+`styles.refero.design/style/90ce5883-bb24-4466-93f7-801cd617b0d1` ("midnight
+precision instrument"). It is dark-only. It supersedes both the 2026-08-18
+Notion-palette pivot and the short-lived same-day "Lazy" pass, which is in
+git history at `da68a23`. Where following the reference literally would break
+a rule that outranks it, the rule wins, and each such place is named below:
+muted text uses Fog rather than Ash (the AA floor), and overcommit stays red
+via Linear's own coral.
 
 ## Theme
 
-**An object, not a document.** Surfaces have mass, edges catch light, and things
-respond under the hand. Physicality comes from material, depth, and motion —
-never from props. No paper textures, tape, stains, rotation jitter, or
-skeuomorphic ornament of any kind. **"Paper Warmth" below is a flat canvas
-color, not a paper texture** — the no-skeuomorphism rule is unaffected by the
-palette pivot; a warm hex value is not a prop.
+**A precision instrument at midnight.** Darkness is the substrate, not a
+theme. Near-black surfaces step up in tone (Void → Carbon → Obsidian), edges
+are hairlines, and geometry does the work that shadows usually would. There
+is no decorative ornament and no skeuomorphic prop of any kind (no paper,
+tape, stains or rotation jitter). Depth comes from surface steps, hairlines
+and motion.
 
-Calm at rest, expressive only under interaction. Reference sensibility: Things 3
-and Apple — generous space, soft depth, opinionated about what you don't see.
+Calm at rest, expressive only under interaction.
 
-Light and dark are both first-class. Neither is an inversion of the other.
+**Dark-only** (`PRODUCT.md`, 2026-09-11 amendment). There is no light theme,
+no theme toggle and no `data-theme` attribute. `:root` declares
+`color-scheme: dark`.
 
 ## Color
 
-**Strategy: near-monochrome, one commitment.** Warm-toned neutrals carry the
-interface, with exactly one saturated brand color (blue) as "the single
-chromatic commitment," plus one dedicated alert red used for exactly one
-thing:
+**Strategy: a neutral ladder, one action color, and one alert color.**
 
-- **Primary (blue)** — committed, planned, complete, selected, focused.
-- **Alert (red)** — past the edge of the day. Nothing else.
+- **Acid lime `--action`** is the single primary action per view: the landing
+  hero's "Get started", login/signup's submit, the board's "Pick something to
+  start", and settings' Export. It is never decoration, never a secondary
+  button, and never data.
+- **Coral `--alert`** marks the day's edge being crossed (the cutline, spill,
+  the capacity overage and the day's endline) and form errors. Nothing else.
+- **Everything else is neutral.** The focus ring, the capacity fill, step
+  progress, selection, tinted chips and planned time all sit on the Mist/Bone
+  ladder. What used to be "the blue commitment" is gone.
 
-A reserved accent cast exists in the token set (below) for possible future
-decorative use — empty-state illustration, feature moments — and is **not**
-used in UI chrome, buttons, or any functional signal in v1. The interface
-itself stays a two-color system in practice, even though the token palette is
-now wider than that.
-
-There is still no per-course color system. Courses are text labels. This rule
-is accessibility-motivated (color-blind-safe distinction across many courses
-isn't achievable with color alone), not aesthetic purism, and holds regardless
-of how many colors the palette makes available.
+There is no per-course color system. Courses are text labels, now set in the
+mono face. This rule is accessibility-motivated: color-blind-safe distinction
+across many courses isn't achievable with color alone.
 
 ### Tokens
 
-Color is OKLCH. Neutrals now carry a small warm chroma (not `0`) — this is the
-one deliberate exception to the prior "chroma-0 neutrals" rule, adopted
-because "Paper Warmth" is the signature of the palette being ported in.
+Hex, not OKLCH: the values are the reference's literals, and
+`ui/tokens.contrast.test.ts` asserts each one.
 
-```css
-:root{                                      /* light */
-  --desk:oklch(0.970 0.003 68);             /* "Paper Warmth" — the ground */
-  --rail:oklch(0.950 0.004 68);             /* second neutral layer: sidebar */
-  --card:oklch(1 0 0);                      /* Pure White — cards only, never the page bg */
-  --card-hi:oklch(0.995 0.001 68);          /* hover */
-  --ink:oklch(0.22 0.004 68);
-  --ink-2:oklch(0.42 0.005 68);             /* secondary */
-  --ink-3:oklch(0.505 0.005 68);            /* meta — the AA floor, do not lighten */
-  --line:oklch(0.875 0.005 68);
-  --line-soft:oklch(0.925 0.004 68);
-  --primary:oklch(0.568 0.182 254);         /* Notion Blue #0075de — text + indicators */
-  --primary-fill:oklch(0.53 0.18 254);      /* filled surfaces, white text */
-  --primary-soft:oklch(0.958 0.020 243);    /* Sky Tint #e6f3fe — ghost buttons */
-  --alert:oklch(0.59 0.22 31);              /* Vermillion #e32d14 */
-  --alert-soft:oklch(0.95 0.035 31);
-  --on-fill:oklch(1 0 0);
-  --busy:oklch(0.885 0.004 68);             /* committed time blocks */
-
-  /* Reserved accent cast — decorative use only, never UI chrome or a functional signal */
-  --accent-marigold:oklch(0.80 0.16 75);    /* #ffb110 */
-  --accent-coral:oklch(0.651 0.213 31);     /* #f64932 */
-  --accent-mocha:oklch(0.60 0.06 45);       /* #b18164 */
-  --accent-sky:oklch(0.78 0.09 240);        /* #62aef0 */
-}
-:root[data-theme="dark"]{
-  --desk:oklch(0.145 0.004 68); --rail:oklch(0.115 0.004 68);
-  --card:oklch(0.205 0.005 68); --card-hi:oklch(0.235 0.005 68);
-  --ink:oklch(0.97 0.004 68); --ink-2:oklch(0.775 0.005 68); --ink-3:oklch(0.665 0.005 68);
-  --line:oklch(0.30 0.006 68); --line-soft:oklch(0.245 0.005 68);
-  --primary:oklch(0.75 0.16 254); --primary-fill:oklch(0.50 0.17 254);
-  --primary-soft:oklch(0.275 0.05 254);
-  --alert:oklch(0.74 0.19 31); --alert-soft:oklch(0.29 0.06 31);
-  --on-fill:oklch(1 0 0); --busy:oklch(0.26 0.005 68);
-}
-```
-
-Dark tokens are duplicated under `@media (prefers-color-scheme:dark)` guarded by
-`:root:not([data-theme="light"])`, so the explicit toggle wins in both directions.
+| Token | Value | Linear name: role |
+|---|---|---|
+| `--desk` | `#08090a` | Void: page canvas, the day column |
+| `--rail` | `#08090a` | Void: sidebar, separated from the day by a hairline, not a tone step |
+| `--card` | `#0f1011` | Carbon: cards, screenshot frames, nav |
+| `--card-hi` | `#161718` | Obsidian: hover, elevated panels, the toast |
+| `--ink` | `#ffffff` | Paper: headings, titles |
+| `--ink-2` | `#d0d6e0` | Mist: body, secondary headings, button text |
+| `--ink-3` | `#8a8f98` | Fog: muted text, placeholders |
+| `--line` | `#383b3f` | Smoke: higher-contrast hairlines, empty step segments |
+| `--line-soft` | `#23252a` | Graphite: default hairline, dividers, ghost outlines |
+| `--busy` | `#23252a` | Graphite: committed time |
+| `--primary` | `#d0d6e0` | Mist: focus ring, indicators |
+| `--primary-fill` | `#e5e5e6` | Bone: neutral high-emphasis fills (capacity bar, steps, day-mark arc) |
+| `--primary-soft` | `rgb(255 255 255 / 0.05)` | Linear's pill/badge ground |
+| `--primary-ink` | `#d0d6e0` | Mist: text on `--primary-soft` |
+| `--on-fill` | `#08090a` | text on Bone |
+| `--action` / `--on-action` | `#e4f222` / `#08090a` | Acid Lime and its text (16.15:1) |
+| `--alert` / `--alert-ink` | `#eb5757` | Coral Red: fills and rules / text |
+| `--alert-soft` | `rgb(235 87 87 / 0.12)` | the coral wash |
 
 ### Rules
 
-- `--primary` is for text and indicators; `--primary-fill` is for filled surfaces
-  and always carries white text. They are separate tokens because a fill bright
-  enough to read as brand in dark mode cannot hold white text.
-- **`--primary-ink` / `--alert-ink` are for text on a tint or on the canvas.**
-  Measured in light theme, the obvious pairings miss the AA floor that
-  `PRODUCT.md` sets as non-negotiable: `--primary` on `--primary-soft` is
-  **4.05:1**, `--alert` on `--alert-soft` is **3.88:1**, and `--alert` on
-  `--desk` is **4.21:1** — all below 4.5:1 for body-size text. The `-ink`
-  variants are darker in light (6.06:1 and 5.63:1) and simply track `--primary`
-  / `--alert` in dark, where those already clear the floor. Keep `--primary` and
-  `--alert` for fills, bars, and rules, where the text floor doesn't apply.
-  *This was found while building the landing surface;
-  `ui/capture/CaptureBar.module.css` still ships the failing pairing, so the
-  board should adopt `--primary-ink` for its chips.*
-- `--ink-3` is at the 4.5:1 floor in both themes — the same floor the prior
-  palette held; adding warm chroma at this low a level doesn't move OKLCH `L`
-  enough to matter, but **verify with a real contrast checker before shipping,
-  not by inspection.** Lightening it for elegance is the single most common way
-  this system breaks.
-- Dimming (`.past`, opacity) must be gentler in dark than in light — `0.45` light,
-  `0.6` dark. Dark grounds destroy legibility far faster.
-- Only one `--primary-fill` call-to-action per screen. A second one competes
-  with the first and both lose their weight.
-- Don't invert the canvas/card hierarchy — `--desk` (warm, dim) stays under
-  `--card` (white, brighter). A white page with warm cards reads as a mistake,
-  not a variation.
-- The reserved accent tokens are not wired into any component in v1. Using one
-  in UI chrome is the palette equivalent of the per-course-color failure mode:
-  it reads as decoration competing with the two signals that actually mean
-  something.
+- **`--ink-3` is Fog, not Ash.** Linear labels Ash (`#62666d`) "muted body
+  text", but it measures **3.45:1** on Void and **3.30:1** on Carbon, under
+  `PRODUCT.md`'s non-negotiable 4.5:1. Fog measures 6.13 / 5.86 / 5.52:1 on
+  Void / Carbon / Obsidian. Ash is for non-text only. The contrast test
+  asserts Ash's failure from the failing side, so switching to it has to be
+  deliberate.
+- **Coral text never sits on Graphite** (`--busy`, `--line-soft`): 4.41:1. On
+  Void, Carbon, Obsidian and the coral wash it clears AA.
+- **One `--action` per view.** A second lime element competes with the first
+  and both lose their meaning. Repeatable actions such as "Break into steps"
+  on a card are ghost buttons.
+- Planned and committed time are told apart by **treatment, never hue**.
+  Committed is solid Graphite; planned is the pill ground with a Smoke ring
+  and white text.
+- Surface order holds: `--desk` ≤ `--card` < `--card-hi`. The page is never
+  brighter than the cards on it.
+- Dimming (`.past`) is `0.6`, the dark-ground floor. It is raised to `0.85`
+  on hover.
+- **One gradient exists:** the landing hero's floor. Nowhere else, never on a
+  button, card or text.
 
 ## Typography
 
-Two families. **Inter** (400/500/600/700) as the primary UI face — an open,
-self-hostable stand-in for the source system's proprietary font, not a
-compromise; it was already this doc's fallback. **Source Serif 4** as a
-secondary accent, used in exactly one place: the AI's one-line reason on the
-focus card (the interface's one moment of written, human-register voice, per
-`05-design-brief.md`'s "Voice" section). It is a system accent, not a parallel
-hierarchy — never buttons, labels, or data.
+**Inter Variable** at weights **400 / 510 / 590** with
+`font-feature-settings: "cv01", "ss03", "zero"` set on `body`: the alternate
+glyphs and slashed zero are Linear's typographic identity. Inter is loaded
+without a `weight` array so 510 and 590 exist on the variable axis.
 
-Fixed rem/px scale, not fluid — users view at consistent DPI and a clamped heading
-that shrinks in a column looks worse, not better.
+**JetBrains Mono** 400, as `--font-mono`, is Linear's documented substitute
+for its licensed Berkeley Mono. It is used only in the reference's "issue ID"
+slot: course codes and keyboard hints. Never headings, prose or durations.
+
+**No serif, anywhere.** Nothing heavier than **590**. Sizes are integers.
 
 | Role | Size | Weight | Tracking |
 |---|---|---|---|
-| Day title | 20px | 600 | −0.02em |
-| Focus card title | 17px | 550 | −0.018em |
-| Focus card reason (serif accent) | 14px | 400 | 0 |
-| Card title | 13.5px | 500 | −0.006em |
-| Body / UI | 14px | 400 | 0 |
-| Lane heading | 12.5px | 600 | −0.005em |
-| Meta, labels | 11.5px | 400–600 | 0 to +0.02em |
+| Day title | 20px | 590 | −0.012em |
+| Focus card title | 17px | 510 | −0.01em |
+| Card title | 14px | 510 | −0.01em |
+| Body / UI, AI reason line | 14px | 400 | −0.01em |
+| Lane heading | 13px | 510 | −0.01em |
+| Meta, labels | 12px | 400 | 0 |
+| Course code (mono) | 12px | 400 | −0.013em |
 
-Tracking is size-specific: tighten as size grows, near zero at body, slightly
-positive on small caps-ish labels. Never one letter-spacing value across the scale.
+The tracking ladder follows the reference:
 
-All durations, counts, clock times, and dates use `font-variant-numeric:
-tabular-nums` so columns of numbers don't shimmer as they update.
+| Size | Tracking |
+|---|---|
+| ≥48px | −0.022em (non-negotiable at display sizes) |
+| 20–32px | −0.012em |
+| 15px | −0.011em |
+| 13–16px | −0.010em |
+| ≤12px | 0 |
+
+All durations, counts, clock times and dates use `font-variant-numeric:
+tabular-nums`, so columns of numbers don't shimmer as they update.
 
 ## Spacing
 
-Base unit `4px`, comfortable density. Card padding `24px`, element gap `8px`.
-(The source system's marketing-page values — `1440px` max-width, `80px`
-section gaps — don't apply here; this is an app board, not a landing page,
-and those are not adopted.)
+Base unit `4px`, compact density, and the reference's 8 / 12 / 24 / 96
+ladder: an element gap of `8px`, card padding of `12–16px` on the board and
+`24px` on screenshot frames and auth cards, and a `96px` section rhythm on
+the landing page.
 
 ## Depth and material
 
-Elevation now separates *resting* surfaces from *interactive/transient* ones,
-per the adopted system's "no shadows on content cards" rule:
+Elevation comes from surface steps and hairlines, not shadow stacks.
 
-- **Resting cards and panels use `--edge` only** (a hairline border, below) —
-  no shadow. This replaces the prior `--lift-2` role.
-- `--lift-1` — pressed/inline chrome (buttons, segmented control). Still a
-  shadow — this is interactive chrome, not a resting card, matching the
-  source system's own treatment of its nav and product-UI chrome.
-- `--lift-3` — lifted while dragging. Only ever transient, and still a real
-  shadow — a card mid-drag is not "resting," and losing that cue would make
-  drag read as static.
-- `--edge` — a 1px inset hairline. In dark it becomes a **top highlight**
-  (`inset 0 1px 0 oklch(1 0 0/.06)`), which is the light-catching edge that makes
-  the surface read as machined rather than flat.
-- `--groove` — an inset shadow where the rail meets the day. A seam, not a border.
+- **`--edge`**: `inset 0 0 0 1px #23252a`, Linear's `shadow-subtle`. Every
+  resting card and panel uses it, with no shadow.
+- **`--lift-1`**: `0 2px 4px rgb(0 0 0 / .4)`, Linear's `shadow-sm`. Only for
+  interactive chrome.
+- **`--lift-3`**: Linear's `shadow-xl` plus a Smoke hairline. Used while
+  dragging and for the toast; only ever transient.
+- **`--lift-action`**: the lime CTA's inset shadow stack, the one real shadow
+  the reference puts on a chrome element.
+- The rail/day seam is a **1px `--line-soft` border**. There is no `--groove`.
 
-The capture bar is a translucent layer with content running underneath it, not an
-opaque strip that eats a fixed band of screen.
+The capture bar is a translucent layer with content running underneath it,
+not an opaque strip.
 
-Radii: `4px` small, `8px` buttons and small cards, `12px` cards and panels
-(including the focus card — no larger). `9999px` is reserved for pills only,
-never a general-purpose "rounder" card radius.
+Radii: `4px` for badges, `6px` for buttons and inputs, `12px` for cards and
+the focus card (no larger), and `9999px` for pills only.
 
 ## Motion
 
-Springs for anything the user touches; short eased transitions for everything else.
+Springs for anything the user touches; short eased transitions for everything
+else.
 
 | Interaction | Parameters |
 |---|---|
@@ -203,328 +170,245 @@ Springs for anything the user touches; short eased transitions for everything el
 | Hover, color, chrome | 120–200ms, `cubic-bezier(.22,1,.36,1)` |
 | Button press | `scale(0.975)`, 110ms, on pointer-**down** |
 
-These are unchanged by the palette pivot — they're interaction physics, not
-color. The adopted source system (a marketing site) only specifies generic
-"200ms ease" hover transitions, which this table's 120–200ms range already
-covers; it says nothing about drag/spring physics, so that craft stays as
-previously tuned.
+These are interaction physics, not color, so they are unchanged by the
+reference swap.
 
 Rules that are not negotiable:
 
 - Feedback fires on pointer-down, never on release.
-- Drag tracks 1:1 and respects the grab offset. Never snap to the card's center.
-- Animate from the current on-screen value, never the target. Every animation is
-  interruptible.
+- Drag tracks 1:1 and respects the grab offset. It never snaps to the card's
+  center.
+- Animate from the current on-screen value, never the target. Every animation
+  is interruptible.
 - Only `transform` and `opacity`. No animated layout properties.
 - No orchestrated page-load sequence. The board loads into a task.
 - `prefers-reduced-motion: reduce` replaces springs with instant settles and
   cross-fades. Content is never gated behind a reveal transition.
 
-**Implementation note (2026-09-04):** the card-settle and capacity-meter rows
-above are now real springs, built with Framer Motion rather than hand-rolled —
-a deliberate, one-time exception to `CLAUDE.md`'s "hand-written CSS… no
-component library" and to this doc's own `animation-timeline: view()` landing
-entrances being "no JS, no library, consistent with a repo that hand-rolls all
-motion." The exception is narrow on purpose: it covers only the two rows a
-plain CSS transition provably cannot satisfy — carrying release velocity into
-the animation, and staying interruptible mid-flight (grabbing a settling card
-must redirect it, not wait for it to finish). Every other row in this table —
-hover/color/chrome, button press — is still plain CSS, and the landing
-surface's entrances, sweep, and tagline rotator are untouched. `ui/drag/
-springs.ts` is the one place the two spring configs are defined; nothing
-imports Framer Motion outside `ui/drag/useDraggableCard.ts` and
-`ui/board/BoardHeader.tsx`. Writing this down so a later reader finds a
-decision, not drift — the same failure mode that produced the stale
-`--lift-2` and prototype-color confusions this doc already warns about.
+**Implementation note (2026-09-04):** the card-settle and capacity-meter
+springs are real Framer Motion springs. This is a narrow, deliberate exception
+covering only the two rows plain CSS provably can't satisfy: carrying release
+velocity, and staying interruptible mid-flight. `ui/drag/springs.ts` defines
+both. Nothing imports Framer Motion outside `ui/drag/useDraggableCard.ts` and
+`ui/board/BoardHeader.tsx`.
 
-## Landing surface (addendum, 2026-08-22)
+## Landing surface
 
-**Scope: `/` and `/login` only. Inside the board every rule above holds
-unchanged.** These two surfaces have an audience the rest of this document was
-never written for — a first-time reader on an unknown device, including a phone.
-Where a rule's stated justification doesn't reach that reader, it is relaxed
+**Scope: `/`.** A public page has an audience the rest of this document was
+never written for: a first-time reader on an unknown device, including a
+phone. Where a rule's justification doesn't reach that reader, it is relaxed
 here and nowhere else.
+
+### Layout
+
+The reference's marketing grammar, top to bottom:
+
+1. **Nav**: the logo (day-mark glyph plus "Adlaw" at 16/510, white) on the
+   left. On the right, a "Sign in" nav text link and a white "Sign up" pill.
+   The nav is not sticky.
+2. **Hero**: left-aligned. The audience line (Fog), the D1 headline with the
+   rotating tagline word, then a row with the lead (Fog) on the left and the
+   one lime action on the right.
+3. **Product frame on the gradient floor**: a Carbon screenshot frame (12px,
+   `--edge`, 24px padding, no outer shadow). Inside it, the live capture demo
+   runs the real parser, above `ui/landing/demos/BoardPreview.tsx`, a still of
+   the board in its over-capacity state.
+4. **Four failure bands**: text on the left, evidence on the right, the same
+   way round every time, separated by `--line-soft` hairlines at the 96px
+   rhythm. There are no panels.
+5. **How it works**: one row per sentence (sentence and parsed badges on the
+   left, the resulting card on the right). Never a 3-column card grid.
+6. **Showcase band**: the timeline at full width.
+7. **Footer**: a hairline, the close line at 24/400, and "Sign in" as nav
+   text.
+
+**Imagery is product UI only**: the reference is product-screenshot-first.
+Every miniature is a static reproduction built from
+`ui/landing/demos/demos.module.css` and the fixtures in `copy.ts`. The
+fixtures' arithmetic is asserted in `copy.test.ts`: the board preview's queue
+sums to the capacity slot's planned minutes, and its cutline falls where the
+board's rule puts it. A miniature that depicts unbuilt work carries the
+`NOT_SHIPPED` line.
 
 ### Display type
 
-Not a second scale — three more rungs on the existing ladder, seeded at the 20px
-day title at a constant 1.4 ratio: 20 → 28 → 40 → 56.
-
 | Role | Size | Weight | Tracking | Line height |
 |---|---|---|---|---|
-| Display 1 — hero | 56px | 600 | −0.024em | 1.02 |
-| Display 2 — section | 40px | 600 | −0.023em | 1.10 |
-| Display 3 — band heading | 28px | 600 | −0.021em | 1.22 |
-| Lead prose | 17px | 400 | −0.011em | 1.55 |
+| Display 1: hero | 40 → 72px | 510 | −0.022em | 1.0 |
+| Display 2: section | 32 → 48px | 510 | −0.022em | 1.0 |
+| Display 3: band heading | 24 → 32px | 400 | −0.022em | 1.13 |
+| Lead prose | 16px | 400 | −0.01em | 1.5 |
 
-**Tracking flattens; it does not keep tightening.** The instinct is to
-extrapolate the app curve (−0.006em at 13.5px → −0.02em at 20px) out to −0.04em
-at 56px. That is wrong for Inter, whose dynamic-metrics curve asymptotes near
-−0.022em — 20px/−0.02em is already essentially there. Display sizes converge to
-−0.021…−0.024em and never go past it. This is the single most likely thing to
-get wrong later, and it looks like a squashed logotype.
+### `clamp()`: a documented exception
 
-Weight is **600, never 700**: 700 at 56px is shouty and contradicts "quiet at
-rest". No new body size — landing prose reuses the existing 17px rung at weight
-400.
-
-### `clamp()` — a documented exception
-
-§Typography says the scale is fixed rem/px, not fluid, because "users view at
-consistent DPI". That justification is a claim about one student on one laptop
-looking at a board. It does not reach a public page, where a fixed 56px headline
-at 375px produces roughly six characters per line and horizontal overflow — a
-worse outcome than anything the fixed-scale rule was written to prevent. The
-rule is not overturned; its premise simply doesn't extend here.
-
-**Permitted for the three display sizes, on the landing surface, and nowhere
-else.** Not the lead, not body, not any app text, not spacing.
+The fixed-scale rule's premise ("users view at consistent DPI") doesn't reach
+a public page, where a fixed 72px headline at 375px overflows. `clamp()` is
+therefore **permitted for the three display sizes, on the landing surface,
+and nowhere else**:
 
 ```
-D1  clamp(2.125rem, 1.5rem  + 2.67vw, 3.5rem)     34 → 56px
-D2  clamp(1.625rem, 1.23rem + 1.70vw, 2.5rem)     26 → 40px
-D3  clamp(1.375rem, 1.20rem + 0.73vw, 1.75rem)    22 → 28px
+D1  clamp(2.5rem, 1.75rem + 3.2vw, 4.5rem)    40 → 72px
+D2  clamp(2rem,   1.62rem + 1.6vw, 3rem)      32 → 48px
+D3  clamp(1.5rem, 1.31rem + 0.8vw, 2rem)      24 → 32px
 ```
 
-**Every fixed term is in `rem`, never `px` — this is load-bearing.** A pure-`vw`
-clamp violates WCAG 2.2 SC 1.4.4 (Resize Text): the text stops responding to the
-reader's browser font-size setting. The rem intercept is what preserves scaling,
-and it is why these numbers look arbitrary. Do not "simplify" them.
-
-These live as custom properties scoped to the landing root in
-`ui/landing/landing.module.css`, not as global tokens — the system has no type
-tokens at all, and growing a global scale for one surface would break that
-convention for no gain.
+**Every fixed term is in `rem`, never `px`, and this is load-bearing.** A
+pure-`vw` clamp violates WCAG 2.2 SC 1.4.4 (Resize Text). These values are
+custom properties scoped to `.landing`, not global tokens.
 
 ### Motion allowance
 
-Still binding, unchanged: `transform` and `opacity` only, no animated layout
-properties, hover/chrome at 120–200ms `cubic-bezier(.22,1,.36,1)`, press
-feedback at `scale(0.975)` / 110ms on pointer-**down**, focus ring untouched.
+Still binding: `transform` and `opacity` only, no animated layout properties,
+the hover and press parameters above, and the focus ring untouched. Three
+kinds are permitted here:
 
-Newly permitted, exactly two kinds:
+**(a) One ambient layer per screen.** On `/` this is the **hero gradient
+floor**, the system's only gradient: Void at 10% to Mist at 100%, per the
+reference, at 0.16 opacity. It is feathered at both sides, and its bright end
+sits behind the product frame. It is static, non-interactive and
+`pointer-events: none`, and it is hidden under `prefers-contrast: more`.
 
-**(a) One ambient background treatment per screen.** Period ≥ 20s, neutral
-only — no hue shift, no chromatic token. Non-interactive, `aria-hidden`,
-`pointer-events: none`, maximum one element. `/login`'s sweep is the shipped
-reference: opacity 0.35 → 0.80 → 0.35 (a 0.45 delta) over 40s, tuned and
-contrast-verified — any real content sitting near an ambient layer needs its
-own stacking order above it (`z-index: 1`, matching `.content`), so its
-contrast against the canvas can't fluctuate as the animation runs.
-The "every animation is interruptible" rule targets gesture-driven motion and
-does not apply to a non-interactive ambient layer. `/login`'s light sweep is the
-one instance; it uses `--sheen`.
+**(b) One scroll-triggered entrance per section**: ≤ 8px of translate via
+native `animation-timeline: view()`, **`transform` only, never `opacity`**. An
+opacity-gated reveal ships blank sections to screenshots, prints, headless
+renderers and background tabs; that bug shipped once. The resting state is the
+final visible state, and the `@supports` guard lands unsupporting browsers on
+it.
 
-**(b) One scroll-triggered entrance per section.** ≤ 200ms, ≤ 8px translate, via
-native CSS `animation-timeline: view()` — no JS, no library, consistent with a
-repo that hand-rolls all motion.
+**(c) One rotating word, in the hero tagline only.** The final word of "A day
+that ___" cycles through four readings. Mechanics are under Components.
 
-**The entrance must animate `transform` only — never `opacity`.** This is the
-hard part and it was got wrong first. An opacity-gated reveal leaves every
-below-the-fold section at `opacity: 0` until scrolled into view, so a full-page
-screenshot, a print, a headless renderer, or a background tab captures a blank
-page. That is exactly what §Motion's "content is never gated behind a reveal
-transition" forbids. Author the resting state as the final visible state, let
-the keyframes supply only the from-state, use `animation-duration: auto`, and
-wrap the whole thing in `@supports (animation-timeline: view())`. Unsupporting
-browsers then land on the end state immediately: the failure mode is "no
-animation", never "invisible content".
-
-Banned on this surface: parallax · scroll pinning or hijacking · animated
-counters · typewriter effects · staggered list cascades · more than one ambient
-layer per screen · any animation of `background-position`, `width`, `height`,
-`top`, or `left`.
-
-**(c) One rotating word, in the tagline only.** Added 2026-08-23. The final
-word of "A day that ___" cycles through four readings of how a day resolves — in the
-landing hero's `<h1>` and in `/login` and `/signup`'s echo line. Strictly
-scoped: one instance per screen, one word, `transform` and `opacity` only,
-≥ 4s per word (an 18s cycle), and the readings are stacked in a single CSS
-grid cell so the container is sized by the widest and *nothing* animates
-layout — the `width`/`height` ban is not bent.
-
-This is **not** the banned typewriter effect, which reveals per character
-with a cursor and draws the eye letter by letter; this is a whole-word
-crossfade at a period slower than most ambient loops. It is nonetheless a
-third motion kind on this surface, so it is written down rather than left to
-look like drift. Under `prefers-reduced-motion: reduce` the cycle stops and
-the canonical first word holds — the same "render at mid-state and hold"
-treatment ambient layers get. The rotator is `aria-hidden`; a visually
-hidden static copy of the full sentence carries the accessible name, so
-assistive tech reads one stable tagline and never a word churning on a
-timer.
-
-`prefers-reduced-motion: reduce` gets a genuine alternative, not a removal:
-ambient treatments render at their mid-state and hold, permanently still;
-entrances resolve instantly to their end state. Nothing disappears, nothing is
-dimmer, nothing is missing.
+Banned here: parallax, scroll pinning or hijacking, animated counters,
+typewriter effects, staggered list cascades, more than one ambient layer per
+screen, and any animation of `background-position`, `width`, `height`, `top`
+or `left`.
 
 ### Spacing
 
-§Spacing rejects the source system's marketing values because "this is an app
-board, not a landing page". That reason has now expired for exactly one surface.
-Adopt, for the landing only: content max-width **1080px** (not 1440 — too wide
-for 17px prose in this register), section rhythm **96px** desktop / **64px**
-below 720px, prose measure **34em**. All multiples of the 4px base.
+Content max-width **1200px** (the reference's). The section rhythm is
+**96px**, dropping to **64px** below 720px, and the prose measure is
+**36em**. **Never `width: 100vw`**: it includes the scrollbar and produces
+horizontal overflow.
 
-**Never `width: 100vw`** — it includes the scrollbar width and produces
-horizontal overflow. Full-bleed bands set a background on the section element
-itself and let the shell hold the content.
+### Auth screens (`/login`, `/signup`)
 
-### The ban list still applies in full
-
-Nothing in §Bans is relaxed here. In particular: at most **one**
-`--primary-fill` call-to-action on the whole document (a scrolling page is
-arguable, so don't argue it), no gradient text, no decorative glassmorphism, no
-hero-metric tiles, no uppercase tracked eyebrows, no grain or texture, no
-identical card grids, no radii above 12px, and the Source Serif 4 accent stays
-on the focus card's reason line alone.
+Linear's minimal auth: one centered column on Void. It holds the wordmark and
+a Carbon form card (12px, `--edge`, 24px padding) with the title at 24/400,
+the Google ghost button, a divider, Linear's text inputs, the lime submit, and
+the switch link as nav text. There is no ambient layer and no tagline. The one
+motion is the `@starting-style` entrance.
 
 ## Components
 
-**Card.** The base unit. Cards differ by lane rather than repeating one rectangle:
+**Buttons: Linear's four kinds.**
 
-- *Focus card* (Start here) — larger padding, `12px` radius, 17px title, the parent
-  breakdown bar, and actions. Exactly one exists. Its one-line reason is the
-  interface's sole use of the Source Serif 4 accent.
-- *Queue card* (Then) — compact. Course label, title, duration, due hint.
-- *Done card* — no shadow, no background, hairline separator, struck through at
-  `--ink-3`. Deliberately minimal presence.
+- *Primary action (lime)*: `--action` background, `--on-action` text, 6px
+  radius, 10px 16px padding, 14/510, −0.011em, `--lift-action`. One per view.
+- *Ghost/outline*: transparent, a 1px `--line-soft` ring, `--ink-2` text, 6px
+  radius, 8px 12px padding, 13/400. Hover adds `--primary-soft` and a Smoke
+  ring. Used for Google sign-in and "Break into steps".
+- *Nav text*: no border and no fill, `--ink-2` text, 13/400, underline on
+  hover.
+- *Sign-up pill*: white background, Void text, 9999px radius, 8px 16px
+  padding, 13/510. Used on the landing nav only.
 
-**Cutline.** A hairline in `--alert` with a soft-background label naming the real
-boundary (`4:00 — work starts`). Cards below it dim. It moves as the queue changes.
+**Text input.** A white-2% ground, a white-8% inset border, `--ink-2` text,
+6px radius, 12px 14px padding, 14px. The border brightens to Mist on focus
+and turns coral on `aria-invalid`.
 
-**Capacity slot.** A recessed track with an inset shadow, a `--primary-fill`
-segment, an `--alert` overflow segment past the notch, and a notch marking 100%.
-Reads as a machined slot, not a progress bar.
+**Badge.** `--primary-soft` ground, `--ink-3` text, 4px radius, 0 6px
+padding, 12/400. Used for parsed-field previews and inline metadata. The coral
+variant is the cutline label.
 
-**Timeline (Today's shape).** Time gutter plus two tracks: committed and planned.
-Solid line for now, dashed alert line for the day's edge. Blocks crossing the edge
-render in alert.
+**Pill.** `--primary-soft` ground, `--ink-2` text, 9999px radius. Used for
+the rotating tagline word.
 
-**Segmented control, capture bar, shelf item** — standard affordances, standard
-behavior. Product UI earns trust through familiarity, not invention.
+**Card.** Cards differ by lane rather than repeating one rectangle:
 
-**The rotating tagline** (`ui/type/TaglineWord.tsx`) — the final word of
-*A day that ___* cycles through **fits · adds up · balances · closes out**,
-in the landing hero's `<h1>` and in `/login` and `/signup`'s echo line. The
-four readings are a set, not a thesaurus dump — "fits" is the product's
-capacity thesis, and the other three describe a day the same way a ledger
-describes a set of entries (things that sum, settle, and get closed out at
-day's end), so the rotation says something rather than just moving. On
-the auth screens it replaced the ambient day-mark on 2026-08-23 (see the
-day-mark entry below for why that came out).
+- *Focus card* (Start here): 12px radius, 17px title, the AI's one-line
+  reason in Inter 14/400 Mist, the parent breakdown bar, and actions. Exactly
+  one exists.
+- *Queue card* (Then): compact. Mono course code, title, duration, due hint.
+- *Done card*: no background, a hairline separator, struck through at
+  `--ink-3`.
 
-Mechanics, and why they satisfy §Motion rather than bend it: the four
-readings are stacked in a **single CSS grid cell**, so the container is sized
-by the widest and the line never reflows — the animation is `opacity` and
-`translateY(6px)` only, and the `width`/`height` ban stays intact. 18s cycle,
-4.5s per reading, ~0.5s crossfade where each word's fade-out window is
-exactly the next one's fade-in, so there is no blank beat. No JavaScript: it
-is keyframes plus a `--i` index per slot, so it renders inside the landing
-page's server component unchanged.
+**Cutline.** A coral hairline at 50% with a coral badge naming the real
+boundary (`4:00 — work starts`). Cards below it dim. It moves as the queue
+changes.
 
-**The readings live in the stylesheet as `::after` content, not as DOM
-text** — this is load-bearing, and the landing hero is why. Text inside the
-rotator would make the page's `<h1>` read *"A day that fits. fits. adds up.
-balances. closes out."* to a crawler, contradicting the `metadata.title` set
-a few lines above it in `app/page.tsx`. Generated content is not DOM text, so
-the heading's only real text is the canonical sentence in the visually hidden
-span beside it — which does triple duty as the accessible name, the
-indexable heading text, and what a selection copies. Verified three ways:
-`h1.textContent` is `"A day that fits."`, the server-rendered HTML ships the
-rotator slots empty, and the real accessibility tree (read via CDP, not
-inferred) contains only that one heading string. Under
-`prefers-reduced-motion: reduce` the cycle stops and "fits." holds.
+**Capacity slot.** A recessed track (Graphite, with an inset shadow), a Bone
+fill up to the notch, a coral overflow segment past it, and a notch marking
+100%. It reads as a machined slot, not a progress bar.
 
-**The day-mark** (`ui/graphics/DayMark.tsx`) — the one graphic in the product,
-and the reason it's allowed: it isn't illustration, it's the capacity slot's own
-shape read a different way. A hairline ring stands for the day; one solid arc in
-`--primary-fill` is what's committed; one short notch in `--alert` marks where
-that commitment ends — the same relationship as the slot's fill/spill/notch, and
-the timeline's dashed edge line, just wrapped into a circle instead of a bar. No
-clock face, no numerals, no percentage label anywhere near it — a mark, not a
-stat, so it can never be misread as one. Two scales, one motif:
+**Timeline (Today's shape).** A time gutter plus two tracks. Committed is
+solid Graphite; planned is the pill ground with a Smoke ring. Spill is the
+coral wash with a coral ring and its own "past today's edge" text, so spill is
+never color-only. The now-line is a solid white line; the day's edge is a
+dashed coral line.
 
-- *Mark* (~20–26px) — paired with the "Adlaw" wordmark wherever it appears.
-  `stroke-width: 1.6`, real pixels via `vector-effect="non-scaling-stroke"`
-  (SVG stroke-width is otherwise in viewBox units and inflates or vanishes with
-  the rendered size — get this wrong and the two scales come out backwards).
-  No motion — a logo mark shouldn't animate every render.
-- *Ambient* (~420px) — sits large and quiet behind the landing hero's empty
-  side, `z-index: -1` so it never competes with the headline or the capture
-  demo. Thinner and fainter than the mark scale (`stroke-width: 1`, arc at
-  `opacity: 0.4`) — texture for the section, not a second thing to read.
-  Hidden under `prefers-contrast: more`, same reasoning as the login sweep: a
-  diffuse hairline is what that mode can't rely on rendering. This scale
-  carries the hero's one orchestrated moment: the mark fades and scales in
-  once on load (`scale(0.92) → 1`, 900ms, `ease-out-expo`-family curve), then
-  the whole dial turns as a single rigid body — track, arc, and notch
-  together, orientation only — at 140s per rotation, slow enough to be
-  imperceptible moment-to-moment. The fill fraction between the three shapes
-  never changes, only where the assembly points; a filling arc would read as
-  a live stat loading, which is exactly what the fixed-fraction rule above
-  exists to prevent. Both stop under `prefers-reduced-motion: reduce`.
+**The rotating tagline** (`ui/type/TaglineWord.tsx`). It appears in the
+landing hero's `<h1>` only. The four readings (**fits · adds up · balances ·
+closes out**) are a set: "fits" is the capacity thesis, and the other three
+describe a day the way a ledger describes entries.
 
-**The ambient scale is the landing hero's alone.** It was briefly also placed
-in `/login` and `/signup`'s field plane on 2026-08-23 and removed the same
-day: at that size the ring had to be cropped by the screen edge to fit
-beside the sign-in card, and a cropped circle reads as off-centre rather
-than as deliberate framing. The auth screens keep the light sweep as their
-single ambient layer, and the field plane's presence now comes from the
-rotating tagline instead (§Components → rotating tagline). The one-ambient
-cap holds everywhere, with no exceptions.
+- They are stacked in a **single CSS grid cell**, so nothing reflows.
+- The animation is `opacity` plus `translateY(6px)`: an 18s cycle, 4.5s per
+  reading, with a ~0.5s crossfade.
+- **The readings live in the stylesheet as `::after` content, not DOM
+  text.** DOM text would make the `<h1>` index as all four readings at once.
+  The heading's real text is the visually hidden canonical sentence, which
+  serves as the accessible name, the indexable text and what a selection
+  copies.
+- Each reading wears Linear's Pill.
+- Reduced motion holds "fits."
 
-The *mark* scale (~26px, beside the wordmark) does appear on all three
-public surfaces — that is unaffected by the above.
+**The day-mark** (`ui/graphics/DayMark.tsx`) is the capacity slot's shape
+wrapped into a circle:
 
-Public surfaces only (`/`, `/login`, `/signup`) — there's no wordmark inside
-the board to attach it to, and it isn't proposed for one.
+- a Smoke hairline ring for the day;
+- a Bone arc for what's committed;
+- a Mist notch where that commitment ends.
 
-**Third scale: the favicon** (`app/icon.tsx`, 32px; `app/apple-icon.tsx`, 180px,
-the iOS home-screen icon). Same geometry, but these routes can't reach
-`ui/tokens.css` — `next/og`'s `ImageResponse` renders server-side via Satori,
-independent of the app's CSS, and Satori's color parser doesn't reliably
-handle `oklch()` — so the three colors are the light-theme values converted to
-sRGB hex once and hardcoded in each file (`--line` `#d8d5d2`, `--primary-fill`
-`#0069d0`, `--alert` `#e22a12`). `app/icon.tsx` stays transparent, since a
-favicon sits on the browser's own tab-strip color; `app/apple-icon.tsx` is
-opaque `--card` white, since a transparent apple-touch-icon renders as solid
-black under Apple's HIG, and it isn't pre-rounded — iOS applies its own corner
-mask. `app/favicon.ico` (Next's stock placeholder) stays in place as a legacy
-fallback; browsers prefer the generated PNG.
+The notch is not coral: it's a boundary marker, not an overage. The fill
+fraction is a fixed 0.58 and never wired to data (a mark, not a stat). It
+exists at **wordmark scale only**, next to "Adlaw" on public surfaces, with no
+motion. The large ambient ring behind the hero was removed on 2026-09-11,
+because the reference allows almost no ornament.
 
-Both routes are dot-less URLs (`/icon`, `/apple-icon`), so `proxy.ts`'s
-catch-all matcher doesn't exclude them the way it excludes `/favicon.ico` —
-they have to be listed in `isPublicRoute` explicitly, or a signed-out request
-for either 307s to `/login` instead of returning image bytes, and the favicon
-silently breaks on the one page that most needs it working.
+**Favicon** (`app/icon.tsx`, 32px; `app/apple-icon.tsx`, 180px). Same
+geometry, rendered via Satori, which can't read the CSS tokens, so the hex
+values are copied in each file. The favicon is an opaque Void rounded tile,
+because a light glyph on a transparent background vanishes on a light tab
+strip. The apple icon is opaque Void and not pre-rounded, since iOS applies
+its own mask. Both are dot-less routes, so they're listed in `proxy.ts`'s
+`isPublicRoute`.
 
-Every interactive component needs default, hover, focus-visible, active, disabled,
-and where relevant loading and error. Focus ring is `2px solid var(--primary)` at
-`2px` offset, everywhere, no exceptions.
+Every interactive component needs default, hover, focus-visible, active and
+disabled states, plus loading and error where relevant. The focus ring is
+`2px solid var(--primary)` (Mist) at a `2px` offset, everywhere, with no
+exceptions.
 
 ## Bans
 
 Rewrite the element if you are about to ship any of these:
 
-- Colored side-stripe borders (`border-left` > 1px as an accent). This was in the
-  first draft and it is the clearest tell.
-- Shadows on resting content cards — hairline (`--edge`) only. Shadows are
-  reserved for interactive chrome (`--lift-1`) and the transient drag state
-  (`--lift-3`).
-- Inverting the canvas/card hierarchy — the page (`--desk`) is never brighter
-  than the cards on it.
-- More than one `--primary-fill` call-to-action per screen.
-- Skeuomorphic props: tape, stains, torn edges, pins, rotation jitter. (A warm
-  flat canvas color is not this — texture and grain still are.)
-- Gradient text, glassmorphism as decoration, hero-metric tiles.
-- Tiny uppercase tracked eyebrows above every section.
-- A per-course rainbow of tag colors, or any use of the reserved accent cast
-  as a functional/UI-chrome signal.
+- Colored side-stripe borders (`border-left` > 1px as an accent).
+- Shadows on resting content cards. Use a hairline (`--edge`) only.
+- Inverting the surface order: the page is never brighter than its cards.
+- More than one `--action` (lime) element per view, or lime on anything that
+  isn't a primary action.
+- Any chromatic color outside `--action` and `--alert`. That includes a
+  per-course rainbow of tags, and it includes Linear's own decorative accents
+  (Pulse Green, Signal Teal, Iris Violet, Lavender), which are not adopted.
+- Coral text on Graphite, and coral for anything but overcommit and errors.
+- Font weights above 590. Any serif face. Mono outside course codes and
+  keyboard hints.
+- Gradients anywhere but the landing hero's floor, including gradient text.
+- Radii above `12px` on cards and panels; `9999px` is for pills only.
+- Skeuomorphic props: tape, stains, torn edges, pins, rotation jitter,
+  texture, grain.
+- Glassmorphism as decoration, hero-metric tiles, tiny uppercase tracked
+  eyebrows above every section, and 3-column or identical card grids.
 - Gamification surfaces: XP bars, level badges, streak flames, confetti.
-- Nested cards.
-- The Source Serif 4 accent anywhere but the focus card's reason line —
-  never a button, label, or data value. Display/serif faces stay out of UI
-  labels, buttons, and data generally.
-- Radii above `12px` on cards/panels; `9999px` is for pills only.
+- Nested cards. A screenshot frame is a picture of the product, not a UI card.
+- A light theme, a theme toggle, or `data-theme` selectors.

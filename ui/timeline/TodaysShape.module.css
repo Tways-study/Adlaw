@@ -21,12 +21,12 @@
 
 .head h4 {
   margin: 0;
-  font-size: 12.5px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 590;
 }
 
 .head span {
-  font-size: 11.5px;
+  font-size: 12px;
   color: var(--ink-3);
 }
 
@@ -45,13 +45,13 @@
 .emptyPanel {
   margin: 0;
   padding: 8px 2px;
-  font-size: 12.5px;
+  font-size: 13px;
   line-height: 1.5;
 }
 
 .emptyLink {
   color: var(--primary-ink);
-  font-weight: 600;
+  font-weight: 590;
 }
 
 .emptyLink:hover {
@@ -75,13 +75,13 @@
 }
 
 .calloutText {
-  font-size: 11.5px;
+  font-size: 12px;
   color: var(--ink-2);
 }
 
 .calloutLink {
   color: var(--primary-ink);
-  font-weight: 600;
+  font-weight: 590;
 }
 
 .calloutLink:hover {
@@ -91,10 +91,10 @@
 .calloutDismiss {
   flex: none;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 590;
   color: var(--ink-3);
   padding: 3px 6px;
-  /* DESIGN.md: "8px buttons" — a clickable dismiss action. This is the
+  /* DESIGN.md: "6px buttons" — a clickable dismiss action. This is the
      smallest element touched in this pass (~18px tall); verify by eye that
      8px doesn't read as pill-shaped here before treating this as settled. */
   border-radius: var(--r-m);
@@ -131,7 +131,7 @@
 
 .col {
   position: relative;
-  border-radius: 5px;
+  border-radius: var(--r-s);
   background-image: linear-gradient(var(--line-soft) 1px, transparent 1px);
   background-repeat: repeat;
   background-position: 0 0;
@@ -141,10 +141,9 @@
   position: absolute;
   top: -15px;
   left: 1px;
-  font-size: 9.5px;
-  font-weight: 600;
+  font-size: 10px;
+  font-weight: 510;
   color: var(--ink-3);
-  letter-spacing: 0.02em;
 }
 
 .blkFixed,
@@ -154,34 +153,37 @@
   left: 0;
   right: 2px;
   min-height: 18px;
-  border-radius: 5px;
+  border-radius: var(--r-s);
   padding: 3px 7px;
   overflow: hidden;
-  font-size: 10.5px;
+  font-size: 11px;
   line-height: 1.25;
 }
 
+/* Committed: a solid Graphite block. */
 .blkFixed {
   background: var(--busy);
   color: var(--ink-2);
 }
 
-/* Full-ring inset outlines (never a side-stripe — DESIGN.md's clearest
-   banned tell is border-left/right as an accent) distinguish planned from
-   spilled-past-the-edge by shape as well as color, on top of the spill
-   block's own " · past today's edge" text — spill is never color-only. */
+/* Planned vs. committed is carried by treatment, never hue — lime is
+   reserved for actions (DESIGN.md), so planned time is Linear's pill
+   ground with a Smoke ring and full-white text, against committed's solid
+   Graphite. Full-ring inset outlines, never a side-stripe (DESIGN.md's
+   clearest banned tell). Spill adds coral on top of its own
+   " · past today's edge" text — spill is never color-only. */
 .blkPlan {
   background: var(--primary-soft);
-  color: var(--primary-ink);
-  box-shadow: inset 0 0 0 1px oklch(0.568 0.182 254 / 0.22);
-  font-weight: 550;
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--line);
+  font-weight: 510;
 }
 
 .blkSpill {
   background: var(--alert-soft);
   color: var(--alert-ink);
-  box-shadow: inset 0 0 0 1px oklch(0.59 0.22 31 / 0.28);
-  font-weight: 550;
+  box-shadow: inset 0 0 0 1px oklch(from var(--alert) l c h / 0.4);
+  font-weight: 510;
 }
 
 .blkTitle {
@@ -193,7 +195,7 @@
 
 .blkTime {
   display: block;
-  font-size: 9.5px;
+  font-size: 10px;
   opacity: 0.8;
   font-weight: 400;
   white-space: nowrap;

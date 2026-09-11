@@ -9,8 +9,14 @@ product
 One person: a student, using their own laptop. No accounts, no sharing, no
 onboarding for strangers. They open it in two contexts that both matter — late at
 night in a dim room deciding what still has to happen, and in daylight between
-classes on a washed-out screen. Both themes are first-class; neither is an
-inverted afterthought.
+classes on a washed-out screen.
+
+**2026-09-11 amendment — dark-only.** The design direction moved to the Linear
+reference (`DESIGN.md`), which defines a single dark theme, and the author
+chose to follow it strictly: there is no light theme and no theme toggle. The
+daylight context above still matters, and it is served by contrast rather than
+by a second theme — every text pairing clears WCAG AA with margin, asserted in
+`ui/tokens.contrast.test.ts`, so a washed-out screen still reads.
 
 The job to be done, in their words: *"tell me what to start, and stop me from
 planning a day that was never possible."*
@@ -39,22 +45,21 @@ Success is narrow and behavioral: it is still open in week six.
 
 Calm, physical, honest.
 
-It behaves like a well-made object rather than a document — surfaces have depth,
-weight, and edges that catch light; things respond on press, track the pointer
-1:1, and carry momentum when released. The tone is a good tool's tone: it states
-what is true (*"this day is 1h45 over"*) without scolding, celebrating, or
-gamifying. No streaks, no confetti, no XP.
+It behaves like a well-made instrument rather than a document — surfaces have
+depth and precise edges; things respond on press, track the pointer 1:1, and
+carry momentum when released. The tone is a good tool's tone: it states what is
+true (*"this day is 1h45 over"*) without scolding, celebrating, or gamifying. No
+streaks, no confetti, no XP.
 
 It is quiet at rest and expressive only under the hand.
 
 ## Anti-references
 
-The palette (`DESIGN.md`, 2026-08-18) is now a deliberate adaptation of
-Notion's own visual system — a considered pivot, not an oversight. That makes
-this list narrower than it once was: it bans specific *props and patterns*,
-not warmth or a particular hue family. "Notion/Trello as-is," below, is still
-in force for a different reason — the generic-container information
-architecture, not the color of the surface.
+The visual language (`DESIGN.md`, 2026-09-11) strictly follows Linear's
+design system — a considered choice, not an oversight. That makes this list
+about specific *props and patterns*, not about resembling a productivity tool.
+"Notion/Trello as-is," below, is still in force for a different reason — the
+generic-container information architecture, not the look of the surface.
 
 - **Cozy stationery skeuomorphism.** Coffee rings, washi tape, torn paper,
   rotation jitter, parchment textures. Props are not craft. Physicality must come
@@ -84,8 +89,8 @@ architecture, not the color of the surface.
 
 ## Accessibility & Inclusion
 
-- WCAG 2.2 AA as the floor: body text ≥ 4.5:1, large text ≥ 3:1, in both themes.
-  Verified, not assumed.
+- WCAG 2.2 AA as the floor: body text ≥ 4.5:1, large text ≥ 3:1, in the dark
+  theme (the only theme). Verified, not assumed — `ui/tokens.contrast.test.ts`.
 - Course identity is never carried by hue alone — always paired with a text
   label, since color-blind-safe distinction across many courses is not achievable
   with color alone.

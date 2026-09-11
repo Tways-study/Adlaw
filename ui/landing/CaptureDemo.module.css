@@ -1,23 +1,25 @@
 .demo {
   width: 100%;
-  max-width: 560px;
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
+/* Linear's Text Input: white-2% ground, white-8% border, brightening to
+   Mist on focus. */
 .inner {
   display: flex;
   align-items: center;
   gap: 10px;
-  background: var(--card);
-  border-radius: 11px;
-  padding: 12px 16px;
-  box-shadow: var(--edge);
+  background: rgb(255 255 255 / 0.02);
+  border-radius: var(--r-m);
+  padding: 12px 14px;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.08);
+  transition: box-shadow 140ms var(--ease);
 }
 
 .inner:focus-within {
-  box-shadow: inset 0 0 0 1.5px var(--primary-fill);
+  box-shadow: inset 0 0 0 1px var(--ink-2);
 }
 
 .inner input {
@@ -25,19 +27,20 @@
   min-width: 0;
   border: 0;
   background: none;
-  color: var(--ink);
+  color: var(--ink-2);
   font-size: 14px;
+  letter-spacing: -0.01em;
   outline: none;
 }
 
 .inner input::placeholder {
-  /* --ink-3 is the AA floor; placeholder text is held to the same 4.5:1 as
-     body text, not dropped to a lighter grey. */
+  /* --ink-3 (Fog) is the AA floor; placeholder text is held to the same
+     4.5:1 as body text. */
   color: var(--ink-3);
 }
 
 /* Reserved height: the chip row appears and disappears as the field is typed
-   into, and reflowing the hero underneath it would be worse than the gap. */
+   into, and reflowing the frame underneath it would be worse than the gap. */
 .parsed {
   display: flex;
   gap: 6px;
@@ -47,28 +50,27 @@
   margin-left: 2px;
 }
 
-/* DESIGN.md's "Pill Tag: 9999px, used for status labels" convention — a
-   small, tinted status label is exactly what these are. */
+/* Linear's Badge: inline metadata, not an action. */
+.chip,
+.chipQuiet {
+  font-size: 12px;
+  line-height: 20px;
+  padding: 0 6px;
+  border-radius: var(--r-s);
+  font-weight: 400;
+  color: var(--ink-3);
+}
+
 .chip {
-  font-size: 11px;
-  padding: 3px 8px;
-  border-radius: var(--r-pill);
   background: var(--primary-soft);
-  color: var(--primary-ink);
-  font-weight: 600;
 }
 
 .chipQuiet {
-  font-size: 11px;
-  padding: 3px 8px;
-  border-radius: var(--r-pill);
-  background: var(--line-soft);
-  color: var(--ink-3);
-  font-weight: 600;
+  box-shadow: inset 0 0 0 1px var(--line-soft);
 }
 
 .empty {
-  font-size: 11.5px;
+  font-size: 12px;
   color: var(--ink-3);
 }
 

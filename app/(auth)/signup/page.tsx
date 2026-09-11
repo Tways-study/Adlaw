@@ -4,9 +4,7 @@ import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signInWithGoogle, signUpWithEmail } from "@/firebase/auth";
-import { ThemeToggle } from "@/ui/theme/ThemeToggle";
 import { DayMark } from "@/ui/graphics/DayMark";
-import { TaglineWord } from "@/ui/type/TaglineWord";
 import styles from "./signup.module.css";
 
 const ERROR_ID = "signup-error";
@@ -61,18 +59,9 @@ export default function SignupPage() {
 
   return (
     <main className={styles.screen}>
-      <div className={styles.rail} aria-hidden="true" />
-      <div className={styles.field} aria-hidden="true" />
-      <div className={styles.sweep} aria-hidden="true" />
-      <p className={styles.echo}>
-        <span className={styles.echoLine}>
-          A day that <TaglineWord />
-        </span>
-        <span className={styles.echoSub}>One sentence in, a finite day out.</span>
-      </p>
       <div className={styles.content}>
         <Link href="/" className={styles.wordmark}>
-          <DayMark size={26} />
+          <DayMark size={20} />
           Adlaw
         </Link>
         <form className={styles.card} onSubmit={handleSubmit}>
@@ -127,9 +116,6 @@ export default function SignupPage() {
             </Link>
           </p>
         </form>
-      </div>
-      <div className={styles.toggle}>
-        <ThemeToggle />
       </div>
     </main>
   );

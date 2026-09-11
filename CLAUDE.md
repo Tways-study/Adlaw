@@ -97,7 +97,7 @@ stack or scope sections.
 | `docs/04-tdd.md` | Module map, data flow, error handling, testing, build order |
 | `docs/05-design-brief.md` | Design intent — pairs with `DESIGN.md` for values |
 | `PRODUCT.md` | Register, users, the four failures the product exists to prevent, anti-references, a11y floor |
-| `DESIGN.md` | Every color token (both themes), type scale, elevation, spring parameters, the ban list |
+| `DESIGN.md` | Every color token (dark-only, the Linear reference), type scale, elevation, spring parameters, the ban list |
 | `docs/design/prototype.html` | The approved interface, as a working prototype. Open it in a browser rather than guessing at layout |
 | `CONTEXT.md` | The domain glossary — Task/Step/Status, Free window/Capacity/Cutline, `parseState`, Course. Use these terms as defined; don't drift to synonyms it explicitly avoids (e.g. "card" for Task, "gap" for Free window) |
 
@@ -216,7 +216,6 @@ ui/
                         grid). useDayPlan.ts lives here — the single layout()
                         call site every capacity surface reads
   landing/              S0 sections, copy.ts fixtures, demos/ miniatures
-  theme/                shared theme toggle + applyTheme (storage key lives here)
   graphics/             DayMark — the one graphic, public surfaces only (S0 + S1)
   type/                 TaglineWord — the rotating "A day that ___" word,
                         public surfaces only. Readings live in its CSS as
@@ -298,29 +297,28 @@ reading any single module.
 
 `DESIGN.md` carries the full ban list. The three that get broken most:
 
-- **Exactly two saturated colors exist**: primary (blue, Notion `#0075de` since
-  the 2026-08-18 pivot — committed, planned, complete, selected) and alert (red —
-  past the edge of the day, nothing else). Neutrals carry a small warm chroma
-  (~`0.003–0.006` at hue 68), not `0` — that was the pre-pivot rule. Courses are
-  text labels; there is no per-course color system, and adding one is the failure
-  mode, not the upgrade.
-- **Text on a tint uses `--primary-ink` / `--alert-ink`, not `--primary` /
-  `--alert`.** The latter pair misses the 4.5:1 AA floor against their own soft
-  tints in light theme (4.05:1 and 3.88:1, measured). Keep `--primary` and
-  `--alert` for fills, bars, and rules. See `DESIGN.md` §Color → Rules.
-- **`docs/design/prototype.html` predates the palette pivot.** Its CSS hardcodes
-  the old green primary (`oklch(… 162)`). Port its layout, motion, and structure;
-  take colors from `ui/tokens.css`. It also uses `--lift-2`, a token that no
-  longer exists — a resting card is `--edge` only.
+- **The system strictly follows the Linear reference, dark-only** (2026-09-11;
+  `DESIGN.md`). There is no light theme, no theme toggle, and no `data-theme`
+  selector — don't add one back.
+- **Exactly two chromatic colors exist**: `--action` (acid lime `#e4f222`) for
+  the single primary action per view — never decoration, never a secondary
+  button — and `--alert` (coral `#eb5757`) for the day's edge being crossed and
+  form errors, nothing else. Everything the old blue used to mean (focus ring,
+  capacity fill, selection, planned time) is neutral Mist/Bone now. Courses are
+  text labels (mono face); there is no per-course color system, and adding one
+  is the failure mode, not the upgrade.
+- **`--ink-3` is Fog (`#8a8f98`), not Linear's Ash (`#62666d`).** Ash fails AA
+  (3.45:1 on Void); `ui/tokens.contrast.test.ts` asserts that from the failing
+  side. Lightening muted text "to match the reference" is the most likely way
+  this system breaks.
+- **Weights are 400 / 510 / 590 only**, Inter with `cv01 ss03 zero`; no serif
+  anywhere; JetBrains Mono only for course codes and keyboard hints.
+- **`docs/design/prototype.html` predates every palette change.** Port its
+  layout, motion, and structure; take colors from `ui/tokens.css`. Its
+  `--lift-2` no longer exists — a resting card is `--edge` only.
 - **No skeuomorphic props.** Physicality comes from material, depth, and motion.
   No paper textures, tape, stains, pins, or rotation jitter. An earlier draft was
   rejected for exactly this.
-- **No warm-neutral surfaces** and none of the token names that come with them
-  (`--paper`, `--cream`, `--linen`, `--parchment`, `--sand`).
-
-Light and dark are both first-class and independently tuned — dimming that reads
-fine on white destroys legibility on a dark ground, so `.past` opacity differs per
-theme by design.
 
 ## Build order
 
@@ -366,7 +364,7 @@ collaboration between accounts · productivity analytics · recurring tasks.
 
 Before any UI work, load the `impeccable` skill (it reads `PRODUCT.md`, which
 exists) plus the matching craft skill. Build interactive prototypes over static
-mockups, and verify in a browser in **both** themes before presenting — contrast
+mockups, and verify in a browser before presenting (dark-only; check against `DESIGN.md`'s one-lime-per-view and Fog-not-Ash rules) — contrast
 and dimming bugs in this design system are invisible in one theme and obvious in
 the other.
 

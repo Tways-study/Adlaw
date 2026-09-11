@@ -17,12 +17,12 @@
 .titleGroup h1 {
   margin: 0 0 4px;
   font-size: 20px;
-  font-weight: 600;
-  letter-spacing: -0.02em;
+  font-weight: 590;
+  letter-spacing: -0.012em;
 }
 
 .backLink {
-  font-size: 12.5px;
+  font-size: 13px;
   color: var(--ink-3);
   transition: color 140ms var(--ease);
 }
@@ -59,7 +59,7 @@
   background: var(--card);
   border-radius: var(--r-l);
   box-shadow: var(--edge);
-  font-size: 12.5px;
+  font-size: 13px;
   color: var(--ink-3);
   line-height: 1.5;
 }
@@ -67,7 +67,7 @@
 .loading {
   margin: 0;
   padding: 16px 4px;
-  font-size: 12.5px;
+  font-size: 13px;
   color: var(--ink-3);
 }
 

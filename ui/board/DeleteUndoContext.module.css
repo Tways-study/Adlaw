@@ -1,3 +1,5 @@
+/* Not inverted: an Obsidian slab with Linear's shadow-xl and a Smoke
+   hairline (both in --lift-3), floating above the Void canvas. */
 .toast {
   position: fixed;
   left: 50%;
@@ -7,33 +9,22 @@
   display: flex;
   align-items: center;
   gap: 14px;
-  background: var(--ink);
-  color: var(--desk);
+  background: var(--card-hi);
+  color: var(--ink-2);
   border-radius: var(--r-m);
   padding: 10px 12px 10px 16px;
-  font-size: 12.5px;
+  font-size: 13px;
+  letter-spacing: -0.01em;
   box-shadow: var(--lift-3);
 }
 
 .undo {
-  font-weight: 600;
-  color: var(--primary);
+  font-weight: 510;
+  color: var(--ink);
   padding: 6px 10px;
   border-radius: var(--r-m);
 }
 
 .undo:hover {
-  background: oklch(1 0 0 / 0.1);
-}
-
-:root[data-theme="dark"] .toast {
-  background: var(--card-hi);
-  color: var(--ink);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .toast {
-    background: var(--card-hi);
-    color: var(--ink);
-  }
+  background: var(--primary-soft);
 }

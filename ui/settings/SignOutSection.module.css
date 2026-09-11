@@ -1,10 +1,10 @@
 .signOutBtn {
   align-self: flex-start;
-  font-size: 12.5px;
-  font-weight: 500;
+  font-size: 13px;
+  font-weight: 510;
   color: var(--alert-ink);
   padding: 8px 14px;
-  /* DESIGN.md: "8px buttons" — a real button, --edge border. */
+  /* DESIGN.md: "6px buttons" — a real button, --edge border. */
   border-radius: var(--r-m);
   box-shadow: var(--edge);
   transition: background 140ms var(--ease);
