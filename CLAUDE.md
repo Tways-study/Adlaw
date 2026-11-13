@@ -4,16 +4,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository state
 
-**Slices 1–5 built, plus a public landing surface and multi-user auth.**
+**Slices 1–9 are built** (the board, schedule/capacity/cutline/Today's shape,
+Calendar overlay, Gemini AI, `/settings` config surfaces, offline capture queue),
+plus a public landing surface and multi-user auth.
 Next.js (App Router) + Firebase (Firestore + Firebase Auth — Google and
 email/password, open signup as of `docs/00-intake.md`'s Amendment 4) are wired
-up; `DESIGN.md`'s tokens are in `ui/tokens.css`. Task capture (heuristic parser
-only), lanes, complete, delete+undo, and drag all work, scoped per account.
-The weekly schedule editor (`/schedule`), capacity math, cutline, and Today's
-shape are built — the day has a real capacity figure on the manual schedule
-alone. **No Calendar and no AI yet** — those are Slices 6–7 per
-`docs/04-tdd.md` §Build order, which means capture is still heuristic-only and
-nothing breaks a large task into steps or picks a focus task.
+up; `DESIGN.md`'s tokens are in `ui/tokens.css`. Everything is scoped per
+account. The board must stay fully correct with Calendar empty/failed and with
+AI unavailable — both degrade silently to the manual schedule / heuristic parser.
+Check `git log` and the directory before assuming a feature is missing; this
+file lagged the code once already.
 
 **The one computation rule.** `ui/board/useDayPlan.ts` is the single place
 that calls `core/capacity`'s `layout()`. The capacity slot, the cutline, and
@@ -42,9 +42,8 @@ Commands: `npm run dev` (Next + Turbopack — no separate backend dev process;
 Firestore/Firebase Auth are serverless), `npm run lint`, `npx tsc --noEmit`,
 `npm run build` (`next build`), `npm test` (Vitest, pure suite). Single test
 file: `npx vitest run path/to/file.test.ts`; filter by name within it with
-`-t "pattern"`. Tests cover `core/heuristic.ts`, `core/time.ts`,
-`core/capacity.ts`, `core/order.ts`'s laneOrder
-arithmetic, and `ui/landing/copy.ts`'s fixtures. `vitest.config.mts` includes
+`-t "pattern"`. Tests live beside the pure modules (`core/*`, `ai/heuristic`,
+`app/api/ai/guard`, `firebase/config`, `ui/landing/copy`, `ui/tokens.contrast`). `vitest.config.mts` includes
 `**/*.test.ts` only — **no `.tsx`, and no environment is configured**, so
 component tests need a config change first; keep new tests pure and they
 don't. `npm run test:rules` runs `firestore.rules.test.ts` (cross-user
@@ -77,6 +76,11 @@ expecting it to do this job.
 `AGENTS.md` at the repo root is generated and rewritten by `next dev` itself
 (framework/version-specific breaking-change notes) — it's not a second
 agent-instructions file competing with this one; leave it alone.
+
+Server-only env (Vercel server environment, never `NEXT_PUBLIC_`):
+`GEMINI_API_KEY` (absent → heuristic provider), `TOKEN_ENCRYPTION_KEY`
+(base64 32 bytes, `openssl rand -base64 32`; Calendar breaks without it, the
+board doesn't), plus the Google OAuth client credentials for Calendar.
 
 ## Source of truth
 
@@ -164,8 +168,8 @@ the loop to bypass. Signup is open to the public internet as of Amendment 4 —
 a deliberate reopening of the quota exposure Amendment 3's invite gate existed
 to prevent. Google OAuth for the **v1** Calendar overlay's `calendar.readonly`
 refresh token is a separate consent step from sign-in (Firebase Auth's own
-Google provider returns no refresh token) — that exchange is deferred to a
-Vercel Route Handler (Slice 6, not built; Firebase's Spark plan has no Cloud
+Google provider returns no refresh token) — that exchange lives in a Vercel
+Route Handler (`app/api/calendar/*`; Firebase's Spark plan has no Cloud
 Functions). See `docs/00-stack-decision.md` v4.0 for the full reasoning and the
 three-reversal history (Convex → Postgres → Convex → Firebase).
 
@@ -183,8 +187,12 @@ app/                    Next.js routes. Thin — layout and data wiring only
   FirebaseProvider.tsx  thin wrapper around firebase/hooks.tsx's AuthProvider
   api/                   Vercel Route Handlers — the server boundary Firebase's
                          Spark plan needs in place of Cloud Functions
-    calendar/callback/    OAuth code exchange                     (Slice 6, not built)
-    ai/                   keeps the Gemini API key off the client (Slice 7, not built)
+    calendar/             connect / callback / sync. Server-only; _tokenCrypto.ts
+                          AES-256-GCM-encrypts the refresh token (TOKEN_ENCRYPTION_KEY),
+                          _firestoreRest.ts talks to Firestore over REST with the
+                          caller's ID token (no Admin SDK), so firestore.rules still apply
+    ai/                   parse / breakdown / focus / status. guard.ts is the shared
+                          per-uid + global in-memory rate limit (per serverless instance)
 firebase/
   client.ts              app/auth/firestore init from NEXT_PUBLIC_FIREBASE_* env
   auth.ts                signInWithGoogle / signInWithEmail / signUpWithEmail /
@@ -194,6 +202,9 @@ firebase/
   schedule.ts            scheduleBlocks writes + setDayEnd. endBlock() sets
                          activeTo rather than deleting, so a semester change
                          doesn't destroy history
+  ai.ts                  client contract for app/api/ai/*: 4s timeout, always resolves with a
+                         usable result, writes aiLog as the user (the route can't — no Admin SDK)
+  calendar.ts / settings.ts / courses.ts / aiLog.ts / export.ts   per-surface writes
   hooks.tsx              useAuth, useTasksByStatus / useDoneToday / useCourses /
                          useScheduleBlocks / usePrefs — onSnapshot wrappers
                          returning T[] | undefined
@@ -206,11 +217,13 @@ core/                   PURE. No I/O, no React, no Firebase imports
                          freeWindows. Minutes past local midnight throughout
   capacity.ts           layout() — totals, overage, cutline index, per-task
                          start/end. The ONLY caller is ui/board/useDayPlan.ts
-  heuristic.ts          rules-based parser — the fallback. Built, and the only parser today
-ai/                      (Slice 7, not built)
+  heuristic.ts          rules-based parser — the fallback when Gemini errors or exceeds 4s
+  breakdown.ts / focus.ts  deterministic step/focus-pick logic over validated AI output
+ai/                      Server-side only (imported by app/api/ai/* alone, so GEMINI_API_KEY
+                         never reaches a client bundle)
   types.ts              ParsedTask, BreakdownResult, FocusPick + Zod schemas
-  gemini.ts             provider adapter
-  index.ts              provider selection
+  gemini.ts             provider adapter (plain fetch, no SDK)
+  index.ts              provider selection: env key default, per-user prefs override
 ui/
   board/                lanes, cards, cutline (+ shell.module.css, the .app/.day
                         grid). useDayPlan.ts lives here — the single layout()
@@ -226,14 +239,13 @@ ui/
                          day edge. Rendered inside ui/board/StartHere.tsx
   schedule/              S4 week grid + the editable day edge. Writes commit
                          per edit, no save button
-  capture/               input + live preview. Built, Firebase-wired
-  settings/               S6 + S7 (Calendar connect)                (Slice 8, not built)
+  capture/               input + live preview; offlineQueue.ts is the localStorage
+                         queue for captures typed offline (capture only — not drag/complete/delete)
+  settings/               S6 + S7: AI provider, aiLog review, courses, export, Calendar connect
   drag/                  pointer tracking, spring, FLIP. Built
   tokens.css             DESIGN.md, verbatim
 ```
 
-Lines marked "not built" are `docs/04-tdd.md`'s target locations for later slices —
-don't `Read` them expecting content; check `git status`/the directory first.
 
 **`ui/landing/` may not import from `ui/board/`.** Every board component is
 `"use client"` + a `firebase/hooks.tsx` listener that resolves to `undefined`
